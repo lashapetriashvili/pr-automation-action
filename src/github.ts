@@ -59,6 +59,8 @@ export async function fetchConfig(): Promise<Config> {
   const octokit = getMyOctokit();
   const path = getInput('config');
 
+  info(JSON.stringify(octokit));
+
   const response = await octokit.rest.repos.getContent({
     owner: context.repo.owner,
     repo: context.repo.repo,
