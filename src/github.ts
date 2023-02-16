@@ -4,10 +4,13 @@ import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
 import { Config } from './config/typings';
-import { debug, error, warning } from './logger';
+import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
   const myToken = getInput('token');
+  const config = getInput('config');
+  info(myToken);
+  info(config);
 
   const octokit = getOctokit(myToken);
   return octokit;
