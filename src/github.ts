@@ -58,7 +58,9 @@ export async function fetchConfig(): Promise<Config> {
 
   info(JSON.stringify(octokit));
 
-  info('---------1 ------------');
+  info('--------- 1 ------------');
+
+  info(JSON.stringify(context));
 
   const response = await octokit.rest.repos.getContent({
     owner: context.repo.owner,

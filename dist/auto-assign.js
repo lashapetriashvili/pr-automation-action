@@ -34372,7 +34372,8 @@ function fetchConfig() {
         const octokit = getMyOctokit();
         const path = (0,core.getInput)('config');
         info(JSON.stringify(octokit));
-        info('---------1 ------------');
+        info('--------- 1 ------------');
+        info(JSON.stringify(github.context));
         const response = yield octokit.rest.repos.getContent({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
