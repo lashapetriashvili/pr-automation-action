@@ -67,6 +67,9 @@ export async function fetchConfig(): Promise<Config> {
     path,
     ref: context.ref,
   });
+
+  info(JSON.stringify(octokit));
+
   if (response.status !== 200) {
     error(`Response.status: ${response.status}`);
     throw new Error(JSON.stringify(response.data));
