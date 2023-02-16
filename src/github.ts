@@ -8,9 +8,6 @@ import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
   const myToken = getInput('token');
-  const config = getInput('config');
-  info(myToken);
-  info(config);
 
   const octokit = getOctokit(myToken);
   return octokit;
@@ -61,6 +58,8 @@ export async function fetchConfig(): Promise<Config> {
 
   info(JSON.stringify(octokit));
 
+  info('---------1 ------------');
+
   const response = await octokit.rest.repos.getContent({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -68,12 +67,17 @@ export async function fetchConfig(): Promise<Config> {
     ref: context.ref,
   });
 
-  info(JSON.stringify(octokit));
+  info('---------- 2 -------------');
+
+  info(JSON.stringify(response));
 
   if (response.status !== 200) {
     error(`Response.status: ${response.status}`);
     throw new Error(JSON.stringify(response.data));
   }
+
+  info('----------- 3 --------------');
+
   const data = response.data as {
     type: string;
     content: string;

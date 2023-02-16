@@ -34335,9 +34335,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 function getMyOctokit() {
     const myToken = (0,core.getInput)('token');
-    const config = (0,core.getInput)('config');
-    info(myToken);
-    info(config);
     const octokit = (0,github.getOctokit)(myToken);
     return octokit;
 }
@@ -34375,17 +34372,20 @@ function fetchConfig() {
         const octokit = getMyOctokit();
         const path = (0,core.getInput)('config');
         info(JSON.stringify(octokit));
+        info('---------1 ------------');
         const response = yield octokit.rest.repos.getContent({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             path,
             ref: github.context.ref,
         });
-        info(JSON.stringify(octokit));
+        info('---------- 2 -------------');
+        info(JSON.stringify(response));
         if (response.status !== 200) {
             error(`Response.status: ${response.status}`);
             throw new Error(JSON.stringify(response.data));
         }
+        info('----------- 3 --------------');
         const data = response.data;
         if (data.type !== 'file') {
             throw new Error('Failed to get config');
