@@ -60,7 +60,14 @@ export async function fetchConfig(): Promise<Config> {
 
   info('--------- 1 ------------');
 
-  info(JSON.stringify(context));
+  info(
+    JSON.stringify({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      path,
+      ref: context.ref,
+    }),
+  );
 
   const response = await octokit.rest.repos.getContent({
     owner: context.repo.owner,
