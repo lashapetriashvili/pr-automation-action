@@ -34335,7 +34335,6 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 function getMyOctokit() {
     const myToken = (0,core.getInput)('token');
-    console.log(11111, myToken);
     const octokit = (0,github.getOctokit)(myToken);
     return octokit;
 }
@@ -34653,7 +34652,7 @@ var auto_assign_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 function run() {
     return auto_assign_awaiter(this, void 0, void 0, function* () {
         try {
-            info('Starting pr auto assign.');
+            info('Starting pr auto assign. 1111111111111');
             let config;
             try {
                 config = yield fetchConfig();
