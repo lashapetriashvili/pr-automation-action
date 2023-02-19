@@ -34427,8 +34427,8 @@ function assignReviewers(pr, reviewers) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         yield octokit.rest.pulls.requestReviewers({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             pull_number: pr.number,
             reviewers: reviewers,
         });
@@ -34663,7 +34663,7 @@ var auto_assign_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 function run() {
     return auto_assign_awaiter(this, void 0, void 0, function* () {
         try {
-            info('Starting pr auto assign. 111');
+            info('Starting pr auto assign.');
             let config;
             try {
                 config = yield fetchConfig();
@@ -34710,7 +34710,7 @@ function run() {
                 info(`No reviewers were matched for author ${author}. Terminating the process`);
                 return;
             }
-            yield assignReviewers(pr, reviewersToAssign);
+            /* await github.assignReviewers(pr, reviewersToAssign); */
             info(`Requesting review to ${reviewersToAssign.join(', ')}`);
             info('Done');
         }
