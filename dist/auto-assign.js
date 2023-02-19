@@ -34663,7 +34663,7 @@ var auto_assign_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 function run() {
     return auto_assign_awaiter(this, void 0, void 0, function* () {
         try {
-            info('Starting pr auto assign.');
+            info('Starting pr auto assign. 1111');
             let config;
             try {
                 config = yield fetchConfig();

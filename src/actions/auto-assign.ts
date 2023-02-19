@@ -8,7 +8,7 @@ import {
 
 export async function run(): Promise<void> {
   try {
-    info('Starting pr auto assign.');
+    info('Starting pr auto assign. 1111');
 
     let config;
 
