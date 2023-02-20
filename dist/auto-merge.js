@@ -33932,48 +33932,42 @@ function getLatestCommitDate(pr) {
             const queryResult = yield octokit.graphql(`{
     repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
-        title
-        number
-        commits(last: 1) {
-          edges {
-            node {
-              commit {
-                authoredDate
-                author {
-                  user {
-                    email
-                    login
-                    name
-                    twitterUsername
-                  }
-                  date
-                }
-                committedDate
-                committer {
-                  user {
-                    email
-                    login
-                    name
-                    twitterUsername
-                  }
-                  date
-                }
-              }
+       reviews(first: 100) {
+        nodes {
+          author {
+            login
+          }
+          state
+          comments(first: 100) {
+            nodes {
+              body
             }
           }
+          authorAssociation
         }
       }
+      }
+pullRequestReviews(first: 100) {
+      nodes {
+        author {
+          login
+        }
+        state
+      }
+    }
     }
   }`);
             info(JSON.stringify(queryResult, null, 2));
-            info(JSON.stringify(queryResult.repository.pullRequest.commits, null, 2));
-            // @todo
-            const authoredDateString = queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
-            const latestCommitDate = new Date(authoredDateString);
-            return {
-                latestCommitDate,
-                authoredDateString,
-            };
+            /* info(JSON.stringify(queryResult.repository.pullRequest.commits, null, 2)); */
+            /**/
+            /* // @todo */
+            /* const authoredDateString = */
+            /*   queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate; */
+            /* const latestCommitDate = new Date(authoredDateString); */
+            /* return { */
+            /*   latestCommitDate, */
+            /*   authoredDateString, */
+            /* }; */
         }
         catch (err) {
             logger_warning(err);
