@@ -33961,7 +33961,13 @@ function checkReviewersState2(pr, reviewerLogin) {
             const queryResult = yield octokit.graphql(`{
     repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
-         reviews(first: 100) {
+        PullRequestReviewConnection() {
+          edges
+          nodes
+          pageInfo
+          totalCount
+        }
+        reviews(first: 100) {
           nodes {
             author {
               login
