@@ -2,9 +2,8 @@ import { inspect } from 'util';
 import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
-import { info, error, warning, debug } from '../logger';
-import { fetchConfig, checkReviewersState, getPullRequest } from '../github';
-import Retry from './retry';
+import { info, debug } from '../logger';
+import { checkReviewersState, getPullRequest } from '../github';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -35,14 +34,7 @@ interface ValidationResult {
 }
 
 export class Merger {
-  private retry: Retry;
-
-  constructor(private configInput: Inputs) {
-    this.retry = new Retry()
-      .timeout(this.configInput.timeoutSeconds)
-      .interval(this.configInput.intervalSeconds)
-      .failStep(this.configInput.failStep);
-  }
+  constructor(private configInput: Inputs) {}
 
   private isAllLabelsValid(
     pr: PullsGetResponseData,
@@ -63,7 +55,7 @@ export class Merger {
       failed = false;
     }
 
-    core.debug(
+    debug(
       `Checking all labels for type:${type} and prLabels:${inspect(
         pr.labels.map((l) => l.name),
       )}, hasLabels:${inspect(hasLabels)}, labels:${inspect(
@@ -100,7 +92,7 @@ export class Merger {
       failed = false;
     }
 
-    core.debug(
+    debug(
       `Checking atLeastOne labels for type:${type} and prLabels:${inspect(
         pr.labels.map((l) => l.name),
       )}, hasLabels:${inspect(hasLabels)}, labels:${inspect(
@@ -136,135 +128,121 @@ export class Merger {
 
     const { owner, repo } = this.configInput;
 
-    try {
-      await this.retry.exec(async (count): Promise<void> => {
-        try {
-          const { data: pr } = await client.pulls.get({
-            owner,
-            repo,
-            pull_number: this.configInput.pullRequestNumber,
-          });
+    const { data: pr } = await client.pulls.get({
+      owner,
+      repo,
+      pull_number: this.configInput.pullRequestNumber,
+    });
 
-          const pullRequest = getPullRequest();
+    const pullRequest = getPullRequest();
 
-          if (this.configInput.labels.length) {
-            const labelResult = this.isLabelsValid(
-              // @ts-ignore
-              pr,
-              this.configInput.labels,
-              this.configInput.labelsStrategy,
-              'labels',
-            );
-            if (labelResult.failed) {
-              throw new Error(`Checked labels failed: ${labelResult.message}`);
-            }
+    if (this.configInput.labels.length) {
+      const labelResult = this.isLabelsValid(
+        // @ts-ignore
+        pr,
+        this.configInput.labels,
+        this.configInput.labelsStrategy,
+        'labels',
+      );
+      if (labelResult.failed) {
+        throw new Error(`Checked labels failed: ${labelResult.message}`);
+      }
 
-            core.debug(
-              `Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`,
-            );
-            core.info(
-              `Checked labels and passed with labels:${inspect(this.configInput.labels)}`,
-            );
-          }
+      debug(
+        `Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`,
+      );
 
-          if (this.configInput.ignoreLabels.length) {
-            const ignoreLabelResult = this.isLabelsValid(
-              // @ts-ignore
-              pr,
-              this.configInput.ignoreLabels,
-              this.configInput.ignoreLabelsStrategy,
-              'ignoreLabels',
-            );
-            if (ignoreLabelResult.failed) {
-              throw new Error(
-                `Checked ignore labels failed: ${ignoreLabelResult.message}`,
-              );
-            }
+      info(`Checked labels and passed with labels:${inspect(this.configInput.labels)}`);
+    }
 
-            core.debug(
-              `Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`,
-            );
-            core.info(
-              `Checked ignore labels and passed with ignoreLabels:${inspect(
-                this.configInput.ignoreLabels,
-              )}`,
-            );
-          }
+    if (this.configInput.ignoreLabels.length) {
+      const ignoreLabelResult = this.isLabelsValid(
+        // @ts-ignore
+        pr,
+        this.configInput.ignoreLabels,
+        this.configInput.ignoreLabelsStrategy,
+        'ignoreLabels',
+      );
+      if (ignoreLabelResult.failed) {
+        throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
+      }
 
-          if (this.configInput.checkStatus) {
-            const { data: checks } = await client.checks.listForRef({
-              owner: this.configInput.owner,
-              repo: this.configInput.repo,
-              ref: this.configInput.sha,
-            });
+      debug(
+        `Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`,
+      );
+      info(
+        `Checked ignore labels and passed with ignoreLabels:${inspect(
+          this.configInput.ignoreLabels,
+        )}`,
+      );
+    }
 
-            const totalStatus = checks.total_count;
-            const totalSuccessStatuses = checks.check_runs.filter(
-              (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
-            ).length;
-
-            // @ts-ignore
-            const requestedChanges = pr.requested_reviewers.map(
-              (reviewer: any) => reviewer.login,
-            );
-
-            if (requestedChanges.length > 0) {
-              throw new Error('Waiting approve');
-            }
-
-            const checkReviewerState = await checkReviewersState(
-              pullRequest,
-              'lashapetriashvili-ezetech',
-            );
-
-            if (checkReviewerState === undefined) {
-              throw new Error('Waiting approve');
-            }
-
-            if (totalStatus - 1 !== totalSuccessStatuses) {
-              throw new Error(
-                `Not all status success, ${totalSuccessStatuses} out of ${
-                  totalStatus - 1
-                } (ignored this check) success`,
-              );
-            }
-
-            core.debug(`All ${totalStatus} status success`);
-            core.debug(`Merge PR ${pr.number}`);
-          }
-        } catch (err) {
-          core.debug(`failed retry count:${count} with error ${inspect(err)}`);
-          throw err;
-        }
+    if (this.configInput.checkStatus) {
+      const { data: checks } = await client.checks.listForRef({
+        owner: this.configInput.owner,
+        repo: this.configInput.repo,
+        ref: this.configInput.sha,
       });
 
-      if (this.configInput.comment) {
-        const { data: resp } = await client.issues.createComment({
-          owner: this.configInput.owner,
-          repo: this.configInput.repo,
-          issue_number: this.configInput.pullRequestNumber,
-          body: this.configInput.comment,
-        });
+      const totalStatus = checks.total_count;
+      const totalSuccessStatuses = checks.check_runs.filter(
+        (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
+      ).length;
 
-        core.debug(`Post comment ${inspect(this.configInput.comment)}`);
-        core.setOutput('commentID', resp.id);
-      }
+      // @ts-ignore
+      const requestedChanges = pr.requested_reviewers.map(
+        (reviewer: any) => reviewer.login,
+      );
 
-      /* await client.pulls.merge({ */
-      /*   owner, */
-      /*   repo, */
-      /*   pull_number: this.configInput.pullRequestNumber, */
-      /*   merge_method: this.configInput.strategy, */
-      /* }); */
+      info(JSON.stringify(requestedChanges, null, 2));
 
-      core.setOutput('merged', true);
-    } catch (err) {
-      core.debug(`Error on retry error:${inspect(err)}`);
-      if (this.configInput.failStep) {
-        throw err;
-      }
-      core.debug('timeout but passing because "failStep" is configure to false');
+      /* if (requestedChanges.length > 0) { */
+      /*   throw new Error('Waiting approve'); */
+      /* } */
+
+      const checkReviewerState = await checkReviewersState(
+        pullRequest,
+        'lashapetriashvili-ezetech',
+      );
+
+      info(JSON.stringify(checkReviewerState, null, 2));
+
+      /* if (checkReviewerState === undefined) { */
+      /*   throw new Error('Waiting approve'); */
+      /* } */
+
+      /* if (totalStatus - 1 !== totalSuccessStatuses) { */
+      /*   throw new Error( */
+      /*     `Not all status success, ${totalSuccessStatuses} out of ${ */
+      /*       totalStatus - 1 */
+      /*     } (ignored this check) success`, */
+      /*   ); */
+      /* } */
+
+      debug(`All ${totalStatus} status success`);
+      debug(`Merge PR ${pr.number}`);
     }
+
+    if (this.configInput.comment) {
+      const { data: resp } = await client.issues.createComment({
+        owner: this.configInput.owner,
+        repo: this.configInput.repo,
+        issue_number: this.configInput.pullRequestNumber,
+        body: this.configInput.comment,
+      });
+
+      debug(`Post comment ${inspect(this.configInput.comment)}`);
+      core.setOutput('commentID', resp.id);
+    }
+
+    /* await client.pulls.merge({ */
+    /*   owner, */
+    /*   repo, */
+    /*   pull_number: this.configInput.pullRequestNumber, */
+    /*   merge_method: this.configInput.strategy, */
+    /* }); */
+
+    core.setOutput('merged', true);
   }
 }
 
