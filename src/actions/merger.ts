@@ -196,9 +196,9 @@ export class Merger {
 
       info(JSON.stringify(requestedChanges, null, 2));
 
-      /* if (requestedChanges.length > 0) { */
-      /*   throw new Error('Waiting approve'); */
-      /* } */
+      if (requestedChanges.length > 0) {
+        throw new Error('Waiting approve');
+      }
 
       const checkReviewerState = await checkReviewersState(
         pullRequest,
@@ -207,17 +207,17 @@ export class Merger {
 
       info(JSON.stringify(checkReviewerState, null, 2));
 
-      /* if (checkReviewerState === undefined) { */
-      /*   throw new Error('Waiting approve'); */
-      /* } */
+      if (checkReviewerState === undefined) {
+        throw new Error('Waiting approve');
+      }
 
-      /* if (totalStatus - 1 !== totalSuccessStatuses) { */
-      /*   throw new Error( */
-      /*     `Not all status success, ${totalSuccessStatuses} out of ${ */
-      /*       totalStatus - 1 */
-      /*     } (ignored this check) success`, */
-      /*   ); */
-      /* } */
+      if (totalStatus - 1 !== totalSuccessStatuses) {
+        throw new Error(
+          `Not all status success, ${totalSuccessStatuses} out of ${
+            totalStatus - 1
+          } (ignored this check) success`,
+        );
+      }
 
       debug(`All ${totalStatus} status success`);
       debug(`Merge PR ${pr.number}`);
@@ -235,12 +235,12 @@ export class Merger {
       core.setOutput('commentID', resp.id);
     }
 
-    /* await client.pulls.merge({ */
-    /*   owner, */
-    /*   repo, */
-    /*   pull_number: this.configInput.pullRequestNumber, */
-    /*   merge_method: this.configInput.strategy, */
-    /* }); */
+    await client.pulls.merge({
+      owner,
+      repo,
+      pull_number: this.configInput.pullRequestNumber,
+      merge_method: this.configInput.strategy,
+    });
 
     core.setOutput('merged', true);
   }
