@@ -33817,7 +33817,7 @@ const isTest = process.env.NODE_ENV === 'test';
 const info = (/* unused pure expression or super */ null && (isTest ? () => { } : logInfo));
 const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
 const debug = isTest ? () => { } : core.debug;
-const logger_warning = (/* unused pure expression or super */ null && (isTest ? () => { } : logWarning));
+const logger_warning = isTest ? () => { } : core.warning;
 
 ;// CONCATENATED MODULE: ./src/github.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -33835,8 +33835,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 function getMyOctokit() {
-    const myToken = getInput('token');
-    const octokit = getOctokit(myToken);
+    const myToken = (0,core.getInput)('token');
+    const octokit = (0,github.getOctokit)(myToken);
     return octokit;
 }
 class PullRequest {
@@ -33965,7 +33965,7 @@ function checkReviewersState(pr, reviewerLogin) {
         const octokit = getMyOctokit();
         try {
             const queryResult = yield octokit.graphql(`{
-    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
          reviews(first: 100) {
           nodes {
@@ -33985,7 +33985,7 @@ function checkReviewersState(pr, reviewerLogin) {
             return response;
         }
         catch (err) {
-            warning(err);
+            logger_warning(err);
             throw err;
         }
     });
@@ -34193,21 +34193,14 @@ class Merger {
                             const totalStatus = checks.total_count;
                             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
                             // @ts-ignore
-                            /* const requestedChanges = pr.requested_reviewers.map( */
-                            /*   (reviewer: any) => reviewer.login, */
-                            /* ); */
-                            /**/
-                            /* if (requestedChanges.length > 0) { */
-                            /*   throw new Error('Waiting approve'); */
-                            /* } */
-                            /* const checkReviewerState = await checkReviewersState( */
-                            /*   pullRequest, */
-                            /*   'lashapetriashvili-ezetech', */
-                            /* ); */
-                            /**/
-                            /* if (checkReviewerState === undefined) { */
-                            /*   throw new Error('Waiting approve'); */
-                            /* } */
+                            const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
+                            if (requestedChanges.length > 0) {
+                                throw new Error('Waiting approve');
+                            }
+                            const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
+                            if (checkReviewerState === undefined) {
+                                throw new Error('Waiting approve');
+                            }
                             if (totalStatus - 1 !== totalSuccessStatuses) {
                                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
                             }
@@ -34230,12 +34223,12 @@ class Merger {
                     core.debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
                     core.setOutput('commentID', resp.id);
                 }
-                yield client.pulls.merge({
-                    owner,
-                    repo,
-                    pull_number: this.configInput.pullRequestNumber,
-                    merge_method: this.configInput.strategy,
-                });
+                /* await client.pulls.merge({ */
+                /*   owner, */
+                /*   repo, */
+                /*   pull_number: this.configInput.pullRequestNumber, */
+                /*   merge_method: this.configInput.strategy, */
+                /* }); */
                 core.setOutput('merged', true);
             }
             catch (err) {
