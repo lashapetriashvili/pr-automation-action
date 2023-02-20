@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
-import Retry from './retry';
+/* import Retry from './retry'; */
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -132,12 +132,11 @@ export class Merger {
   async merge(): Promise<void> {
     core.info('---------');
 
-    // @ts-ignore
-    const client: { pulls: any; checks: any; issues: any } = github.getOctokit(
-      this.configInput.token,
-    );
+    const client = github.getOctokit(this.configInput.token);
 
     core.info(JSON.stringify(client.pulls));
+
+    return;
 
     const { owner, repo } = this.configInput;
 
@@ -154,6 +153,7 @@ export class Merger {
 
     if (this.configInput.labels.length) {
       const labelResult = this.isLabelsValid(
+        // @ts-ignore
         pr,
         this.configInput.labels,
         this.configInput.labelsStrategy,
@@ -173,6 +173,7 @@ export class Merger {
 
     if (this.configInput.ignoreLabels.length) {
       const ignoreLabelResult = this.isLabelsValid(
+        // @ts-ignore
         pr,
         this.configInput.ignoreLabels,
         this.configInput.ignoreLabelsStrategy,

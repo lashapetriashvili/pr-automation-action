@@ -103,7 +103,7 @@ export async function fetchChangedFiles({ pr }: { pr: PullRequest }): Promise<st
     });
 
     numberOfFilesInCurrentPage = responseBody.length;
-    changedFiles.push(...responseBody.map((file) => file.filename));
+    changedFiles.push(...responseBody.map((file: any) => file.filename));
   } while (numberOfFilesInCurrentPage === perPage);
 
   return changedFiles;
