@@ -33937,7 +33937,28 @@ function getLatestCommitDate(pr) {
         commits(last: 1) {
           edges {
             node {
-              commit
+              commit {
+                authoredDate
+                author {
+                  user {
+                    email
+                    login
+                    name
+                    twitterUsername
+                  }
+                  date
+                }
+                committedDate
+                committer {
+                  user {
+                    email
+                    login
+                    name
+                    twitterUsername
+                  }
+                  date
+                }
+              }
             }
           }
         }

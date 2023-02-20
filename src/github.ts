@@ -137,7 +137,28 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
         commits(last: 1) {
           edges {
             node {
-              commit
+              commit {
+                authoredDate
+                author {
+                  user {
+                    email
+                    login
+                    name
+                    twitterUsername
+                  }
+                  date
+                }
+                committedDate
+                committer {
+                  user {
+                    email
+                    login
+                    name
+                    twitterUsername
+                  }
+                  date
+                }
+              }
             }
           }
         }
