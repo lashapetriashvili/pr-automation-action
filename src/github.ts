@@ -181,10 +181,12 @@ export async function checkReviewersState(pr: PullRequest, reviewerLogin: string
 
     const reviews = queryResult.repository.pullRequest.reviews.nodes;
 
-    return reviews.find(
+    const response = reviews.find(
       (reviewer: any) =>
         reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED',
     );
+
+    return response;
   } catch (err) {
     warning(err as Error);
     throw err;

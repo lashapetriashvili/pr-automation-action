@@ -33981,7 +33981,8 @@ function checkReviewersState(pr, reviewerLogin) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            return reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
+            const response = reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
+            return response;
         }
         catch (err) {
             logger_warning(err);
