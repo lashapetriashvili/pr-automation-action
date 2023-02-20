@@ -33930,36 +33930,63 @@ function getLatestCommitDate(pr) {
         const octokit = getMyOctokit();
         try {
             const queryResult = yield octokit.graphql(`{
-    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
-       reviews(first: 100) {
-        nodes {
-          author {
-            login
-          }
-          state
-          comments(first: 100) {
-            nodes {
-              body
+        title
+        number
+        commits(last: 1) {
+          edges {
+            node {
+              commit {
+                authoredDate
+              }
             }
           }
-          authorAssociation
         }
-      }
       }
     }
   }`);
-            info(JSON.stringify(queryResult, null, 2));
-            /* info(JSON.stringify(queryResult.repository.pullRequest.commits, null, 2)); */
-            /**/
-            /* // @todo */
-            /* const authoredDateString = */
-            /*   queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate; */
-            /* const latestCommitDate = new Date(authoredDateString); */
-            /* return { */
-            /*   latestCommitDate, */
-            /*   authoredDateString, */
-            /* }; */
+            // @todo
+            const authoredDateString = queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
+            const latestCommitDate = new Date(authoredDateString);
+            return {
+                latestCommitDate,
+                authoredDateString,
+            };
+        }
+        catch (err) {
+            warning(err);
+            throw err;
+        }
+    });
+}
+function getReviewersState(pr) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getMyOctokit();
+        try {
+            const queryResult = yield octokit.graphql(`{
+    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+      pullRequest(number: ${pr.number}) {
+         reviews(first: 100) {
+                      nodes {
+                        author {
+                          login
+                        }
+                        state
+                        authorAssociation
+                        viewerCanUpdate
+                      }
+                    }
+      }
+    }
+  }`);
+            const reviews = queryResult.repository.pullRequest.reviews.nodes;
+            info(JSON.stringify(reviews, null, 2));
+            const reviewers = reviews.filter((review) => review.state === 'CHANGES_REQUESTED' &&
+                review.authorAssociation !== 'MEMBER' &&
+                review.authorAssociation !== 'COLLABORATOR' &&
+                !review.viewerCanUpdate);
+            return reviewers.map((reviewer) => reviewer.author.login);
         }
         catch (err) {
             logger_warning(err);
@@ -34162,7 +34189,7 @@ class Merger {
                         }
                         /* info(JSON.stringify(config, null, 2)); */
                         const pullRequest = getPullRequest();
-                        const response = getLatestCommitDate(pullRequest);
+                        const response = getReviewersState(pullRequest);
                         info(JSON.stringify(response, null, 2));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
