@@ -134,6 +134,10 @@ export class Merger {
     const client: { pulls: any; checks: any; issues: any } = github.getOctokit(
       this.configInput.token,
     );
+
+    core.info(JSON.stringify(client));
+    return;
+
     const { owner, repo } = this.configInput;
 
     try {
