@@ -3,6 +3,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, error, warning, debug } from '../logger';
+import { fetchConfig } from '../github';
 import Retry from './retry';
 
 export type labelStrategies = 'all' | 'atLeastOne';
@@ -152,6 +153,23 @@ export class Merger {
           /* info(JSON.stringify(requestedChanges)); */
 
           /* info(JSON.stringify(pr, null, 2)); */
+
+          let config;
+
+          try {
+            config = await fetchConfig();
+          } catch (err) {
+            if ((err as Record<string, unknown>).status === 404) {
+              warning(
+                'No configuration file is found in the base branch; terminating the process',
+              );
+              info(JSON.stringify(err));
+              return;
+            }
+            throw err;
+          }
+
+          info(JSON.stringify(config, null, 2));
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
