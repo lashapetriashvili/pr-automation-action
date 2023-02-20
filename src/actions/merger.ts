@@ -145,11 +145,11 @@ export class Merger {
           });
 
           // @ts-ignore
-          const requestedChanges = pr.data.requested_reviewers.map(
-            (reviewer: any) => reviewer.login,
-          );
-
-          info(JSON.stringify(requestedChanges));
+          /* const requestedChanges = pr.data.requested_reviewers.map( */
+          /*   (reviewer: any) => reviewer.login, */
+          /* ); */
+          /**/
+          /* info(JSON.stringify(requestedChanges)); */
 
           info(JSON.stringify(pr, null, 2));
 

@@ -10708,8 +10708,11 @@ class Merger {
                             pull_number: this.configInput.pullRequestNumber,
                         });
                         // @ts-ignore
-                        const requestedChanges = pr.data.requested_reviewers.map((reviewer) => reviewer.login);
-                        info(JSON.stringify(requestedChanges));
+                        /* const requestedChanges = pr.data.requested_reviewers.map( */
+                        /*   (reviewer: any) => reviewer.login, */
+                        /* ); */
+                        /**/
+                        /* info(JSON.stringify(requestedChanges)); */
                         info(JSON.stringify(pr, null, 2));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
