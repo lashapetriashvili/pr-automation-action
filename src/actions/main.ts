@@ -30,9 +30,10 @@ async function run(): Promise<void> {
     };
 
     core.debug(`Inputs: ${inspect(inputs)}`);
+    core.info(JSON.stringify(inputs));
 
-    const merger = new Merger(inputs);
-    await merger.merge();
+    /* const merger = new Merger(inputs); */
+    /* await merger.merge(); */
   } catch (error) {
     // @ts-ignore
     core.setFailed(error.message);
