@@ -33981,7 +33981,9 @@ function checkReviewersState(pr, reviewerLogin) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            return reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
+            const response = reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
+            info(JSON.stringify(response, null, 2));
+            return false;
         }
         catch (err) {
             logger_warning(err);
@@ -34170,6 +34172,7 @@ class Merger {
                         const pullRequest = getPullRequest();
                         const checkReviewerState = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                         info(JSON.stringify(checkReviewerState, null, 2));
+                        return;
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
                             // @ts-ignore
@@ -34200,6 +34203,11 @@ class Merger {
                             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
                             /* pr.requested_reviewers */
                             /* info(JSON.stringify(checks, null, 2)); */
+                            // @ts-ignore
+                            const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
+                            if (requestedChanges.length > 0) {
+                                throw new Error('Waiting approve');
+                            }
                             if (totalStatus - 1 !== totalSuccessStatuses) {
                                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
                             }

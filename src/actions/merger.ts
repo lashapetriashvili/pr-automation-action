@@ -163,6 +163,8 @@ export class Merger {
 
           info(JSON.stringify(checkReviewerState, null, 2));
 
+          return
+
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
               // @ts-ignore
@@ -222,6 +224,15 @@ export class Merger {
             /* pr.requested_reviewers */
 
             /* info(JSON.stringify(checks, null, 2)); */
+
+            // @ts-ignore
+            const requestedChanges = pr.requested_reviewers.map(
+              (reviewer: any) => reviewer.login,
+            );
+
+            if (requestedChanges.length > 0) {
+              throw new Error('Waiting approve');
+            }
 
             if (totalStatus - 1 !== totalSuccessStatuses) {
               throw new Error(
