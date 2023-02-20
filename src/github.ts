@@ -181,21 +181,10 @@ export async function checkReviewersState(pr: PullRequest, reviewerLogin: string
 
     const reviews = queryResult.repository.pullRequest.reviews.nodes;
 
-    info(JSON.stringify(reviews, null, 2));
-
-    const response = reviews.find((reviewer: any) => {
-      info(
-        JSON.stringify(
-          reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED',
-          null,
-          2,
-        ),
-      );
-
-      return reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED';
-    });
-
-    info(JSON.stringify(response, null, 2));
+    const response = reviews.find(
+      (reviewer: any) =>
+        reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED',
+    );
 
     return response;
   } catch (err) {

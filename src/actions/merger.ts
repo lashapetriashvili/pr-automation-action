@@ -147,11 +147,10 @@ export class Merger {
 
           const pullRequest = getPullRequest();
 
-          const checkReviewerState = checkReviewersState(
+          const checkReviewerState = await checkReviewersState(
             pullRequest,
             'lashapetriashvili-ezetech',
           );
-          info('------');
           info(JSON.stringify(checkReviewerState, null, 2));
 
           return;

@@ -33981,12 +33981,7 @@ function checkReviewersState(pr, reviewerLogin) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            info(JSON.stringify(reviews, null, 2));
-            const response = reviews.find((reviewer) => {
-                info(JSON.stringify(reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED', null, 2));
-                return reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED';
-            });
-            info(JSON.stringify(response, null, 2));
+            const response = reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
             return response;
         }
         catch (err) {
@@ -34170,8 +34165,7 @@ class Merger {
                             pull_number: this.configInput.pullRequestNumber,
                         });
                         const pullRequest = getPullRequest();
-                        const checkReviewerState = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
-                        info('------');
+                        const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                         info(JSON.stringify(checkReviewerState, null, 2));
                         return;
                         if (this.configInput.labels.length) {
