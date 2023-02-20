@@ -33937,9 +33937,7 @@ function getLatestCommitDate(pr) {
         commits(last: 1) {
           edges {
             node {
-              commit {
-                authoredDate
-              }
+              commit
             }
           }
         }
