@@ -135,91 +135,86 @@ export class Merger {
       this.configInput.token,
     );
 
-    core.info(JSON.stringify(client));
-    return;
-
     const { owner, repo } = this.configInput;
 
     try {
-      await this.retry.exec(async (count): Promise<void> => {
-        try {
-          const { data: pr } = await client.pulls.get({
-            owner,
-            repo,
-            pull_number: this.configInput.pullRequestNumber,
+      /* await this.retry.exec(async (count): Promise<void> => { */
+      try {
+        const { data: pr } = await client.pulls.get({
+          owner,
+          repo,
+          pull_number: this.configInput.pullRequestNumber,
+        });
+
+        if (this.configInput.labels.length) {
+          const labelResult = this.isLabelsValid(
+            pr,
+            this.configInput.labels,
+            this.configInput.labelsStrategy,
+            'labels',
+          );
+          if (labelResult.failed) {
+            throw new Error(`Checked labels failed: ${labelResult.message}`);
+          }
+
+          core.debug(
+            `Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`,
+          );
+          core.info(
+            `Checked labels and passed with labels:${inspect(this.configInput.labels)}`,
+          );
+        }
+
+        if (this.configInput.ignoreLabels.length) {
+          const ignoreLabelResult = this.isLabelsValid(
+            pr,
+            this.configInput.ignoreLabels,
+            this.configInput.ignoreLabelsStrategy,
+            'ignoreLabels',
+          );
+          if (ignoreLabelResult.failed) {
+            throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
+          }
+
+          core.debug(
+            `Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`,
+          );
+          core.info(
+            `Checked ignore labels and passed with ignoreLabels:${inspect(
+              this.configInput.ignoreLabels,
+            )}`,
+          );
+        }
+
+        if (this.configInput.checkStatus) {
+          const { data: checks } = await client.checks.listForRef({
+            owner: this.configInput.owner,
+            repo: this.configInput.repo,
+            ref: this.configInput.sha,
           });
 
-          if (this.configInput.labels.length) {
-            const labelResult = this.isLabelsValid(
-              pr,
-              this.configInput.labels,
-              this.configInput.labelsStrategy,
-              'labels',
-            );
-            if (labelResult.failed) {
-              throw new Error(`Checked labels failed: ${labelResult.message}`);
-            }
+          const totalStatus = checks.total_count;
+          const totalSuccessStatuses = checks.check_runs.filter(
+            (check: any) =>
+              check.conclusion === 'success' || check.conclusion === 'skipped',
+          ).length;
 
-            core.debug(
-              `Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`,
-            );
-            core.info(
-              `Checked labels and passed with labels:${inspect(this.configInput.labels)}`,
+          if (totalStatus - 1 !== totalSuccessStatuses) {
+            throw new Error(
+              `Not all status success, ${totalSuccessStatuses} out of ${
+                totalStatus - 1
+              } (ignored this check) success`,
             );
           }
 
-          if (this.configInput.ignoreLabels.length) {
-            const ignoreLabelResult = this.isLabelsValid(
-              pr,
-              this.configInput.ignoreLabels,
-              this.configInput.ignoreLabelsStrategy,
-              'ignoreLabels',
-            );
-            if (ignoreLabelResult.failed) {
-              throw new Error(
-                `Checked ignore labels failed: ${ignoreLabelResult.message}`,
-              );
-            }
-
-            core.debug(
-              `Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`,
-            );
-            core.info(
-              `Checked ignore labels and passed with ignoreLabels:${inspect(
-                this.configInput.ignoreLabels,
-              )}`,
-            );
-          }
-
-          if (this.configInput.checkStatus) {
-            const { data: checks } = await client.checks.listForRef({
-              owner: this.configInput.owner,
-              repo: this.configInput.repo,
-              ref: this.configInput.sha,
-            });
-
-            const totalStatus = checks.total_count;
-            const totalSuccessStatuses = checks.check_runs.filter(
-              (check: any) =>
-                check.conclusion === 'success' || check.conclusion === 'skipped',
-            ).length;
-
-            if (totalStatus - 1 !== totalSuccessStatuses) {
-              throw new Error(
-                `Not all status success, ${totalSuccessStatuses} out of ${
-                  totalStatus - 1
-                } (ignored this check) success`,
-              );
-            }
-
-            core.debug(`All ${totalStatus} status success`);
-            core.debug(`Merge PR ${pr.number}`);
-          }
-        } catch (err) {
-          core.debug(`failed retry count:${count} with error ${inspect(err)}`);
-          throw err;
+          core.debug(`All ${totalStatus} status success`);
+          core.debug(`Merge PR ${pr.number}`);
         }
-      });
+      } catch (err) {
+        core.debug(`error ${inspect(err)}`);
+        throw err;
+      }
+      /* }); */
 
       if (this.configInput.comment) {
         const { data: resp } = await client.issues.createComment({
