@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
-/* import { info, error, warning, debug } from '../logger'; */
+import { info, error, warning, debug } from '../logger';
 import Retry from './retry';
 
 export type labelStrategies = 'all' | 'atLeastOne';
@@ -197,9 +197,10 @@ export class Merger {
 
             const totalStatus = checks.total_count;
             const totalSuccessStatuses = checks.check_runs.filter(
-              (check: any) =>
-                check.conclusion === 'success' || check.conclusion === 'skipped',
+              (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
             ).length;
+
+            info(JSON.stringify(checks, null, 2));
 
             if (totalStatus - 1 !== totalSuccessStatuses) {
               throw new Error(
@@ -231,12 +232,12 @@ export class Merger {
       }
 
       if (!this.configInput.dryRun) {
-        await client.pulls.merge({
-          owner,
-          repo,
-          pull_number: this.configInput.pullRequestNumber,
-          merge_method: this.configInput.strategy,
-        });
+        /* await client.pulls.merge({ */
+        /*   owner, */
+        /*   repo, */
+        /*   pull_number: this.configInput.pullRequestNumber, */
+        /*   merge_method: this.configInput.strategy, */
+        /* }); */
         core.setOutput('merged', true);
       } else {
         core.info('dry run merge action');
