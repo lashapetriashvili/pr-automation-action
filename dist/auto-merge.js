@@ -10750,8 +10750,6 @@ class Merger {
                         throw err;
                     }
                 }));
-                info('------------- Comment ---------------');
-                info(this.configInput.comment);
                 if (this.configInput.comment) {
                     const { data: resp } = yield client.issues.createComment({
                         owner: this.configInput.owner,
@@ -10762,19 +10760,13 @@ class Merger {
                     core.debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
                     core.setOutput('commentID', resp.id);
                 }
-                if (!this.configInput.dryRun) {
-                    /* await client.pulls.merge({ */
-                    /*   owner, */
-                    /*   repo, */
-                    /*   pull_number: this.configInput.pullRequestNumber, */
-                    /*   merge_method: this.configInput.strategy, */
-                    /* }); */
-                    core.setOutput('merged', true);
-                }
-                else {
-                    core.info('dry run merge action');
-                    core.setOutput('merged', false);
-                }
+                /* await client.pulls.merge({ */
+                /*   owner, */
+                /*   repo, */
+                /*   pull_number: this.configInput.pullRequestNumber, */
+                /*   merge_method: this.configInput.strategy, */
+                /* }); */
+                core.setOutput('merged', true);
             }
             catch (err) {
                 core.debug(`Error on retry error:${(0,external_util_.inspect)(err)}`);
