@@ -193,6 +193,33 @@ export async function checkReviewersState(pr: PullRequest, reviewerLogin: string
   }
 }
 
+export async function checkReviewersState2(pr: PullRequest, reviewerLogin: string) {
+  const octokit = getMyOctokit();
+  try {
+    const queryResult = await octokit.graphql<any>(`{
+    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+      pullRequest(number: ${pr.number}) {
+         reviews(first: 100) {
+          nodes {
+            author {
+              login
+            }
+          state
+          authorAssociation
+          viewerCanUpdate
+          }
+      }
+      }
+    }
+  }`);
+
+    info(JSON.stringify(queryResult, null, 2));
+  } catch (err) {
+    warning(err as Error);
+    throw err;
+  }
+}
+
 export type Reviews = {
   author: string;
   state: string; // @todo type it more correctly

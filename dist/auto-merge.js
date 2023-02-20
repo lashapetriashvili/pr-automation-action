@@ -33954,6 +33954,34 @@ function checkReviewersState(pr, reviewerLogin) {
         }
     });
 }
+function checkReviewersState2(pr, reviewerLogin) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getMyOctokit();
+        try {
+            const queryResult = yield octokit.graphql(`{
+    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+      pullRequest(number: ${pr.number}) {
+         reviews(first: 100) {
+          nodes {
+            author {
+              login
+            }
+          state
+          authorAssociation
+          viewerCanUpdate
+          }
+      }
+      }
+    }
+  }`);
+            info(JSON.stringify(queryResult, null, 2));
+        }
+        catch (err) {
+            logger_warning(err);
+            throw err;
+        }
+    });
+}
 function getReviews(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
@@ -34060,6 +34088,8 @@ class Merger {
                 pull_number: this.configInput.pullRequestNumber,
             });
             const pullRequest = getPullRequest();
+            yield checkReviewersState2(pullRequest, 'test');
+            return;
             if (this.configInput.labels.length) {
                 const labelResult = this.isLabelsValid(
                 // @ts-ignore
@@ -34092,13 +34122,12 @@ class Merger {
                 const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
                 info(JSON.stringify(requestedChanges, null, 2));
                 if (requestedChanges.length > 0) {
-                    info(`${requestedChanges.length} approved required.`);
+                    info(`Approved required from ${requestedChanges.join(', ')}`);
                     return;
                 }
                 const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                 info(JSON.stringify(checkReviewerState, null, 2));
                 if (checkReviewerState === undefined) {
-                    info(`approved required from ${requestedChanges.join(', ')}`);
                     return;
                 }
                 /* if (totalStatus - 1 !== totalSuccessStatuses) { */

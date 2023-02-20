@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, debug } from '../logger';
-import { checkReviewersState, getPullRequest } from '../github';
+import { checkReviewersState, checkReviewersState2, getPullRequest } from '../github';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -136,6 +136,9 @@ export class Merger {
 
     const pullRequest = getPullRequest();
 
+    await checkReviewersState2(pullRequest, 'test');
+    return;
+
     if (this.configInput.labels.length) {
       const labelResult = this.isLabelsValid(
         // @ts-ignore
@@ -197,7 +200,7 @@ export class Merger {
       info(JSON.stringify(requestedChanges, null, 2));
 
       if (requestedChanges.length > 0) {
-        info(`${requestedChanges.length} approved required.`);
+        info(`Approved required from ${requestedChanges.join(', ')}`);
         return;
       }
 
@@ -209,7 +212,6 @@ export class Merger {
       info(JSON.stringify(checkReviewerState, null, 2));
 
       if (checkReviewerState === undefined) {
-        info(`approved required from ${requestedChanges.join(', ')}`);
         return;
       }
 
