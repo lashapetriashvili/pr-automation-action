@@ -137,7 +137,7 @@ export class Merger {
       this.configInput.token,
     );
 
-    core.info(JSON.stringify(client));
+    core.info(JSON.stringify(client.pulls));
 
     const { owner, repo } = this.configInput;
 
