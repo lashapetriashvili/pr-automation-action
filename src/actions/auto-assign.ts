@@ -66,7 +66,7 @@ export async function run(): Promise<void> {
       info(`No reviewers were matched for author ${author}. Terminating the process`);
       return;
     }
-    /* await github.assignReviewers(pr, reviewersToAssign); */
+    await github.assignReviewers(pr, reviewersToAssign);
 
     info(`Requesting review to ${reviewersToAssign.join(', ')}`);
 
