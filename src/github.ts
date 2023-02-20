@@ -222,7 +222,7 @@ export async function checkReviewersState2(pr: PullRequest, reviewerLogin: strin
               updatedAt
             }
           }
-        }
+        }  }
       }
     }
   }`);

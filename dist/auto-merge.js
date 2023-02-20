@@ -33984,7 +33984,7 @@ function checkReviewersState2(pr, reviewerLogin) {
               updatedAt
             }
           }
-        }
+        }  }
       }
     }
   }`);
