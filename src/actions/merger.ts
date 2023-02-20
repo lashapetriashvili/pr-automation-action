@@ -144,6 +144,8 @@ export class Merger {
             pull_number: this.configInput.pullRequestNumber,
           });
 
+          info(JSON.stringify(pr, null, 2));
+
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
               // @ts-ignore
@@ -188,9 +190,6 @@ export class Merger {
             );
           }
 
-          info('------------- CheckStatus ---------------');
-          info(this.configInput.checkStatus ? 'true' : 'false');
-
           if (this.configInput.checkStatus) {
             const { data: checks } = await client.checks.listForRef({
               owner: this.configInput.owner,
@@ -203,7 +202,7 @@ export class Merger {
               (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
             ).length;
 
-            info(JSON.stringify(checks, null, 2));
+            /* info(JSON.stringify(checks, null, 2)); */
 
             if (totalStatus - 1 !== totalSuccessStatuses) {
               throw new Error(
