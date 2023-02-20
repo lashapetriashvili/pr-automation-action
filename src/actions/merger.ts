@@ -33,13 +33,13 @@ interface ValidationResult {
 }
 
 export class Merger {
-  private retry: Retry;
+  /* private retry: Retry; */
 
   constructor(private configInput: Inputs) {
-    this.retry = new Retry()
-      .timeout(this.configInput.timeoutSeconds)
-      .interval(this.configInput.intervalSeconds)
-      .failStep(this.configInput.failStep);
+    /* this.retry = new Retry() */
+    /*   .timeout(this.configInput.timeoutSeconds) */
+    /*   .interval(this.configInput.intervalSeconds) */
+    /*   .failStep(this.configInput.failStep); */
   }
 
   private isAllLabelsValid(
@@ -130,6 +130,9 @@ export class Merger {
   }
 
   async merge(): Promise<void> {
+
+    core.info('---------');
+
     // @ts-ignore
     const client: { pulls: any; checks: any; issues: any } = github.getOctokit(
       this.configInput.token,
