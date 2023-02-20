@@ -200,6 +200,7 @@ export async function checkReviewersState2(pr: PullRequest, reviewerLogin: strin
     repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
         reviews(first: 10) {
+        id
         nodes {
           author {
             login
