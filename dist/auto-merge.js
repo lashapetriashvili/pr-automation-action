@@ -33773,9 +33773,9 @@ var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/logger.ts
 
 const isTest = process.env.NODE_ENV === 'test';
-const logger_info = isTest ? () => { } : core.info;
+const info = isTest ? () => { } : core.info;
 const error = isTest ? () => { } : core.error;
-const logger_debug = (/* unused pure expression or super */ null && (isTest ? () => { } : logDebug));
+const debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
 
 // EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
@@ -33860,7 +33860,7 @@ class PullRequest {
     }
 }
 function getPullRequest() {
-    const pr = context.payload.pull_request;
+    const pr = github.context.payload.pull_request;
     // @todo validate PR data
     if (!pr) {
         throw new Error('No pull_request data in context.payload');
@@ -33930,7 +33930,7 @@ function getLatestCommitDate(pr) {
         const octokit = getMyOctokit();
         try {
             const queryResult = yield octokit.graphql(`{
-    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
         title
         number
@@ -33956,7 +33956,7 @@ function getLatestCommitDate(pr) {
             };
         }
         catch (err) {
-            warning(err);
+            logger_warning(err);
             throw err;
         }
     });
@@ -34149,12 +34149,14 @@ class Merger {
                         catch (err) {
                             if (err.status === 404) {
                                 logger_warning('No configuration file is found in the base branch; terminating the process');
-                                logger_info(JSON.stringify(err));
+                                info(JSON.stringify(err));
                                 return;
                             }
                             throw err;
                         }
-                        logger_info(JSON.stringify(config, null, 2));
+                        /* info(JSON.stringify(config, null, 2)); */
+                        const pullRequest = getPullRequest();
+                        getLatestCommitDate(pullRequest);
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
                             // @ts-ignore

@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, error, warning, debug } from '../logger';
-import { fetchConfig } from '../github';
+import { fetchConfig, getLatestCommitDate, getPullRequest } from '../github';
 import Retry from './retry';
 
 export type labelStrategies = 'all' | 'atLeastOne';
@@ -169,7 +169,11 @@ export class Merger {
             throw err;
           }
 
-          info(JSON.stringify(config, null, 2));
+          /* info(JSON.stringify(config, null, 2)); */
+
+          const pullRequest = getPullRequest();
+
+          getLatestCommitDate(pullRequest);
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
