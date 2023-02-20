@@ -147,14 +147,6 @@ export class Merger {
 
           const pullRequest = getPullRequest();
 
-          const checkReviewerState = await checkReviewersState(
-            pullRequest,
-            'lashapetriashvili-ezetech',
-          );
-          info(JSON.stringify(checkReviewerState, null, 2));
-
-          return;
-
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
               // @ts-ignore
@@ -211,16 +203,21 @@ export class Merger {
               (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
             ).length;
 
-            /* pr.requested_reviewers */
-
-            /* info(JSON.stringify(checks, null, 2)); */
-
             // @ts-ignore
             const requestedChanges = pr.requested_reviewers.map(
               (reviewer: any) => reviewer.login,
             );
 
             if (requestedChanges.length > 0) {
+              throw new Error('Waiting approve');
+            }
+
+            const checkReviewerState = await checkReviewersState(
+              pullRequest,
+              'lashapetriashvili-ezetech',
+            );
+
+            if (!checkReviewerState) {
               throw new Error('Waiting approve');
             }
 
@@ -253,12 +250,12 @@ export class Merger {
         core.setOutput('commentID', resp.id);
       }
 
-      /* await client.pulls.merge({ */
-      /*   owner, */
-      /*   repo, */
-      /*   pull_number: this.configInput.pullRequestNumber, */
-      /*   merge_method: this.configInput.strategy, */
-      /* }); */
+      await client.pulls.merge({
+        owner,
+        repo,
+        pull_number: this.configInput.pullRequestNumber,
+        merge_method: this.configInput.strategy,
+      });
 
       core.setOutput('merged', true);
     } catch (err) {

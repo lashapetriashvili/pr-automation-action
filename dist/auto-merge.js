@@ -33770,14 +33770,6 @@ var external_util_ = __nccwpck_require__(3837);
 var core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(5438);
-;// CONCATENATED MODULE: ./src/logger.ts
-
-const isTest = process.env.NODE_ENV === 'test';
-const info = isTest ? () => { } : core.info;
-const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
-const debug = isTest ? () => { } : core.debug;
-const logger_warning = isTest ? () => { } : core.warning;
-
 // EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
 var dist = __nccwpck_require__(4083);
 // EXTERNAL MODULE: ./node_modules/joi/lib/index.js
@@ -33818,6 +33810,14 @@ function config_validateConfig(configJson) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return value;
 }
+
+;// CONCATENATED MODULE: ./src/logger.ts
+
+const isTest = process.env.NODE_ENV === 'test';
+const info = (/* unused pure expression or super */ null && (isTest ? () => { } : logInfo));
+const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
+const debug = isTest ? () => { } : core.debug;
+const logger_warning = isTest ? () => { } : core.warning;
 
 ;// CONCATENATED MODULE: ./src/github.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -34096,7 +34096,6 @@ var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _a
 
 
 
-
 class Merger {
     constructor(configInput) {
         this.configInput = configInput;
@@ -34165,9 +34164,6 @@ class Merger {
                             pull_number: this.configInput.pullRequestNumber,
                         });
                         const pullRequest = getPullRequest();
-                        const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
-                        info(JSON.stringify(checkReviewerState, null, 2));
-                        return;
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
                             // @ts-ignore
@@ -34196,11 +34192,13 @@ class Merger {
                             });
                             const totalStatus = checks.total_count;
                             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
-                            /* pr.requested_reviewers */
-                            /* info(JSON.stringify(checks, null, 2)); */
                             // @ts-ignore
                             const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
                             if (requestedChanges.length > 0) {
+                                throw new Error('Waiting approve');
+                            }
+                            const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
+                            if (!checkReviewerState) {
                                 throw new Error('Waiting approve');
                             }
                             if (totalStatus - 1 !== totalSuccessStatuses) {
@@ -34225,12 +34223,12 @@ class Merger {
                     core.debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
                     core.setOutput('commentID', resp.id);
                 }
-                /* await client.pulls.merge({ */
-                /*   owner, */
-                /*   repo, */
-                /*   pull_number: this.configInput.pullRequestNumber, */
-                /*   merge_method: this.configInput.strategy, */
-                /* }); */
+                yield client.pulls.merge({
+                    owner,
+                    repo,
+                    pull_number: this.configInput.pullRequestNumber,
+                    merge_method: this.configInput.strategy,
+                });
                 core.setOutput('merged', true);
             }
             catch (err) {
