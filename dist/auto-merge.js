@@ -34092,12 +34092,14 @@ class Merger {
                 const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
                 info(JSON.stringify(requestedChanges, null, 2));
                 if (requestedChanges.length > 0) {
-                    throw new Error('Waiting approve');
+                    info(`${requestedChanges.length} approved required.`);
+                    return;
                 }
                 const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                 info(JSON.stringify(checkReviewerState, null, 2));
                 if (checkReviewerState === undefined) {
-                    throw new Error('Waiting approve');
+                    info(`${requestedChanges.length} approved required.`);
+                    return;
                 }
                 /* if (totalStatus - 1 !== totalSuccessStatuses) { */
                 /*   throw new Error( */

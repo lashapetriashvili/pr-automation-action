@@ -197,7 +197,8 @@ export class Merger {
       info(JSON.stringify(requestedChanges, null, 2));
 
       if (requestedChanges.length > 0) {
-        throw new Error('Waiting approve');
+        info(`${requestedChanges.length} approved required.`);
+        return;
       }
 
       const checkReviewerState = await checkReviewersState(
@@ -208,7 +209,9 @@ export class Merger {
       info(JSON.stringify(checkReviewerState, null, 2));
 
       if (checkReviewerState === undefined) {
-        throw new Error('Waiting approve');
+        info(`${requestedChanges.length} approved required.`);
+        return;
+
       }
 
       /* if (totalStatus - 1 !== totalSuccessStatuses) { */
