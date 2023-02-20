@@ -10556,6 +10556,14 @@ var external_util_ = __nccwpck_require__(3837);
 var core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
 var github = __nccwpck_require__(5438);
+;// CONCATENATED MODULE: ./src/logger.ts
+
+const isTest = process.env.NODE_ENV === 'test';
+const info = isTest ? () => { } : core.info;
+const error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
+const debug = (/* unused pure expression or super */ null && (isTest ? () => { } : logDebug));
+const warning = (/* unused pure expression or super */ null && (isTest ? () => { } : logWarning));
+
 // EXTERNAL MODULE: ./node_modules/dayjs/dayjs.min.js
 var dayjs_min = __nccwpck_require__(7401);
 var dayjs_min_default = /*#__PURE__*/__nccwpck_require__.n(dayjs_min);
@@ -10630,7 +10638,7 @@ var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _a
 
 
 
-/* import { info, error, warning, debug } from '../logger'; */
+
 
 class Merger {
     constructor(configInput) {
@@ -10719,6 +10727,8 @@ class Merger {
                             core.debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
                             core.info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
                         }
+                        info('------------- CheckStatus ---------------');
+                        info(this.configInput.checkStatus ? 'true' : 'false');
                         if (this.configInput.checkStatus) {
                             const { data: checks } = yield client.checks.listForRef({
                                 owner: this.configInput.owner,
@@ -10727,6 +10737,7 @@ class Merger {
                             });
                             const totalStatus = checks.total_count;
                             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
+                            info(JSON.stringify(checks, null, 2));
                             if (totalStatus - 1 !== totalSuccessStatuses) {
                                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
                             }
@@ -10739,6 +10750,8 @@ class Merger {
                         throw err;
                     }
                 }));
+                info('------------- Comment ---------------');
+                info(this.configInput.comment);
                 if (this.configInput.comment) {
                     const { data: resp } = yield client.issues.createComment({
                         owner: this.configInput.owner,
@@ -10750,12 +10763,12 @@ class Merger {
                     core.setOutput('commentID', resp.id);
                 }
                 if (!this.configInput.dryRun) {
-                    yield client.pulls.merge({
-                        owner,
-                        repo,
-                        pull_number: this.configInput.pullRequestNumber,
-                        merge_method: this.configInput.strategy,
-                    });
+                    /* await client.pulls.merge({ */
+                    /*   owner, */
+                    /*   repo, */
+                    /*   pull_number: this.configInput.pullRequestNumber, */
+                    /*   merge_method: this.configInput.strategy, */
+                    /* }); */
                     core.setOutput('merged', true);
                 }
                 else {

@@ -188,6 +188,9 @@ export class Merger {
             );
           }
 
+          info('------------- CheckStatus ---------------');
+          info(this.configInput.checkStatus ? 'true' : 'false');
+
           if (this.configInput.checkStatus) {
             const { data: checks } = await client.checks.listForRef({
               owner: this.configInput.owner,
@@ -218,6 +221,9 @@ export class Merger {
           throw err;
         }
       });
+
+      info('------------- Comment ---------------');
+      info(this.configInput.comment);
 
       if (this.configInput.comment) {
         const { data: resp } = await client.issues.createComment({
