@@ -151,7 +151,7 @@ export class Merger {
           /**/
           /* info(JSON.stringify(requestedChanges)); */
 
-          info(JSON.stringify(pr, null, 2));
+          /* info(JSON.stringify(pr, null, 2)); */
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
