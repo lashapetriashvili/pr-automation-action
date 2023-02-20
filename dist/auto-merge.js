@@ -33946,6 +33946,14 @@ function getLatestCommitDate(pr) {
           authorAssociation
         }
       }
+pullRequestReviews(first: 100) {
+      nodes {
+        author {
+          login
+        }
+        state
+      }
+    }
       }
     }
   }`);
