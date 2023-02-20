@@ -33947,14 +33947,6 @@ function getLatestCommitDate(pr) {
         }
       }
       }
-pullRequestReviews(first: 100) {
-      nodes {
-        author {
-          login
-        }
-        state
-      }
-    }
     }
   }`);
             info(JSON.stringify(queryResult, null, 2));

@@ -144,14 +144,6 @@ export async function getLatestCommitDate(pr: PullRequest) {
         }
       }
       }
-pullRequestReviews(first: 100) {
-      nodes {
-        author {
-          login
-        }
-        state
-      }
-    }
     }
   }`);
 
