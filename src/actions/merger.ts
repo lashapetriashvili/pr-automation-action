@@ -2,6 +2,7 @@ import { inspect } from 'util';
 import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
+import { info, error, warning, debug } from '../logger';
 import Retry from './retry';
 
 export type labelStrategies = 'all' | 'atLeastOne';
@@ -130,13 +131,7 @@ export class Merger {
   }
 
   async merge(): Promise<void> {
-    core.info('---------');
-
     const client = github.getOctokit(this.configInput.token);
-
-    core.info(JSON.stringify(client.pulls));
-
-    return;
 
     const { owner, repo } = this.configInput;
 

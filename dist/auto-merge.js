@@ -10688,10 +10688,7 @@ class Merger {
     }
     merge() {
         return merger_awaiter(this, void 0, void 0, function* () {
-            core.info('---------');
             const client = github.getOctokit(this.configInput.token);
-            core.info(JSON.stringify(client.pulls));
-            return;
             const { owner, repo } = this.configInput;
             try {
                 yield this.retry.exec((count) => merger_awaiter(this, void 0, void 0, function* () {
