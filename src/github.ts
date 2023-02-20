@@ -203,8 +203,6 @@ export async function checkReviewersState2(pr: PullRequest, reviewerLogin: strin
         nodes {
           author {
             login
-            email
-            avatarUrl
           }
           state
           body
@@ -214,8 +212,6 @@ export async function checkReviewersState2(pr: PullRequest, reviewerLogin: strin
             nodes {
               author {
                 login
-                email
-                avatarUrl
               }
               body
               createdAt

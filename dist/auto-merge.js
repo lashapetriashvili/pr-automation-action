@@ -33965,8 +33965,6 @@ function checkReviewersState2(pr, reviewerLogin) {
         nodes {
           author {
             login
-            email
-            avatarUrl
           }
           state
           body
@@ -33976,8 +33974,6 @@ function checkReviewersState2(pr, reviewerLogin) {
             nodes {
               author {
                 login
-                email
-                avatarUrl
               }
               body
               createdAt
