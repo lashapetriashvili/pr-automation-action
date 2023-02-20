@@ -33981,11 +33981,14 @@ function getReviewersState(pr) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
+            info('--------- reviews -----------');
             info(JSON.stringify(reviews, null, 2));
             const reviewers = reviews.filter((review) => review.state === 'CHANGES_REQUESTED' &&
                 review.authorAssociation !== 'MEMBER' &&
                 review.authorAssociation !== 'COLLABORATOR' &&
                 !review.viewerCanUpdate);
+            info('--------- reviewers -----------');
+            info(JSON.stringify(reviewers, null, 2));
             return reviewers.map((reviewer) => reviewer.author.login);
         }
         catch (err) {

@@ -181,6 +181,7 @@ export async function getReviewersState(pr: PullRequest) {
 
     const reviews = queryResult.repository.pullRequest.reviews.nodes;
 
+    info('--------- reviews -----------');
     info(JSON.stringify(reviews, null, 2));
 
     const reviewers = reviews.filter(
@@ -190,6 +191,9 @@ export async function getReviewersState(pr: PullRequest) {
         review.authorAssociation !== 'COLLABORATOR' &&
         !review.viewerCanUpdate,
     );
+
+    info('--------- reviewers -----------');
+    info(JSON.stringify(reviewers, null, 2));
     return reviewers.map((reviewer: any) => reviewer.author.login);
   } catch (err) {
     warning(err as Error);
