@@ -147,6 +147,10 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
     }
   }`);
 
+    info(JSON.stringify(queryResult, null, 2));
+
+    info(JSON.stringify(queryResult.repository.pullRequest.commits, null, 2));
+
     // @todo
     const authoredDateString =
       queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
