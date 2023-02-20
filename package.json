@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build:auto-assign": "ncc build ./src/actions/auto-assign.ts -o dist && mv ./dist/index.js ./dist/auto-assign.js",
-    "build:auto-merge": "ncc build ./src/actions/auto-merge.ts -o dist && mv ./dist/index.js ./dist/auto-merge.js",
+    "build:auto-merge": "ncc build ./src/actions/main.ts -o dist && mv ./dist/index.js ./dist/auto-merge.js",
     "build": "npm run build:auto-assign && npm run build:auto-merge",
     "test": "tsc --noEmit && NODE_ENV=test mocha --exit -r ts-node/register \"./src/**/*.spec.ts\"",
     "lint": "eslint -f unix \"src/**/*.@(ts|tsx)\"",
@@ -24,7 +24,11 @@
     "@actions/github": "^5.1.1",
     "joi": "^17.7.0",
     "minimatch": "^5.1.0",
-    "yaml": "^2.1.1"
+    "yaml": "^2.1.1",
+    "@octokit/types": "^5.1",
+    "@octokit/webhooks": "^7.21.0",
+    "dayjs": "^1.10.3",
+    "node-notifier": ">=8.0.1"
   },
   "devDependencies": {
     "@ezetech/eslint-config": "^2.0.0",

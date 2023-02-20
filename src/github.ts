@@ -4,7 +4,7 @@ import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
 import { Config } from './config/typings';
-import { debug, error, warning, info } from './logger';
+import { debug, error, warning } from './logger';
 
 function getMyOctokit() {
   const myToken = getInput('token');
@@ -56,19 +56,6 @@ export async function fetchConfig(): Promise<Config> {
   const octokit = getMyOctokit();
   const path = getInput('config');
 
-  info(JSON.stringify(octokit));
-
-  info('--------- 1 ------------');
-
-  info(
-    JSON.stringify({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      path,
-      ref: context.ref,
-    }),
-  );
-
   const response = await octokit.rest.repos.getContent({
     owner: context.repo.owner,
     repo: context.repo.repo,
@@ -76,16 +63,10 @@ export async function fetchConfig(): Promise<Config> {
     ref: context.ref,
   });
 
-  info('---------- 2 -------------');
-
-  info(JSON.stringify(response));
-
   if (response.status !== 200) {
     error(`Response.status: ${response.status}`);
     throw new Error(JSON.stringify(response.data));
   }
-
-  info('----------- 3 --------------');
 
   const data = response.data as {
     type: string;
