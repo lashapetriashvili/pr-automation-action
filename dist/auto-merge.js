@@ -33981,9 +33981,7 @@ function checkReviewersState(pr, reviewerLogin) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            const response = reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
-            info(JSON.stringify(response, null, 2));
-            return false;
+            return reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
         }
         catch (err) {
             logger_warning(err);
@@ -34165,12 +34163,9 @@ class Merger {
                             repo,
                             pull_number: this.configInput.pullRequestNumber,
                         });
-                        // @ts-ignore
-                        const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
-                        info(JSON.stringify(requestedChanges));
-                        /* info(JSON.stringify(pr, null, 2)); */
                         const pullRequest = getPullRequest();
                         const checkReviewerState = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
+                        info('------');
                         info(JSON.stringify(checkReviewerState, null, 2));
                         return;
                         if (this.configInput.labels.length) {
@@ -34290,7 +34285,6 @@ function run() {
                 timeoutSeconds: Number(core.getInput('timeoutSeconds', { required: true })),
             };
             core.debug(`Inputs: ${(0,external_util_.inspect)(inputs)}`);
-            core.info(JSON.stringify(inputs));
             const merger = new Merger(inputs);
             yield merger.merge();
         }

@@ -145,25 +145,16 @@ export class Merger {
             pull_number: this.configInput.pullRequestNumber,
           });
 
-          // @ts-ignore
-          const requestedChanges = pr.requested_reviewers.map(
-            (reviewer: any) => reviewer.login,
-          );
-
-          info(JSON.stringify(requestedChanges));
-
-          /* info(JSON.stringify(pr, null, 2)); */
-
           const pullRequest = getPullRequest();
 
           const checkReviewerState = checkReviewersState(
             pullRequest,
             'lashapetriashvili-ezetech',
           );
-
+          info('------');
           info(JSON.stringify(checkReviewerState, null, 2));
 
-          return
+          return;
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
