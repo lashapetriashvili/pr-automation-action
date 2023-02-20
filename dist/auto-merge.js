@@ -34098,7 +34098,7 @@ class Merger {
                 const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                 info(JSON.stringify(checkReviewerState, null, 2));
                 if (checkReviewerState === undefined) {
-                    info(`${requestedChanges.length} approved required.`);
+                    info(`approved required from ${requestedChanges.join(', ')}`);
                     return;
                 }
                 /* if (totalStatus - 1 !== totalSuccessStatuses) { */
