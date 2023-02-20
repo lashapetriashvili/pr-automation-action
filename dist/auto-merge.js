@@ -10630,6 +10630,7 @@ var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _a
 
 
 
+/* import { info, error, warning, debug } from '../logger'; */
 
 class Merger {
     constructor(configInput) {
@@ -10698,7 +10699,6 @@ class Merger {
                             repo,
                             pull_number: this.configInput.pullRequestNumber,
                         });
-                        core.info(JSON.stringify('-----'));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
                             // @ts-ignore

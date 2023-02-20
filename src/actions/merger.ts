@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
-import { info, error, warning, debug } from '../logger';
+/* import { info, error, warning, debug } from '../logger'; */
 import Retry from './retry';
 
 export type labelStrategies = 'all' | 'atLeastOne';
@@ -143,8 +143,6 @@ export class Merger {
             repo,
             pull_number: this.configInput.pullRequestNumber,
           });
-
-          core.info(JSON.stringify('-----'));
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
