@@ -171,6 +171,8 @@ export class Merger {
 
           /* info(JSON.stringify(config, null, 2)); */
 
+          info('-----------');
+
           const pullRequest = getPullRequest();
 
           const response = getReviewersState(pullRequest);

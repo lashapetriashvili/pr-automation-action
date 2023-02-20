@@ -34188,6 +34188,7 @@ class Merger {
                             throw err;
                         }
                         /* info(JSON.stringify(config, null, 2)); */
+                        info('-----------');
                         const pullRequest = getPullRequest();
                         const response = getReviewersState(pullRequest);
                         info(JSON.stringify(response, null, 2));
