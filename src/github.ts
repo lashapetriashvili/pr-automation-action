@@ -199,22 +199,24 @@ export async function checkReviewersState2(pr: PullRequest, reviewerLogin: strin
     const queryResult = await octokit.graphql<any>(`{
     repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
-        PullRequestReviewConnection() {
-          edges
-          nodes
-          pageInfo
-          totalCount
-        }
-        reviews(first: 100) {
-          nodes {
-            author {
-              login
+commits(last: 1) {
+        nodes {
+          commit {
+            oid
+            checkSuites(first: 1) {
+              nodes {
+                checkRuns(first: 10) {
+                  nodes {
+                    status
+                    name
+                  }
+                }
+              }
             }
-          state
-          authorAssociation
-          viewerCanUpdate
           }
+        }
       }
+
       }
     }
   }`);
