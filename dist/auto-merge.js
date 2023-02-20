@@ -10707,6 +10707,9 @@ class Merger {
                             repo,
                             pull_number: this.configInput.pullRequestNumber,
                         });
+                        // @ts-ignore
+                        const requestedChanges = pr.data.requested_reviewers.map((reviewer) => reviewer.login);
+                        info(JSON.stringify(requestedChanges));
                         info(JSON.stringify(pr, null, 2));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
@@ -10736,6 +10739,7 @@ class Merger {
                             });
                             const totalStatus = checks.total_count;
                             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
+                            /* pr.requested_reviewers */
                             /* info(JSON.stringify(checks, null, 2)); */
                             if (totalStatus - 1 !== totalSuccessStatuses) {
                                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);

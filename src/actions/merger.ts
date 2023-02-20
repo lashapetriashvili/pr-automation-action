@@ -144,6 +144,13 @@ export class Merger {
             pull_number: this.configInput.pullRequestNumber,
           });
 
+          // @ts-ignore
+          const requestedChanges = pr.data.requested_reviewers.map(
+            (reviewer: any) => reviewer.login,
+          );
+
+          info(JSON.stringify(requestedChanges));
+
           info(JSON.stringify(pr, null, 2));
 
           if (this.configInput.labels.length) {
@@ -201,6 +208,8 @@ export class Merger {
             const totalSuccessStatuses = checks.check_runs.filter(
               (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
             ).length;
+
+            /* pr.requested_reviewers */
 
             /* info(JSON.stringify(checks, null, 2)); */
 
