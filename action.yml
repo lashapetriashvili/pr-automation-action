@@ -12,6 +12,18 @@ inputs:
     required: true
   config:
     required: true
+  repository:
+    required: false
+    description: 'The GitHub repository containing the issue or pr.'
+    default: ${{ github.repository }}
+  pullRequestNumber:
+    required: false
+    description: 'Number of the pull request'
+    default: ${{ github.event.pull_request.number }}
+  sha:
+    required: false
+    description: 'SHA of the pull request commit'
+    default: ${{ github.event.pull_request.head.sha }}
 runs:
   using: 'node16'
   main: 'dist/auto-merge.js'
