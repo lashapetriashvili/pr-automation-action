@@ -7,7 +7,7 @@ async function run(): Promise<void> {
     const [owner, repo] = core.getInput('repository').split('/');
 
     const inputs: Inputs = {
-      checkStatus: core.getInput('checkStatus') === 'true',
+      checkStatus: true,
       comment: core.getInput('comment'),
       dryRun: core.getInput('dryRun') === 'true',
       ignoreLabels:
