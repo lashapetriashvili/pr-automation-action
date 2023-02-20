@@ -34371,27 +34371,16 @@ function fetchConfig() {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         const path = (0,core.getInput)('config');
-        info(JSON.stringify(octokit));
-        info('--------- 1 ------------');
-        info(JSON.stringify({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            path,
-            ref: github.context.ref,
-        }));
         const response = yield octokit.rest.repos.getContent({
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             path,
             ref: github.context.ref,
         });
-        info('---------- 2 -------------');
-        info(JSON.stringify(response));
         if (response.status !== 200) {
             error(`Response.status: ${response.status}`);
             throw new Error(JSON.stringify(response.data));
         }
-        info('----------- 3 --------------');
         const data = response.data;
         if (data.type !== 'file') {
             throw new Error('Failed to get config');
@@ -34663,7 +34652,7 @@ var auto_assign_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 function run() {
     return auto_assign_awaiter(this, void 0, void 0, function* () {
         try {
-            info('Starting pr auto assign. 1111');
+            info('Starting pr auto assign.');
             let config;
             try {
                 config = yield fetchConfig();
