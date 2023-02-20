@@ -33984,6 +33984,7 @@ function checkReviewersState(pr, reviewerLogin) {
             info('--------- reviews -----------');
             info(JSON.stringify(reviews, null, 2));
             return reviews.find((reviewer) => {
+                info(JSON.stringify(reviewer, null, 2));
                 if (reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED') {
                     return reviewer;
                 }

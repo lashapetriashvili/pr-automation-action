@@ -185,6 +185,7 @@ export async function checkReviewersState(pr: PullRequest, reviewerLogin: string
     info(JSON.stringify(reviews, null, 2));
 
     return reviews.find((reviewer: any) => {
+      info(JSON.stringify(reviewer, null, 2));
       if (reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED') {
         return reviewer;
       }
