@@ -1,4 +1,4 @@
-name: 'PR automatically assign reviewers'
+name: 'PR automatically merger'
 description: 'desc'
 branding:
   icon: 'book-open'
