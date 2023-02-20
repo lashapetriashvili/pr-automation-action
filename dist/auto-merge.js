@@ -9964,81 +9964,80 @@ class Merger {
             // @ts-ignore
             const client = github.getOctokit(this.configInput.token);
             const { owner, repo } = this.configInput;
-            try {
-                /* await this.retry.exec(async (count): Promise<void> => { */
-                try {
-                    const { data: pr } = yield client.pulls.get({
-                        owner,
-                        repo,
-                        pull_number: this.configInput.pullRequestNumber,
-                    });
-                    if (this.configInput.labels.length) {
-                        const labelResult = this.isLabelsValid(pr, this.configInput.labels, this.configInput.labelsStrategy, 'labels');
-                        if (labelResult.failed) {
-                            throw new Error(`Checked labels failed: ${labelResult.message}`);
-                        }
-                        core.debug(`Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`);
-                        core.info(`Checked labels and passed with labels:${(0,external_util_.inspect)(this.configInput.labels)}`);
-                    }
-                    if (this.configInput.ignoreLabels.length) {
-                        const ignoreLabelResult = this.isLabelsValid(pr, this.configInput.ignoreLabels, this.configInput.ignoreLabelsStrategy, 'ignoreLabels');
-                        if (ignoreLabelResult.failed) {
-                            throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
-                        }
-                        core.debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
-                        core.info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
-                    }
-                    if (this.configInput.checkStatus) {
-                        const { data: checks } = yield client.checks.listForRef({
-                            owner: this.configInput.owner,
-                            repo: this.configInput.repo,
-                            ref: this.configInput.sha,
-                        });
-                        const totalStatus = checks.total_count;
-                        const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
-                        if (totalStatus - 1 !== totalSuccessStatuses) {
-                            throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
-                        }
-                        core.debug(`All ${totalStatus} status success`);
-                        core.debug(`Merge PR ${pr.number}`);
-                    }
+            /* try { */
+            /* await this.retry.exec(async (count): Promise<void> => { */
+            /* try { */
+            const { data: pr } = yield client.pulls.get({
+                owner,
+                repo,
+                pull_number: this.configInput.pullRequestNumber,
+            });
+            core.info(JSON.stringify('-----'));
+            if (this.configInput.labels.length) {
+                const labelResult = this.isLabelsValid(pr, this.configInput.labels, this.configInput.labelsStrategy, 'labels');
+                if (labelResult.failed) {
+                    throw new Error(`Checked labels failed: ${labelResult.message}`);
                 }
-                catch (err) {
-                    core.debug(`error ${(0,external_util_.inspect)(err)}`);
-                    throw err;
-                }
-                /* }); */
-                if (this.configInput.comment) {
-                    const { data: resp } = yield client.issues.createComment({
-                        owner: this.configInput.owner,
-                        repo: this.configInput.repo,
-                        issue_number: this.configInput.pullRequestNumber,
-                        body: this.configInput.comment,
-                    });
-                    core.debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
-                    core.setOutput('commentID', resp.id);
-                }
-                if (!this.configInput.dryRun) {
-                    yield client.pulls.merge({
-                        owner,
-                        repo,
-                        pull_number: this.configInput.pullRequestNumber,
-                        merge_method: this.configInput.strategy,
-                    });
-                    core.setOutput('merged', true);
-                }
-                else {
-                    core.info('dry run merge action');
-                    core.setOutput('merged', false);
-                }
+                core.debug(`Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`);
+                core.info(`Checked labels and passed with labels:${(0,external_util_.inspect)(this.configInput.labels)}`);
             }
-            catch (err) {
-                core.debug(`Error on retry error:${(0,external_util_.inspect)(err)}`);
-                if (this.configInput.failStep) {
-                    throw err;
+            if (this.configInput.ignoreLabels.length) {
+                const ignoreLabelResult = this.isLabelsValid(pr, this.configInput.ignoreLabels, this.configInput.ignoreLabelsStrategy, 'ignoreLabels');
+                if (ignoreLabelResult.failed) {
+                    throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
                 }
-                core.debug('timeout but passing because "failStep" is configure to false');
+                core.debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
+                core.info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
             }
+            if (this.configInput.checkStatus) {
+                const { data: checks } = yield client.checks.listForRef({
+                    owner: this.configInput.owner,
+                    repo: this.configInput.repo,
+                    ref: this.configInput.sha,
+                });
+                const totalStatus = checks.total_count;
+                const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
+                if (totalStatus - 1 !== totalSuccessStatuses) {
+                    throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
+                }
+                core.debug(`All ${totalStatus} status success`);
+                core.debug(`Merge PR ${pr.number}`);
+            }
+            /* } catch (err) { */
+            /*   core.debug(`error ${inspect(err)}`); */
+            /*   throw err; */
+            /* } */
+            /* }); */
+            if (this.configInput.comment) {
+                const { data: resp } = yield client.issues.createComment({
+                    owner: this.configInput.owner,
+                    repo: this.configInput.repo,
+                    issue_number: this.configInput.pullRequestNumber,
+                    body: this.configInput.comment,
+                });
+                core.debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
+                core.setOutput('commentID', resp.id);
+            }
+            if (!this.configInput.dryRun) {
+                yield client.pulls.merge({
+                    owner,
+                    repo,
+                    pull_number: this.configInput.pullRequestNumber,
+                    merge_method: this.configInput.strategy,
+                });
+                core.setOutput('merged', true);
+            }
+            else {
+                core.info('dry run merge action');
+                core.setOutput('merged', false);
+            }
+            /* } catch (err) { */
+            /*   core.debug(`Error on retry error:${inspect(err)}`); */
+            /*   if (this.configInput.failStep) { */
+            /*     throw err; */
+            /*   } */
+            /*   core.debug('timeout but passing because "failStep" is configure to false'); */
+            /* } */
         });
     }
 }
