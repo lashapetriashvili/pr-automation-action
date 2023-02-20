@@ -212,14 +212,14 @@ export class Merger {
               throw new Error('Waiting approve');
             }
 
-            const checkReviewerState = await checkReviewersState(
-              pullRequest,
-              'lashapetriashvili-ezetech',
-            );
-
-            if (!checkReviewerState) {
-              throw new Error('Waiting approve');
-            }
+            /* const checkReviewerState = await checkReviewersState( */
+            /*   pullRequest, */
+            /*   'lashapetriashvili-ezetech', */
+            /* ); */
+            /**/
+            /* if (checkReviewerState === undefined) { */
+            /*   throw new Error('Waiting approve'); */
+            /* } */
 
             if (totalStatus - 1 !== totalSuccessStatuses) {
               throw new Error(

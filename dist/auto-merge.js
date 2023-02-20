@@ -33817,7 +33817,7 @@ const isTest = process.env.NODE_ENV === 'test';
 const info = (/* unused pure expression or super */ null && (isTest ? () => { } : logInfo));
 const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
 const debug = isTest ? () => { } : core.debug;
-const logger_warning = isTest ? () => { } : core.warning;
+const logger_warning = (/* unused pure expression or super */ null && (isTest ? () => { } : logWarning));
 
 ;// CONCATENATED MODULE: ./src/github.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -33835,8 +33835,8 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 
 function getMyOctokit() {
-    const myToken = (0,core.getInput)('token');
-    const octokit = (0,github.getOctokit)(myToken);
+    const myToken = getInput('token');
+    const octokit = getOctokit(myToken);
     return octokit;
 }
 class PullRequest {
@@ -33965,7 +33965,7 @@ function checkReviewersState(pr, reviewerLogin) {
         const octokit = getMyOctokit();
         try {
             const queryResult = yield octokit.graphql(`{
-    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
          reviews(first: 100) {
           nodes {
@@ -33985,7 +33985,7 @@ function checkReviewersState(pr, reviewerLogin) {
             return response;
         }
         catch (err) {
-            logger_warning(err);
+            warning(err);
             throw err;
         }
     });
@@ -34197,10 +34197,14 @@ class Merger {
                             if (requestedChanges.length > 0) {
                                 throw new Error('Waiting approve');
                             }
-                            const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
-                            if (!checkReviewerState) {
-                                throw new Error('Waiting approve');
-                            }
+                            /* const checkReviewerState = await checkReviewersState( */
+                            /*   pullRequest, */
+                            /*   'lashapetriashvili-ezetech', */
+                            /* ); */
+                            /**/
+                            /* if (checkReviewerState === undefined) { */
+                            /*   throw new Error('Waiting approve'); */
+                            /* } */
                             if (totalStatus - 1 !== totalSuccessStatuses) {
                                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
                             }
