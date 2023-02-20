@@ -171,13 +171,14 @@ export class Merger {
 
           /* info(JSON.stringify(config, null, 2)); */
 
-          info('-----------');
-
           const pullRequest = getPullRequest();
 
-          const response = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
+          const checkReviewerState = checkReviewersState(
+            pullRequest,
+            'lashapetriashvili-ezetech',
+          );
 
-          info(JSON.stringify(response, null, 2));
+          info(JSON.stringify(checkReviewerState, null, 2));
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(

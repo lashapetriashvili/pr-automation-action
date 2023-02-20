@@ -33981,12 +33981,7 @@ function checkReviewersState(pr, reviewerLogin) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            return reviews.find((reviewer) => {
-                info(JSON.stringify(reviewer.state === 'APPROVED', null, 2));
-                if (reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED') {
-                    return reviewer;
-                }
-            });
+            return reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
         }
         catch (err) {
             logger_warning(err);
@@ -34188,10 +34183,9 @@ class Merger {
                             throw err;
                         }
                         /* info(JSON.stringify(config, null, 2)); */
-                        info('-----------');
                         const pullRequest = getPullRequest();
-                        const response = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
-                        info(JSON.stringify(response, null, 2));
+                        const checkReviewerState = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
+                        info(JSON.stringify(checkReviewerState, null, 2));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
                             // @ts-ignore
