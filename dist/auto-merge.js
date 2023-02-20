@@ -33991,18 +33991,28 @@ function checkReviewersState2(pr, reviewerLogin) {
       {
         repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviewRequests(first: 10) {
+totalCount
+      edges {
+        node {
+          ... on PullRequest {
+            repository {
+              nameWithOwner
+            }
+            number
+            url                        
+            reviewRequests(first: 100) {
               nodes {
                 requestedReviewer {
                   ... on User {
-                    login
-                  }
-                  ... on Team {
                     name
+                    login
                   }
                 }
               }
-            }
+            }            
+          }
+        }
+
           }
         }
       }
