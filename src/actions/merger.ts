@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, error, warning, debug } from '../logger';
-import { fetchConfig, getReviewersState, getPullRequest } from '../github';
+import { fetchConfig, checkReviewersState, getPullRequest } from '../github';
 import Retry from './retry';
 
 export type labelStrategies = 'all' | 'atLeastOne';
@@ -175,7 +175,7 @@ export class Merger {
 
           const pullRequest = getPullRequest();
 
-          const response = getReviewersState(pullRequest);
+          const response = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
 
           info(JSON.stringify(response, null, 2));
 

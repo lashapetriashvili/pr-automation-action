@@ -159,22 +159,22 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
   }
 }
 
-export async function getReviewersState(pr: PullRequest) {
+export async function checkReviewersState(pr: PullRequest, reviewerLogin: string) {
   const octokit = getMyOctokit();
   try {
     const queryResult = await octokit.graphql<any>(`{
     repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
          reviews(first: 100) {
-                      nodes {
-                        author {
-                          login
-                        }
-                        state
-                        authorAssociation
-                        viewerCanUpdate
-                      }
-                    }
+          nodes {
+            author {
+              login
+            }
+          state
+          authorAssociation
+          viewerCanUpdate
+          }
+      }
       }
     }
   }`);
@@ -184,17 +184,11 @@ export async function getReviewersState(pr: PullRequest) {
     info('--------- reviews -----------');
     info(JSON.stringify(reviews, null, 2));
 
-    const reviewers = reviews.filter(
-      (review: any) =>
-        review.state === 'CHANGES_REQUESTED' &&
-        review.authorAssociation !== 'MEMBER' &&
-        review.authorAssociation !== 'COLLABORATOR' &&
-        !review.viewerCanUpdate,
-    );
-
-    info('--------- reviewers -----------');
-    info(JSON.stringify(reviewers, null, 2));
-    return reviewers.map((reviewer: any) => reviewer.author.login);
+    return reviews.find((reviewer: any) => {
+      if (reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED') {
+        return reviewer;
+      }
+    });
   } catch (err) {
     warning(err as Error);
     throw err;

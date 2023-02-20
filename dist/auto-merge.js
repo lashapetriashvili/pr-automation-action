@@ -33960,7 +33960,7 @@ function getLatestCommitDate(pr) {
         }
     });
 }
-function getReviewersState(pr) {
+function checkReviewersState(pr, reviewerLogin) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         try {
@@ -33968,28 +33968,26 @@ function getReviewersState(pr) {
     repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
          reviews(first: 100) {
-                      nodes {
-                        author {
-                          login
-                        }
-                        state
-                        authorAssociation
-                        viewerCanUpdate
-                      }
-                    }
+          nodes {
+            author {
+              login
+            }
+          state
+          authorAssociation
+          viewerCanUpdate
+          }
+      }
       }
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
             info('--------- reviews -----------');
             info(JSON.stringify(reviews, null, 2));
-            const reviewers = reviews.filter((review) => review.state === 'CHANGES_REQUESTED' &&
-                review.authorAssociation !== 'MEMBER' &&
-                review.authorAssociation !== 'COLLABORATOR' &&
-                !review.viewerCanUpdate);
-            info('--------- reviewers -----------');
-            info(JSON.stringify(reviewers, null, 2));
-            return reviewers.map((reviewer) => reviewer.author.login);
+            return reviews.find((reviewer) => {
+                if (reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED') {
+                    return reviewer;
+                }
+            });
         }
         catch (err) {
             logger_warning(err);
@@ -34193,7 +34191,7 @@ class Merger {
                         /* info(JSON.stringify(config, null, 2)); */
                         info('-----------');
                         const pullRequest = getPullRequest();
-                        const response = getReviewersState(pullRequest);
+                        const response = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                         info(JSON.stringify(response, null, 2));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
