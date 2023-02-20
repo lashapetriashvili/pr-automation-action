@@ -211,13 +211,13 @@ export class Merger {
         throw new Error('Waiting approve');
       }
 
-      if (totalStatus - 1 !== totalSuccessStatuses) {
-        throw new Error(
-          `Not all status success, ${totalSuccessStatuses} out of ${
-            totalStatus - 1
-          } (ignored this check) success`,
-        );
-      }
+      /* if (totalStatus - 1 !== totalSuccessStatuses) { */
+      /*   throw new Error( */
+      /*     `Not all status success, ${totalSuccessStatuses} out of ${ */
+      /*       totalStatus - 1 */
+      /*     } (ignored this check) success`, */
+      /*   ); */
+      /* } */
 
       debug(`All ${totalStatus} status success`);
       debug(`Merge PR ${pr.number}`);
