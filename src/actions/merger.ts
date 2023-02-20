@@ -130,13 +130,14 @@ export class Merger {
   }
 
   async merge(): Promise<void> {
-
     core.info('---------');
 
     // @ts-ignore
     const client: { pulls: any; checks: any; issues: any } = github.getOctokit(
       this.configInput.token,
     );
+
+    core.info(JSON.stringify(client));
 
     const { owner, repo } = this.configInput;
 

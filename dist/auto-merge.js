@@ -9867,6 +9867,7 @@ class Merger {
             core.info('---------');
             // @ts-ignore
             const client = github.getOctokit(this.configInput.token);
+            core.info(JSON.stringify(client));
             const { owner, repo } = this.configInput;
             /* try { */
             /* await this.retry.exec(async (count): Promise<void> => { */
