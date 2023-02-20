@@ -145,31 +145,14 @@ export class Merger {
             pull_number: this.configInput.pullRequestNumber,
           });
 
-          /* // @ts-ignore */
-          /* const requestedChanges = pr.requested_reviewers.map( */
-          /*   (reviewer: any) => reviewer.login, */
-          /* ); */
-          /**/
-          /* info(JSON.stringify(requestedChanges)); */
+          // @ts-ignore
+          const requestedChanges = pr.requested_reviewers.map(
+            (reviewer: any) => reviewer.login,
+          );
+
+          info(JSON.stringify(requestedChanges));
 
           /* info(JSON.stringify(pr, null, 2)); */
-
-          let config;
-
-          try {
-            config = await fetchConfig();
-          } catch (err) {
-            if ((err as Record<string, unknown>).status === 404) {
-              warning(
-                'No configuration file is found in the base branch; terminating the process',
-              );
-              info(JSON.stringify(err));
-              return;
-            }
-            throw err;
-          }
-
-          /* info(JSON.stringify(config, null, 2)); */
 
           const pullRequest = getPullRequest();
 

@@ -27903,7 +27903,7 @@ __webpack_unused_export__ = cst;
 __webpack_unused_export__ = lexer.Lexer;
 __webpack_unused_export__ = lineCounter.LineCounter;
 __webpack_unused_export__ = parser.Parser;
-exports.Qc = publicApi.parse;
+__webpack_unused_export__ = publicApi.parse;
 __webpack_unused_export__ = publicApi.parseAllDocuments;
 __webpack_unused_export__ = publicApi.parseDocument;
 __webpack_unused_export__ = publicApi.stringify;
@@ -33774,7 +33774,7 @@ var github = __nccwpck_require__(5438);
 
 const isTest = process.env.NODE_ENV === 'test';
 const info = isTest ? () => { } : core.info;
-const error = isTest ? () => { } : core.error;
+const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
 const debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
 
@@ -33810,7 +33810,7 @@ const schema = lib.object()
 })
     .required()
     .options({ stripUnknown: true });
-function validateConfig(configJson) {
+function config_validateConfig(configJson) {
     const { error, value } = schema.validate(configJson);
     if (error) {
         throw new Error(JSON.stringify(error.details));
@@ -33871,12 +33871,12 @@ function getPullRequest() {
 function fetchConfig() {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
-        const path = (0,core.getInput)('config');
+        const path = getInput('config');
         const response = yield octokit.rest.repos.getContent({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             path,
-            ref: github.context.ref,
+            ref: context.ref,
         });
         if (response.status !== 200) {
             error(`Response.status: ${response.status}`);
@@ -33887,7 +33887,7 @@ function fetchConfig() {
             throw new Error('Failed to get config');
         }
         const content = Buffer.from(data.content, data.encoding).toString();
-        const parsedConfig = dist/* parse */.Qc(content);
+        const parsedConfig = yaml.parse(content);
         return validateConfig(parsedConfig);
     });
 }
@@ -34163,26 +34163,10 @@ class Merger {
                             repo,
                             pull_number: this.configInput.pullRequestNumber,
                         });
-                        /* // @ts-ignore */
-                        /* const requestedChanges = pr.requested_reviewers.map( */
-                        /*   (reviewer: any) => reviewer.login, */
-                        /* ); */
-                        /**/
-                        /* info(JSON.stringify(requestedChanges)); */
+                        // @ts-ignore
+                        const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
+                        info(JSON.stringify(requestedChanges));
                         /* info(JSON.stringify(pr, null, 2)); */
-                        let config;
-                        try {
-                            config = yield fetchConfig();
-                        }
-                        catch (err) {
-                            if (err.status === 404) {
-                                logger_warning('No configuration file is found in the base branch; terminating the process');
-                                info(JSON.stringify(err));
-                                return;
-                            }
-                            throw err;
-                        }
-                        /* info(JSON.stringify(config, null, 2)); */
                         const pullRequest = getPullRequest();
                         const checkReviewerState = checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
                         info(JSON.stringify(checkReviewerState, null, 2));
