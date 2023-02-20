@@ -204,13 +204,13 @@ export class Merger {
             ).length;
 
             // @ts-ignore
-            const requestedChanges = pr.requested_reviewers.map(
-              (reviewer: any) => reviewer.login,
-            );
-
-            if (requestedChanges.length > 0) {
-              throw new Error('Waiting approve');
-            }
+            /* const requestedChanges = pr.requested_reviewers.map( */
+            /*   (reviewer: any) => reviewer.login, */
+            /* ); */
+            /**/
+            /* if (requestedChanges.length > 0) { */
+            /*   throw new Error('Waiting approve'); */
+            /* } */
 
             /* const checkReviewerState = await checkReviewersState( */
             /*   pullRequest, */

@@ -34193,10 +34193,13 @@ class Merger {
                             const totalStatus = checks.total_count;
                             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
                             // @ts-ignore
-                            const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
-                            if (requestedChanges.length > 0) {
-                                throw new Error('Waiting approve');
-                            }
+                            /* const requestedChanges = pr.requested_reviewers.map( */
+                            /*   (reviewer: any) => reviewer.login, */
+                            /* ); */
+                            /**/
+                            /* if (requestedChanges.length > 0) { */
+                            /*   throw new Error('Waiting approve'); */
+                            /* } */
                             /* const checkReviewerState = await checkReviewersState( */
                             /*   pullRequest, */
                             /*   'lashapetriashvili-ezetech', */
