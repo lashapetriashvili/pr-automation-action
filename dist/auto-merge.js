@@ -33946,7 +33946,6 @@ function getLatestCommitDate(pr) {
       }
     }
   }`);
-            info(JSON.stringify(queryResult, null, 2));
             // @todo
             const authoredDateString = queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
             const latestCommitDate = new Date(authoredDateString);
@@ -34156,7 +34155,8 @@ class Merger {
                         }
                         /* info(JSON.stringify(config, null, 2)); */
                         const pullRequest = getPullRequest();
-                        getLatestCommitDate(pullRequest);
+                        const response = getLatestCommitDate(pullRequest);
+                        info(JSON.stringify(response, null, 2));
                         if (this.configInput.labels.length) {
                             const labelResult = this.isLabelsValid(
                             // @ts-ignore

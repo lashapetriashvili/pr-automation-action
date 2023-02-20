@@ -173,7 +173,9 @@ export class Merger {
 
           const pullRequest = getPullRequest();
 
-          getLatestCommitDate(pullRequest);
+          const response = getLatestCommitDate(pullRequest);
+
+          info(JSON.stringify(response, null, 2));
 
           if (this.configInput.labels.length) {
             const labelResult = this.isLabelsValid(
