@@ -33981,11 +33981,7 @@ function checkReviewersState(pr, reviewerLogin) {
     }
   }`);
             const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            info('--------- reviews -----------');
-            info(JSON.stringify(reviews, null, 2));
             return reviews.find((reviewer) => {
-                info(JSON.stringify(reviewer, null, 2));
-                info(JSON.stringify(reviewer.author.login === reviewerLogin, null, 2));
                 info(JSON.stringify(reviewer.state === 'APPROVED', null, 2));
                 if (reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED') {
                     return reviewer;
