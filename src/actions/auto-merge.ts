@@ -48,6 +48,7 @@ export async function run(): Promise<void> {
       if (requestedChanges.length > 0) {
         warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
         doNotMerge = true;
+        return;
       }
     }
 
@@ -68,8 +69,6 @@ export async function run(): Promise<void> {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       doNotMerge = true;
     }
-
-    info(`${reviewersByState.approve.join(', ')} approved changes.`);
 
     info('Checking CI status.');
 

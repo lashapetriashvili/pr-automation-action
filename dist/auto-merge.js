@@ -34100,6 +34100,7 @@ function run() {
                 if (requestedChanges.length > 0) {
                     logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
                     doNotMerge = true;
+                    return;
                 }
             }
             info('Checking required changes status.');
@@ -34112,7 +34113,6 @@ function run() {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 doNotMerge = true;
             }
-            info(`${reviewersByState.approve.join(', ')} approved changes.`);
             info('Checking CI status.');
             const { data: checks } = yield client.checks.listForRef({
                 owner: configInput.owner,
