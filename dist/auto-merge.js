@@ -33993,7 +33993,11 @@ function getReviewsByGraphQL(pr) {
       {
         repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews() {
+            reviews(last: 100) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
               nodes {
                 author {
                   login

@@ -224,7 +224,11 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews() {
+            reviews(last: 100) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
               nodes {
                 author {
                   login
