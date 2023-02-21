@@ -193,12 +193,16 @@ export class Merger {
 
     info(JSON.stringify(requestedChanges, null, 2));
 
-    if (requestedChanges.length > 0) {
-      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-      return;
-    }
+    /* if (requestedChanges.length > 0) { */
+    /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+    /*   return; */
+    /* } */
 
     const res = await getReviewsByGraphQL(pullRequest);
+
+    info(JSON.stringify(res, null, 2));
+
+    return;
 
     const reviewers: any = findDuplicateValues(res);
 
