@@ -43,7 +43,7 @@ export async function run(): Promise<void> {
         (reviewer) => reviewer.login,
       );
 
-      info(JSON.stringify(requestedChanges, null, 2));
+      info(JSON.stringify(pullRequest?.requested_reviewers, null, 2));
 
       if (requestedChanges.length > 0) {
         warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);

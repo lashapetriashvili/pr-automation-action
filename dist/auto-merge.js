@@ -34096,7 +34096,7 @@ function run() {
             info('Checking requested reviewers.');
             if (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) {
                 const requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
-                info(JSON.stringify(requestedChanges, null, 2));
+                info(JSON.stringify(pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers, null, 2));
                 if (requestedChanges.length > 0) {
                     logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
                     doNotMerge = true;
