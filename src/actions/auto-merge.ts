@@ -11,6 +11,8 @@ import {
 
 export async function run(): Promise<void> {
   try {
+    info('Staring PR auto merging.');
+
     const [owner, repo] = core.getInput('repository').split('/');
 
     const configInput: Inputs = {
@@ -27,15 +29,12 @@ export async function run(): Promise<void> {
 
     const client = github.getOctokit(configInput.token);
 
-    /* const pullRequest = getPullRequest(); */
-    /**/
-    /* info(JSON.stringify(pullRequest, null, 2)); */
-
     const { data: pullRequest } = await client.pulls.get({
       owner,
       repo,
       pull_number: configInput.pullRequestNumber,
     });
+    info('Checking requested reviewers.');
 
     let requestedChanges = pullRequest?.requested_reviewers?.map(
       (reviewer) => reviewer.login,
@@ -45,27 +44,26 @@ export async function run(): Promise<void> {
       requestedChanges = [];
     }
 
-    /* if (requestedChanges.length > 0) { */
-    /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
-    /*   return; */
-    /* } */
+    if (requestedChanges.length > 0) {
+      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+      return;
+    }
+
+    info('Checking required changes status.');
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
-
-    info(JSON.stringify(reviewers));
-    return;
 
     const reviewersByState: ReviewerBySate = filterReviewersByState(
       removeDuplicateReviewer(reviewers),
       reviewers,
     );
 
-    info(JSON.stringify(reviewersByState));
-
     if (reviewersByState.requiredChanges.length) {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
     }
+
+    info('Checking CI status.');
 
     const { data: checks } = await client.checks.listForRef({
       owner: configInput.owner,
@@ -86,9 +84,6 @@ export async function run(): Promise<void> {
       );
     }
 
-    debug(`All ${totalStatus} status success`);
-    debug(`Merge PR ${pullRequest.number}`);
-
     if (configInput.comment) {
       const { data: resp } = await client.issues.createComment({
         owner: configInput.owner,
@@ -101,6 +96,8 @@ export async function run(): Promise<void> {
       core.setOutput('commentID', resp.id);
     }
 
+    info('Merging...');
+
     await client.pulls.merge({
       owner,
       repo,
@@ -109,9 +106,6 @@ export async function run(): Promise<void> {
     });
 
     core.setOutput('merged', true);
-
-    /* const merger = new Merger(inputs); */
-    /* await merger.merge(); */
   } catch (err) {
     error(err as Error);
   }

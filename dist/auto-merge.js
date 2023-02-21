@@ -33984,6 +33984,7 @@ function filterReviewersByState(reviewers, reviewersFullData) {
     });
     return response;
 }
+// TODO Change any
 function getReviewsByGraphQL(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
@@ -34070,6 +34071,7 @@ function run() {
     var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
+            logger_info('Staring PR auto merging.');
             const [owner, repo] = core.getInput('repository').split('/');
             const configInput = {
                 comment: core.getInput('comment'),
@@ -34082,31 +34084,28 @@ function run() {
             };
             logger_debug(`Inputs: ${(0,external_util_.inspect)(configInput)}`);
             const client = github.getOctokit(configInput.token);
-            /* const pullRequest = getPullRequest(); */
-            /**/
-            /* info(JSON.stringify(pullRequest, null, 2)); */
             const { data: pullRequest } = yield client.pulls.get({
                 owner,
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
+            logger_info('Checking requested reviewers.');
             let requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
             if (requestedChanges === undefined) {
                 requestedChanges = [];
             }
-            /* if (requestedChanges.length > 0) { */
-            /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
-            /*   return; */
-            /* } */
+            if (requestedChanges.length > 0) {
+                logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+                return;
+            }
+            logger_info('Checking required changes status.');
             const reviewers = yield getReviewsByGraphQL(pullRequest);
-            logger_info(JSON.stringify(reviewers));
-            return;
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
-            logger_info(JSON.stringify(reviewersByState));
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 return;
             }
+            logger_info('Checking CI status.');
             const { data: checks } = yield client.checks.listForRef({
                 owner: configInput.owner,
                 repo: configInput.repo,
@@ -34117,8 +34116,6 @@ function run() {
             if (totalStatus - 1 !== totalSuccessStatuses) {
                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
             }
-            logger_debug(`All ${totalStatus} status success`);
-            logger_debug(`Merge PR ${pullRequest.number}`);
             if (configInput.comment) {
                 const { data: resp } = yield client.issues.createComment({
                     owner: configInput.owner,
@@ -34129,6 +34126,7 @@ function run() {
                 logger_debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
+            logger_info('Merging...');
             yield client.pulls.merge({
                 owner,
                 repo,
@@ -34136,8 +34134,6 @@ function run() {
                 merge_method: configInput.strategy,
             });
             core.setOutput('merged', true);
-            /* const merger = new Merger(inputs); */
-            /* await merger.merge(); */
         }
         catch (err) {
             logger_error(err);

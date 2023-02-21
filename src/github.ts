@@ -216,6 +216,7 @@ export function filterReviewersByState(
   return response;
 }
 
+// TODO Change any
 export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   try {
