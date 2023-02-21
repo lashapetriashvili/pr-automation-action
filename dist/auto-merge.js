@@ -34007,6 +34007,7 @@ function getReviewsByGraphQL(pr) {
       }
     `);
                 const reviewsResponse = queryResult.repository.pullRequest.reviews;
+                info(JSON.stringify(reviewsResponse, null, 2));
                 response = [...reviewsResponse.nodes, ...response];
                 hasNextPage = reviewsResponse.pageInfo.hasNextPage;
                 reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;

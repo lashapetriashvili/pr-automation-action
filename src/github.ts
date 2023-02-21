@@ -4,7 +4,7 @@ import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
 import { Config, Reviewer, ReviewerBySate } from './config/typings';
-import { debug, error, warning } from './logger';
+import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
   const myToken = getInput('token');
@@ -227,6 +227,9 @@ export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> 
       }
     `);
       const reviewsResponse = queryResult.repository.pullRequest.reviews;
+
+      info(JSON.stringify(reviewsResponse, null, 2));
+
       response = [...reviewsResponse.nodes, ...response];
       hasNextPage = reviewsResponse.pageInfo.hasNextPage;
       reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
