@@ -33761,7 +33761,7 @@ var github = __nccwpck_require__(5438);
 const isTest = process.env.NODE_ENV === 'test';
 const logger_info = isTest ? () => { } : core.info;
 const logger_error = isTest ? () => { } : core.error;
-const debug = isTest ? () => { } : core.debug;
+const logger_debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
 
 // EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
@@ -33849,7 +33849,7 @@ class PullRequest {
     }
 }
 function getPullRequest() {
-    const pr = github.context.payload.pull_request;
+    const pr = context.payload.pull_request;
     // @todo validate PR data
     if (!pr) {
         throw new Error('No pull_request data in context.payload');
@@ -34067,6 +34067,7 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 
 
 function run() {
+    var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
             const [owner, repo] = core.getInput('repository').split('/');
@@ -34079,47 +34080,45 @@ function run() {
                 strategy: core.getInput('strategy', { required: true }),
                 token: core.getInput('token', { required: true }),
             };
-            debug(`Inputs: ${(0,external_util_.inspect)(configInput)}`);
+            logger_debug(`Inputs: ${(0,external_util_.inspect)(configInput)}`);
             const client = github.getOctokit(configInput.token);
-            const pullRequest = getPullRequest();
-            logger_info(JSON.stringify(pullRequest, null, 2));
-            const { data: pr } = yield client.pulls.get({
+            /* const pullRequest = getPullRequest(); */
+            /**/
+            /* info(JSON.stringify(pullRequest, null, 2)); */
+            const { data: pullRequest } = yield client.pulls.get({
                 owner,
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            logger_info(JSON.stringify(pr, null, 2));
-            return;
-            const { data: checks } = yield client.checks.listForRef({
-                owner: configInput.owner,
-                repo: configInput.repo,
-                ref: configInput.sha,
-            });
-            /* let requestedChanges = pullRequest.requested_reviewers.map<{ login: string }[]>( */
-            /*   (reviewer) => reviewer.login, */
-            /* ); */
-            /**/
-            /* if (requestedChanges === undefined) { */
-            /*   requestedChanges = []; */
-            /* } */
-            /* if (requestedChanges.length > 0) { */
-            /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
-            /*   return; */
-            /* } */
+            let requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
+            if (requestedChanges === undefined) {
+                requestedChanges = [];
+            }
+            if (requestedChanges.length > 0) {
+                logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+                return;
+            }
             const reviewers = yield getReviewsByGraphQL(pullRequest);
+            logger_info(JSON.stringify(reviewers));
+            return;
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
             logger_info(JSON.stringify(reviewersByState));
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 return;
             }
+            const { data: checks } = yield client.checks.listForRef({
+                owner: configInput.owner,
+                repo: configInput.repo,
+                ref: configInput.sha,
+            });
             const totalStatus = checks.total_count;
             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
             if (totalStatus - 1 !== totalSuccessStatuses) {
                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
             }
-            debug(`All ${totalStatus} status success`);
-            debug(`Merge PR ${pullRequest.number}`);
+            logger_debug(`All ${totalStatus} status success`);
+            logger_debug(`Merge PR ${pullRequest.number}`);
             if (configInput.comment) {
                 const { data: resp } = yield client.issues.createComment({
                     owner: configInput.owner,
@@ -34127,7 +34126,7 @@ function run() {
                     issue_number: configInput.pullRequestNumber,
                     body: configInput.comment,
                 });
-                debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
+                logger_debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
             yield client.pulls.merge({

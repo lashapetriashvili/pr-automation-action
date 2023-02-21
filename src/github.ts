@@ -5,6 +5,7 @@ import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
 import { Config, Reviewer, ReviewerBySate } from './config/typings';
 import { debug, error, warning, info } from './logger';
+import { PullsGetResponseData } from '@octokit/types';
 
 function getMyOctokit() {
   const myToken = getInput('token');
@@ -31,8 +32,8 @@ class PullRequest {
     return this._pr.number;
   }
 
-  get requestedReviewers(): string[] {
-    return this._pr.requested_reviewers
+  get requestedReviewers(): { login: string; id: number; type: string }[] {
+    return this._pr.requested_reviewers;
   }
 
   get labelNames(): string[] {
@@ -215,7 +216,7 @@ export function filterReviewersByState(
   return response;
 }
 
-export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> {
+export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   try {
     const queryResult = await octokit.graphql<any>(`

@@ -5,7 +5,6 @@ import { Inputs, Strategy, ReviewerBySate, Reviewer } from '../config/typings';
 import { info, debug, warning, error } from '../logger';
 import {
   getReviewsByGraphQL,
-  getPullRequest,
   removeDuplicateReviewer,
   filterReviewersByState,
 } from '../github';
@@ -28,39 +27,33 @@ export async function run(): Promise<void> {
 
     const client = github.getOctokit(configInput.token);
 
-    const pullRequest = getPullRequest();
+    /* const pullRequest = getPullRequest(); */
+    /**/
+    /* info(JSON.stringify(pullRequest, null, 2)); */
 
-    info(JSON.stringify(pullRequest, null, 2));
-
-    const { data: pr } = await client.pulls.get({
+    const { data: pullRequest } = await client.pulls.get({
       owner,
       repo,
       pull_number: configInput.pullRequestNumber,
     });
 
-    info(JSON.stringify(pr, null, 2));
-    return;
+    let requestedChanges = pullRequest?.requested_reviewers?.map(
+      (reviewer) => reviewer.login,
+    );
 
-    const { data: checks } = await client.checks.listForRef({
-      owner: configInput.owner,
-      repo: configInput.repo,
-      ref: configInput.sha,
-    });
+    if (requestedChanges === undefined) {
+      requestedChanges = [];
+    }
 
-    /* let requestedChanges = pullRequest.requested_reviewers.map<{ login: string }[]>( */
-    /*   (reviewer) => reviewer.login, */
-    /* ); */
-    /**/
-    /* if (requestedChanges === undefined) { */
-    /*   requestedChanges = []; */
-    /* } */
-
-    /* if (requestedChanges.length > 0) { */
-    /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
-    /*   return; */
-    /* } */
+    if (requestedChanges.length > 0) {
+      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+      return;
+    }
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
+
+    info(JSON.stringify(reviewers));
+    return;
 
     const reviewersByState: ReviewerBySate = filterReviewersByState(
       removeDuplicateReviewer(reviewers),
@@ -73,6 +66,12 @@ export async function run(): Promise<void> {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
     }
+
+    const { data: checks } = await client.checks.listForRef({
+      owner: configInput.owner,
+      repo: configInput.repo,
+      ref: configInput.sha,
+    });
 
     const totalStatus = checks.total_count;
     const totalSuccessStatuses = checks.check_runs.filter(
