@@ -180,9 +180,11 @@ export function filterReviewersByState(
   reviewers: Reviewer[],
   reviewersFullData: Reviewer[],
 ): ReviewerBySate {
-  const requiredChanges: string[] = [];
-  const approve: string[] = [];
-  const commeted: string[] = [];
+  const response: ReviewerBySate = {
+    requiredChanges: [],
+    approve: [],
+    commeted: [],
+  };
 
   reviewers.forEach((reviewer) => {
     const filter = reviewersFullData.filter(
@@ -191,24 +193,22 @@ export function filterReviewersByState(
 
     const lastAction = filter[filter.length - 1];
 
-    if (lastAction.state === 'APPROVED') {
-      approve.push(lastAction.author.login);
-    }
+    switch (lastAction.state) {
+      case 'APPROVED':
+        response.approve.push(lastAction.author.login);
+        break;
 
-    if (lastAction.state === 'CHANGES_REQUESTED') {
-      requiredChanges.push(lastAction.author.login);
-    }
-
-    if (lastAction.state === 'COMMETED') {
-      commeted.push(lastAction.author.login);
+      case 'CHANGES_REQUESTED':
+        response.requiredChanges.push(lastAction.author.login);
+        break;
+      case 'COMMETED':
+        response.commeted.push(lastAction.author.login);
+        break;
+      default:
     }
   });
 
-  return {
-    requiredChanges,
-    approve,
-    commeted,
-  };
+  return response;
 }
 
 export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> {

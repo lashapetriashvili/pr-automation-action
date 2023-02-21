@@ -33936,27 +33936,28 @@ function removeDuplicateReviewer(arr) {
     return Object.values(response);
 }
 function filterReviewersByState(reviewers, reviewersFullData) {
-    const requiredChanges = [];
-    const approve = [];
-    const commeted = [];
+    const response = {
+        requiredChanges: [],
+        approve: [],
+        commeted: [],
+    };
     reviewers.forEach((reviewer) => {
         const filter = reviewersFullData.filter((data) => data.author.login === reviewer.author.login);
         const lastAction = filter[filter.length - 1];
-        if (lastAction.state === 'APPROVED') {
-            approve.push(lastAction.author.login);
-        }
-        if (lastAction.state === 'CHANGES_REQUESTED') {
-            requiredChanges.push(lastAction.author.login);
-        }
-        if (lastAction.state === 'COMMETED') {
-            commeted.push(lastAction.author.login);
+        switch (lastAction.state) {
+            case 'APPROVED':
+                response.approve.push(lastAction.author.login);
+                break;
+            case 'CHANGES_REQUESTED':
+                response.requiredChanges.push(lastAction.author.login);
+                break;
+            case 'COMMETED':
+                response.commeted.push(lastAction.author.login);
+                break;
+            default:
         }
     });
-    return {
-        requiredChanges,
-        approve,
-        commeted,
-    };
+    return response;
 }
 function getReviewsByGraphQL(pr) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -34140,14 +34141,12 @@ class Merger {
             /*   return; */
             /* } */
             const reviewers = yield getReviewsByGraphQL(pullRequest);
-            logger_info(JSON.stringify(reviewers, null, 2));
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
-            logger_info(JSON.stringify(reviewersByState, null, 2));
-            return;
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 return;
             }
+            return;
             if (totalStatus - 1 !== totalSuccessStatuses) {
                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
             }

@@ -205,21 +205,17 @@ export class Merger {
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
-    info(JSON.stringify(reviewers, null, 2));
-
     const reviewersByState: ReviewerBySate = filterReviewersByState(
       removeDuplicateReviewer(reviewers),
       reviewers,
     );
 
-    info(JSON.stringify(reviewersByState, null, 2));
-
-    return;
-
     if (reviewersByState.requiredChanges.length) {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
     }
+
+    return;
 
     if (totalStatus - 1 !== totalSuccessStatuses) {
       throw new Error(
