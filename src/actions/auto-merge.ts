@@ -43,6 +43,8 @@ export async function run(): Promise<void> {
         (reviewer) => reviewer.login,
       );
 
+      info(JSON.stringify(requestedChanges, null, 2));
+
       if (requestedChanges.length > 0) {
         warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
         doNotMerge = true;
@@ -59,6 +61,8 @@ export async function run(): Promise<void> {
       removeDuplicateReviewer(reviewers),
       reviewers,
     );
+
+    info(JSON.stringify(reviewersByState, null, 2));
 
     if (reviewersByState.requiredChanges.length) {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
