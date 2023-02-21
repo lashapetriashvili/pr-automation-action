@@ -221,7 +221,7 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   try {
     let hasNextPage = true;
-    let reviewsParam = 'last 100';
+    let reviewsParam = 'last: 100';
     let response: Reviewer[] = [];
 
     do {
@@ -251,7 +251,7 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       const reviewsResponse = queryResult.repository.pullRequest.reviews;
       response = [reviewsResponse.nodes, ...response];
       hasNextPage = reviewsResponse.pageInfo.hasNextPage;
-      reviewsParam = `last 100, endCursor: ${reviewsResponse.pageInfo.endCursor}`;
+      reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
     } while (hasNextPage);
 
     return response;
