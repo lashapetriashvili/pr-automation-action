@@ -166,7 +166,7 @@ export async function getReviewsByGraphQL(pr: PullRequest) {
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews(first: 10) {
+            reviews(last: 100) {
               nodes {
                 author {
                   login
@@ -175,16 +175,6 @@ export async function getReviewsByGraphQL(pr: PullRequest) {
                 body
                 createdAt
                 updatedAt
-                comments(first: 10) {
-                  nodes {
-                    author {
-                      login
-                    }
-                    body
-                    createdAt
-                    updatedAt
-                  }
-                }
               }  
             }
           }

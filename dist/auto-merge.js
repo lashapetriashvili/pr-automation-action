@@ -33932,7 +33932,7 @@ function getReviewsByGraphQL(pr) {
       {
         repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews(first: 10) {
+            reviews(last: 100) {
               nodes {
                 author {
                   login
@@ -33941,16 +33941,6 @@ function getReviewsByGraphQL(pr) {
                 body
                 createdAt
                 updatedAt
-                comments(first: 10) {
-                  nodes {
-                    author {
-                      login
-                    }
-                    body
-                    createdAt
-                    updatedAt
-                  }
-                }
               }  
             }
           }
@@ -34147,11 +34137,13 @@ class Merger {
             // @ts-ignore
             const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
             logger_info(JSON.stringify(requestedChanges, null, 2));
-            if (requestedChanges.length > 0) {
-                logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-                return;
-            }
+            /* if (requestedChanges.length > 0) { */
+            /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+            /*   return; */
+            /* } */
             const res = yield getReviewsByGraphQL(pullRequest);
+            logger_info(JSON.stringify(res, null, 2));
+            return;
             const reviewers = findDuplicateValues(res);
             const reviewersByState = filterReviewersByState(reviewers, res);
             if (reviewersByState.reviewersWhoRequiredChanges.length) {
