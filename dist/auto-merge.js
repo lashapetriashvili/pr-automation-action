@@ -33924,37 +33924,7 @@ function getLatestCommitDate(pr) {
         }
     });
 }
-function checkReviewersState(pr, reviewerLogin) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const octokit = getMyOctokit();
-        try {
-            const queryResult = yield octokit.graphql(`{
-    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-      pullRequest(number: ${pr.number}) {
-         reviews(first: 100) {
-          nodes {
-            author {
-              login
-            }
-          state
-          authorAssociation
-          viewerCanUpdate
-          }
-      }
-      }
-    }
-  }`);
-            const reviews = queryResult.repository.pullRequest.reviews.nodes;
-            const response = reviews.find((reviewer) => reviewer.author.login === reviewerLogin && reviewer.state === 'APPROVED');
-            return response;
-        }
-        catch (err) {
-            warning(err);
-            throw err;
-        }
-    });
-}
-function checkReviewersState2(pr) {
+function getReviewsByGraphQL(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         try {
@@ -33987,8 +33957,7 @@ function checkReviewersState2(pr) {
         }
       }
     `);
-            const reviewsNodes = queryResult.repository.pullRequest.reviews.nodes;
-            return reviewsNodes;
+            return queryResult.repository.pullRequest.reviews.nodes;
         }
         catch (err) {
             logger_warning(err);
@@ -34168,35 +34137,32 @@ class Merger {
                 logger_debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
                 logger_info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
             }
-            if (this.configInput.checkStatus) {
-                const { data: checks } = yield client.checks.listForRef({
-                    owner: this.configInput.owner,
-                    repo: this.configInput.repo,
-                    ref: this.configInput.sha,
-                });
-                const totalStatus = checks.total_count;
-                const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
-                // @ts-ignore
-                const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
-                logger_info(JSON.stringify(requestedChanges, null, 2));
-                if (requestedChanges.length > 0) {
-                    logger_warning(`Approved required by ${requestedChanges.join(', ')}`);
-                    return;
-                }
-                const res = yield checkReviewersState2(pullRequest);
-                logger_info(JSON.stringify(res, null, 2));
-                const reviewers = findDuplicateValues(res);
-                const reviewersByState = filterReviewersByState(reviewers, res);
-                if (reviewersByState.reviewersWhoRequiredChanges.length) {
-                    logger_warning(`${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`);
-                    return;
-                }
-                if (totalStatus - 1 !== totalSuccessStatuses) {
-                    throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
-                }
-                logger_debug(`All ${totalStatus} status success`);
-                logger_debug(`Merge PR ${pr.number}`);
+            const { data: checks } = yield client.checks.listForRef({
+                owner: this.configInput.owner,
+                repo: this.configInput.repo,
+                ref: this.configInput.sha,
+            });
+            const totalStatus = checks.total_count;
+            const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
+            // @ts-ignore
+            const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
+            logger_info(JSON.stringify(requestedChanges, null, 2));
+            if (requestedChanges.length > 0) {
+                logger_warning(`Approved required by ${requestedChanges.join(', ')}`);
+                return;
             }
+            const res = yield getReviewsByGraphQL(pullRequest);
+            const reviewers = findDuplicateValues(res);
+            const reviewersByState = filterReviewersByState(reviewers, res);
+            if (reviewersByState.reviewersWhoRequiredChanges.length) {
+                logger_warning(`${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`);
+                return;
+            }
+            if (totalStatus - 1 !== totalSuccessStatuses) {
+                throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
+            }
+            logger_debug(`All ${totalStatus} status success`);
+            logger_debug(`Merge PR ${pr.number}`);
             if (this.configInput.comment) {
                 const { data: resp } = yield client.issues.createComment({
                     owner: this.configInput.owner,
@@ -34239,15 +34205,11 @@ function run() {
         try {
             const [owner, repo] = core.getInput('repository').split('/');
             const inputs = {
-                checkStatus: true,
                 comment: core.getInput('comment'),
-                dryRun: core.getInput('dryRun') === 'true',
                 ignoreLabels: core.getInput('ignoreLabels') === ''
                     ? []
                     : core.getInput('ignoreLabels').split(','),
                 ignoreLabelsStrategy: core.getInput('labelsStrategy'),
-                failStep: core.getInput('failStep') === 'true',
-                intervalSeconds: Number(core.getInput('intervalSeconds', { required: true })) * 1000,
                 labels: core.getInput('labels') === '' ? [] : core.getInput('labels').split(','),
                 labelsStrategy: core.getInput('labelsStrategy'),
                 owner,
@@ -34256,7 +34218,6 @@ function run() {
                 sha: core.getInput('sha', { required: true }),
                 strategy: core.getInput('strategy', { required: true }),
                 token: core.getInput('token', { required: true }),
-                timeoutSeconds: Number(core.getInput('timeoutSeconds', { required: true })),
             };
             core.debug(`Inputs: ${(0,external_util_.inspect)(inputs)}`);
             const merger = new Merger(inputs);

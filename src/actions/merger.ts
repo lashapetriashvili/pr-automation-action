@@ -3,24 +3,15 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, debug, warning } from '../logger';
-import {
-  checkReviewersState,
-  checkReviewersState2,
-  getPullRequest,
-  getReviews,
-} from '../github';
+import { getReviewsByGraphQL, getPullRequest } from '../github';
 import { findDuplicateValues, filterReviewersByState } from '../utils';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
 export interface Inputs {
-  checkStatus: boolean;
   comment: string;
-  dryRun: boolean;
   ignoreLabels: string[];
   ignoreLabelsStrategy: labelStrategies;
-  failStep: boolean;
-  intervalSeconds: number;
   labels: string[];
   labelsStrategy: labelStrategies;
   repo: string;
@@ -29,7 +20,6 @@ export interface Inputs {
   sha: string;
   strategy: Strategy;
   token: string;
-  timeoutSeconds: number;
 }
 
 export type Strategy = 'merge' | 'squash' | 'rebase';
@@ -185,56 +175,52 @@ export class Merger {
       );
     }
 
-    if (this.configInput.checkStatus) {
-      const { data: checks } = await client.checks.listForRef({
-        owner: this.configInput.owner,
-        repo: this.configInput.repo,
-        ref: this.configInput.sha,
-      });
+    const { data: checks } = await client.checks.listForRef({
+      owner: this.configInput.owner,
+      repo: this.configInput.repo,
+      ref: this.configInput.sha,
+    });
 
-      const totalStatus = checks.total_count;
-      const totalSuccessStatuses = checks.check_runs.filter(
-        (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
-      ).length;
+    const totalStatus = checks.total_count;
+    const totalSuccessStatuses = checks.check_runs.filter(
+      (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
+    ).length;
 
-      // @ts-ignore
-      const requestedChanges = pr.requested_reviewers.map(
-        (reviewer: any) => reviewer.login,
-      );
+    // @ts-ignore
+    const requestedChanges = pr.requested_reviewers.map(
+      (reviewer: any) => reviewer.login,
+    );
 
-      info(JSON.stringify(requestedChanges, null, 2));
+    info(JSON.stringify(requestedChanges, null, 2));
 
-      if (requestedChanges.length > 0) {
-        warning(`Approved required by ${requestedChanges.join(', ')}`);
-        return;
-      }
-
-      const res = await checkReviewersState2(pullRequest);
-
-      info(JSON.stringify(res, null, 2));
-
-      const reviewers: any = findDuplicateValues(res);
-
-      const reviewersByState: any = filterReviewersByState(reviewers, res);
-
-      if (reviewersByState.reviewersWhoRequiredChanges.length) {
-        warning(
-          `${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`,
-        );
-        return;
-      }
-
-      if (totalStatus - 1 !== totalSuccessStatuses) {
-        throw new Error(
-          `Not all status success, ${totalSuccessStatuses} out of ${
-            totalStatus - 1
-          } (ignored this check) success`,
-        );
-      }
-
-      debug(`All ${totalStatus} status success`);
-      debug(`Merge PR ${pr.number}`);
+    if (requestedChanges.length > 0) {
+      warning(`Approved required by ${requestedChanges.join(', ')}`);
+      return;
     }
+
+    const res = await getReviewsByGraphQL(pullRequest);
+
+    const reviewers: any = findDuplicateValues(res);
+
+    const reviewersByState: any = filterReviewersByState(reviewers, res);
+
+    if (reviewersByState.reviewersWhoRequiredChanges.length) {
+      warning(
+        `${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`,
+      );
+      return;
+    }
+
+    if (totalStatus - 1 !== totalSuccessStatuses) {
+      throw new Error(
+        `Not all status success, ${totalSuccessStatuses} out of ${
+          totalStatus - 1
+        } (ignored this check) success`,
+      );
+    }
+
+    debug(`All ${totalStatus} status success`);
+    debug(`Merge PR ${pr.number}`);
 
     if (this.configInput.comment) {
       const { data: resp } = await client.issues.createComment({
