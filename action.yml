@@ -6,28 +6,11 @@ branding:
 inputs:
   token:
     required: true
-  config:
-    required: true
-  checkStatus: 
-    required: false
-    description: 'Check all status before merge'
-    default: 'true'
+    description: 'GitHub Token'
   comment:
     required: false
     description: 'Comment before merge'
     default: ''
-  dryRun:
-    required: false
-    description: 'Dry run'
-    default: 'false'
-  intervalSeconds:
-    required: false
-    description: 'Seconds between the check'
-    default: '0.1'
-  failStep:
-    required: false
-    description: 'Fail the step if the PR is not found or merged'
-    default: 'true'
   labels:
     required: false
     description: 'Comma seperated labes that target pull request should have'
@@ -60,10 +43,6 @@ inputs:
     required: false
     description: 'Merge strategy'
     default: 'merge'
-  timeoutSeconds:
-    required: false
-    description: 'Seconds to timeout'
-    default: '60'
 runs:
   using: 'node16'
   main: 'dist/auto-merge.js'
