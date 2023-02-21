@@ -1,4 +1,4 @@
-/* import { Reviews } from '../github'; */
+import { Reviews } from '../github';
 
 type ReviewStatus = 'APPROVED' | 'CHANGES_REQUESTED' | 'PENDING';
 
@@ -30,7 +30,7 @@ export function identifyCurrentState({
   reviews,
   latestCommitDate,
 }: {
-  reviews: any[];
+  reviews: Reviews[];
   latestCommitDate: Date;
 }): {
   user: string;

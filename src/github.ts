@@ -4,8 +4,7 @@ import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
 import { Config, Reviewer, ReviewerBySate } from './config/typings';
-import { debug, error, warning, info } from './logger';
-import { PullsGetResponseData } from '@octokit/types';
+import { debug, error, warning } from './logger';
 
 function getMyOctokit() {
   const myToken = getInput('token');
@@ -32,13 +31,10 @@ class PullRequest {
     return this._pr.number;
   }
 
-  get requestedReviewers(): { login: string; id: number; type: string }[] {
-    return this._pr.requested_reviewers;
-  }
-
   get labelNames(): string[] {
     return (this._pr.labels as { name: string }[]).map((label) => label.name);
   }
+
   get requestedReviewerLogins(): string[] {
     return (this._pr.requested_reviewers as { login: string }[]).map(
       (label) => label.login,
@@ -48,7 +44,6 @@ class PullRequest {
 
 export function getPullRequest(): PullRequest {
   const pr = context.payload.pull_request;
-
   // @todo validate PR data
   if (!pr) {
     throw new Error('No pull_request data in context.payload');
@@ -67,15 +62,12 @@ export async function fetchConfig(): Promise<Config> {
     path,
     ref: context.ref,
   });
-
   if (response.status !== 200) {
     error(`Response.status: ${response.status}`);
     throw new Error(JSON.stringify(response.data));
   }
-
   const data = response.data as {
     type: string;
-
     content: string;
     encoding: 'base64';
   };
@@ -166,6 +158,87 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
   }
 }
 
+export type Reviews = {
+  author: string;
+  state: string;
+  submittedAt: Date;
+};
+
+export async function getReviews(pr: PullRequest): Promise<Reviews[]> {
+  const octokit = getMyOctokit();
+  const reviews = await octokit.paginate(
+    'GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews',
+    {
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      pull_number: pr.number,
+    },
+  );
+  return reviews.reduce<Reviews[]>((result, review) => {
+    // if (review.state !== 'APPROVED') {
+    //   return result;
+    // }
+    if (!review.user) {
+      warning(`No review.user provided for review ${review.id}`);
+      return result;
+    }
+    if (!review.submitted_at) {
+      warning(`No review.submitted_at provided for review ${review.id}`);
+      return result;
+    }
+    result.push({
+      state: review.state,
+      author: review.user.login,
+      submittedAt: new Date(review.submitted_at),
+    });
+    return result;
+  }, []);
+}
+
+export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> {
+  const octokit = getMyOctokit();
+  try {
+    let hasNextPage = true;
+    let reviewsParam = 'last: 100';
+    let response: Reviewer[] = [];
+
+    do {
+      const queryResult = await octokit.graphql<any>(`
+      {
+        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+          pullRequest(number: ${pr.number}) {
+            reviews(${reviewsParam}) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              nodes {
+                author {
+                  login
+                }
+                state
+                body
+                createdAt
+                updatedAt
+              }  
+            }
+          }
+        }
+      }
+    `);
+      const reviewsResponse = queryResult.repository.pullRequest.reviews;
+      response = [...reviewsResponse.nodes, ...response];
+      hasNextPage = reviewsResponse.pageInfo.hasNextPage;
+      reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
+    } while (hasNextPage);
+
+    return response;
+  } catch (err) {
+    warning(err as Error);
+    throw err;
+  }
+}
+
 export function removeDuplicateReviewer(arr: Reviewer[]): Reviewer[] {
   const response: {
     [key: string]: Reviewer & { count: number };
@@ -214,87 +287,4 @@ export function filterReviewersByState(
   });
 
   return response;
-}
-
-// TODO Change any
-export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
-  const octokit = getMyOctokit();
-  try {
-    let hasNextPage = true;
-    let reviewsParam = 'last: 100';
-    let response: Reviewer[] = [];
-
-    do {
-      const queryResult = await octokit.graphql<any>(`
-      {
-        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-          pullRequest(number: ${pr.number}) {
-            reviews(${reviewsParam}) {
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
-              nodes {
-                author {
-                  login
-                }
-                state
-                body
-                createdAt
-                updatedAt
-              }  
-            }
-          }
-        }
-      }
-    `);
-      const reviewsResponse = queryResult.repository.pullRequest.reviews;
-      response = [...reviewsResponse.nodes, ...response];
-      hasNextPage = reviewsResponse.pageInfo.hasNextPage;
-      reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
-    } while (hasNextPage);
-
-    return response;
-  } catch (err) {
-    warning(err as Error);
-    throw err;
-  }
-}
-
-/* export type Reviews = { */
-/*   author: string; */
-/*   state: string; // @todo type it more correctly */
-/*   submittedAt: Date; */
-/* }; */
-
-export async function getReviews(pr: PullRequest): Promise<Reviewer[]> {
-  const octokit = getMyOctokit();
-  const reviews = await octokit.paginate(
-    'GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews',
-    {
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      pull_number: pr.number,
-    },
-  );
-
-  return reviews.reduce<any>((result, review) => {
-    // if (review.state !== 'APPROVED') {
-    //   return result;
-    // }
-    if (!review.user) {
-      warning(`No review.user provided for review ${review.id}`);
-      return result;
-    }
-    if (!review.submitted_at) {
-      warning(`No review.submitted_at provided for review ${review.id}`);
-      return result;
-    }
-    result.push({
-      state: review.state,
-      author: review.user.login,
-      submittedAt: new Date(review.submitted_at),
-    });
-    return result;
-  }, []);
 }

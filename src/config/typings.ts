@@ -1,5 +1,3 @@
-import { alt } from 'joi';
-
 export type Rule = {
   reviewers: string[];
   required: number;

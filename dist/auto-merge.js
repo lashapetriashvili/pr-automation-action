@@ -33838,9 +33838,6 @@ class PullRequest {
     get number() {
         return this._pr.number;
     }
-    get requestedReviewers() {
-        return this._pr.requested_reviewers;
-    }
     get labelNames() {
         return this._pr.labels.map((label) => label.name);
     }
@@ -33949,42 +33946,35 @@ function getLatestCommitDate(pr) {
         }
     });
 }
-function removeDuplicateReviewer(arr) {
-    const response = {};
-    arr.forEach((reviewer) => {
-        const key = reviewer.author.login;
-        if (!response[key]) {
-            response[key] = Object.assign(Object.assign({}, reviewer), { count: 0 });
-        }
-        response[key].count += 1;
+function getReviews(pr) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getMyOctokit();
+        const reviews = yield octokit.paginate('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: pr.number,
+        });
+        return reviews.reduce((result, review) => {
+            // if (review.state !== 'APPROVED') {
+            //   return result;
+            // }
+            if (!review.user) {
+                warning(`No review.user provided for review ${review.id}`);
+                return result;
+            }
+            if (!review.submitted_at) {
+                warning(`No review.submitted_at provided for review ${review.id}`);
+                return result;
+            }
+            result.push({
+                state: review.state,
+                author: review.user.login,
+                submittedAt: new Date(review.submitted_at),
+            });
+            return result;
+        }, []);
     });
-    return Object.values(response);
 }
-function filterReviewersByState(reviewers, reviewersFullData) {
-    const response = {
-        requiredChanges: [],
-        approve: [],
-        commeted: [],
-    };
-    reviewers.forEach((reviewer) => {
-        const filter = reviewersFullData.filter((data) => data.author.login === reviewer.author.login);
-        const lastAction = filter[filter.length - 1];
-        switch (lastAction.state) {
-            case 'APPROVED':
-                response.approve.push(lastAction.author.login);
-                break;
-            case 'CHANGES_REQUESTED':
-                response.requiredChanges.push(lastAction.author.login);
-                break;
-            case 'COMMETED':
-                response.commeted.push(lastAction.author.login);
-                break;
-            default:
-        }
-    });
-    return response;
-}
-// TODO Change any
 function getReviewsByGraphQL(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
@@ -34029,39 +34019,40 @@ function getReviewsByGraphQL(pr) {
         }
     });
 }
-/* export type Reviews = { */
-/*   author: string; */
-/*   state: string; // @todo type it more correctly */
-/*   submittedAt: Date; */
-/* }; */
-function getReviews(pr) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const octokit = getMyOctokit();
-        const reviews = yield octokit.paginate('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: pr.number,
-        });
-        return reviews.reduce((result, review) => {
-            // if (review.state !== 'APPROVED') {
-            //   return result;
-            // }
-            if (!review.user) {
-                warning(`No review.user provided for review ${review.id}`);
-                return result;
-            }
-            if (!review.submitted_at) {
-                warning(`No review.submitted_at provided for review ${review.id}`);
-                return result;
-            }
-            result.push({
-                state: review.state,
-                author: review.user.login,
-                submittedAt: new Date(review.submitted_at),
-            });
-            return result;
-        }, []);
+function removeDuplicateReviewer(arr) {
+    const response = {};
+    arr.forEach((reviewer) => {
+        const key = reviewer.author.login;
+        if (!response[key]) {
+            response[key] = Object.assign(Object.assign({}, reviewer), { count: 0 });
+        }
+        response[key].count += 1;
     });
+    return Object.values(response);
+}
+function filterReviewersByState(reviewers, reviewersFullData) {
+    const response = {
+        requiredChanges: [],
+        approve: [],
+        commeted: [],
+    };
+    reviewers.forEach((reviewer) => {
+        const filter = reviewersFullData.filter((data) => data.author.login === reviewer.author.login);
+        const lastAction = filter[filter.length - 1];
+        switch (lastAction.state) {
+            case 'APPROVED':
+                response.approve.push(lastAction.author.login);
+                break;
+            case 'CHANGES_REQUESTED':
+                response.requiredChanges.push(lastAction.author.login);
+                break;
+            case 'COMMETED':
+                response.commeted.push(lastAction.author.login);
+                break;
+            default:
+        }
+    });
+    return response;
 }
 
 ;// CONCATENATED MODULE: ./src/actions/auto-merge.ts
@@ -34084,6 +34075,7 @@ function run() {
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
             info('Staring PR auto merging.');
+            let doNotMerge = false;
             const [owner, repo] = core.getInput('repository').split('/');
             const configInput = {
                 comment: core.getInput('comment'),
@@ -34106,15 +34098,17 @@ function run() {
                 const requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
                 if (requestedChanges.length > 0) {
                     logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-                    return;
+                    doNotMerge = true;
                 }
             }
             info('Checking required changes status.');
+            // TODO Fix Typescript Error
+            // @ts-ignore
             const reviewers = yield getReviewsByGraphQL(pullRequest);
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
-                return;
+                doNotMerge = true;
             }
             info(`${reviewersByState.approve.join(', ')} approved changes.`);
             info('Checking CI status.');
@@ -34126,7 +34120,11 @@ function run() {
             const totalStatus = checks.total_count;
             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
             if (totalStatus - 1 !== totalSuccessStatuses) {
-                throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
+                logger_warning(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
+                doNotMerge = true;
+            }
+            if (doNotMerge) {
+                return;
             }
             if (configInput.comment) {
                 const { data: resp } = yield client.issues.createComment({
