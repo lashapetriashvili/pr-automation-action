@@ -43,6 +43,7 @@ export async function run(): Promise<void> {
         (reviewer) => reviewer.login,
       );
 
+      info('---------- pullRequest.requested_reviewers ---------------');
       info(JSON.stringify(pullRequest?.requested_reviewers, null, 2));
 
       if (requestedChanges.length > 0) {
@@ -63,6 +64,7 @@ export async function run(): Promise<void> {
       reviewers,
     );
 
+    info('----------------- reviewersByState ---------------');
     info(JSON.stringify(reviewersByState, null, 2));
 
     if (reviewersByState.requiredChanges.length) {

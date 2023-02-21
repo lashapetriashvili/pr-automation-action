@@ -228,6 +228,7 @@ export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> 
     `);
       const reviewsResponse = queryResult.repository.pullRequest.reviews;
 
+      info('--------------- reviewsResponse ------------------');
       info(JSON.stringify(reviewsResponse, null, 2));
 
       response = [...reviewsResponse.nodes, ...response];
