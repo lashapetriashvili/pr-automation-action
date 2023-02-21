@@ -244,6 +244,8 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       }
     `);
 
+    info(JSON.stringify(queryResult, null, 2));
+
     return queryResult.repository.pullRequest.reviews.nodes;
   } catch (err) {
     warning(err as Error);

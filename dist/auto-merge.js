@@ -34012,6 +34012,7 @@ function getReviewsByGraphQL(pr) {
         }
       }
     `);
+            info(JSON.stringify(queryResult, null, 2));
             return queryResult.repository.pullRequest.reviews.nodes;
         }
         catch (err) {
