@@ -220,10 +220,15 @@ export function filterReviewersByState(
 export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   try {
-    const queryResult = await octokit.graphql<any>(`
+    let hasNextPage = true;
+    let endCursor = '';
+    let response: Reviewer[] = [];
+
+    do {
+      const queryResult = await octokit.graphql<any>(`
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-          pullRequest(number: ${pr.number}) {
+          pullRequest(number: ${pr.number}, cursor: ${endCursor}) {
             reviews(last: 100) {
               pageInfo {
                 hasNextPage
@@ -243,10 +248,15 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
         }
       }
     `);
+      const reviewsResponse = queryResult.repository.pullRequest.reviews;
+      response = [reviewsResponse.nodes, ...response];
+      hasNextPage = reviewsResponse.pageInfo.hasNextPage;
+      endCursor = reviewsResponse.pageInfo.endCursor;
+    } while (hasNextPage);
 
-    info(JSON.stringify(queryResult, null, 2));
+    info(JSON.stringify(response, null, 2));
 
-    return queryResult.repository.pullRequest.reviews.nodes;
+    return response;
   } catch (err) {
     warning(err as Error);
     throw err;

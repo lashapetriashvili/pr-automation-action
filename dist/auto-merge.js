@@ -33989,10 +33989,14 @@ function getReviewsByGraphQL(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         try {
-            const queryResult = yield octokit.graphql(`
+            let hasNextPage = true;
+            let endCursor = '';
+            let response = [];
+            do {
+                const queryResult = yield octokit.graphql(`
       {
         repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
-          pullRequest(number: ${pr.number}) {
+          pullRequest(number: ${pr.number}, cursor: ${endCursor}) {
             reviews(last: 100) {
               pageInfo {
                 hasNextPage
@@ -34012,8 +34016,13 @@ function getReviewsByGraphQL(pr) {
         }
       }
     `);
-            info(JSON.stringify(queryResult, null, 2));
-            return queryResult.repository.pullRequest.reviews.nodes;
+                const reviewsResponse = queryResult.repository.pullRequest.reviews;
+                response = [reviewsResponse.nodes, ...response];
+                hasNextPage = reviewsResponse.pageInfo.hasNextPage;
+                endCursor = reviewsResponse.pageInfo.endCursor;
+            } while (hasNextPage);
+            info(JSON.stringify(response, null, 2));
+            return response;
         }
         catch (err) {
             logger_warning(err);
