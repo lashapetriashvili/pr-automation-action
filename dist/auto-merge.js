@@ -34094,10 +34094,10 @@ function run() {
             if (requestedChanges === undefined) {
                 requestedChanges = [];
             }
-            if (requestedChanges.length > 0) {
-                logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-                return;
-            }
+            /* if (requestedChanges.length > 0) { */
+            /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+            /*   return; */
+            /* } */
             const reviewers = yield getReviewsByGraphQL(pullRequest);
             logger_info(JSON.stringify(reviewers));
             return;

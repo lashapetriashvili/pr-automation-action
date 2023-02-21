@@ -45,10 +45,10 @@ export async function run(): Promise<void> {
       requestedChanges = [];
     }
 
-    if (requestedChanges.length > 0) {
-      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-      return;
-    }
+    /* if (requestedChanges.length > 0) { */
+    /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+    /*   return; */
+    /* } */
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
