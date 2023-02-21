@@ -1,3 +1,5 @@
+import { alt } from "joi";
+
 export type Rule = {
   reviewers: string[];
   required: number;
@@ -21,17 +23,23 @@ export type Config = {
   postReviewOptions?: {};
 };
 
+export type ReviewerBySate = {
+  requiredChanges: string[];
+  approve: string[];
+  commeted: string[];
+};
+
 export type State = 'CHANGES_REQUESTED' | 'APPROVED' | 'COMMETED';
 
 export type Author = {
   login: string;
 };
 
-export type Reviewer = {
+export interface Reviewer {
   author: Author;
   state: State;
   body: string;
   createdAt?: Date;
   updatedAt?: Date;
   submittedAt?: Date;
-};
+}

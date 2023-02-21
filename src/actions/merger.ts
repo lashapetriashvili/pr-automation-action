@@ -3,9 +3,13 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, debug, warning } from '../logger';
-import { getReviewsByGraphQL, getPullRequest } from '../github';
-import { findDuplicateValues, filterReviewersByState } from '../utils';
-import { Reviewer } from '../config/typings';
+import {
+  getReviewsByGraphQL,
+  getPullRequest,
+  removeDuplicateReviewer,
+  filterReviewersByState,
+} from '../github';
+import { Reviewer, ReviewerBySate } from '../config/typings';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -199,24 +203,21 @@ export class Merger {
     /*   return; */
     /* } */
 
-    const res = await getReviewsByGraphQL(pullRequest);
-
-    info(JSON.stringify(res, null, 2));
-
-    const reviewers: any = findDuplicateValues(res);
+    const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
     info(JSON.stringify(reviewers, null, 2));
 
-    const reviewersByState: any = filterReviewersByState(reviewers, res);
+    const reviewersByState: ReviewerBySate = filterReviewersByState(
+      removeDuplicateReviewer(reviewers),
+      reviewers,
+    );
 
     info(JSON.stringify(reviewersByState, null, 2));
 
     return;
 
-    if (reviewersByState.reviewersWhoRequiredChanges.length) {
-      warning(
-        `${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`,
-      );
+    if (reviewersByState.requiredChanges.length) {
+      warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
     }
 
