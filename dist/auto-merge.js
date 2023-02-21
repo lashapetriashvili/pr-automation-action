@@ -33955,6 +33955,11 @@ function getReviewsByGraphQL(pr) {
         }
     });
 }
+/* export type Reviews = { */
+/*   author: string; */
+/*   state: string; // @todo type it more correctly */
+/*   submittedAt: Date; */
+/* }; */
 function getReviews(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
@@ -34097,6 +34102,7 @@ class Merger {
         }
     }
     merge() {
+        var _a;
         return merger_awaiter(this, void 0, void 0, function* () {
             const client = github.getOctokit(this.configInput.token);
             const { owner, repo } = this.configInput;
@@ -34135,17 +34141,21 @@ class Merger {
             const totalStatus = checks.total_count;
             const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
             // @ts-ignore
-            const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
-            logger_info(JSON.stringify(requestedChanges, null, 2));
+            let requestedChanges = (_a = pr === null || pr === void 0 ? void 0 : pr.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
+            if (requestedChanges === undefined) {
+                requestedChanges = [];
+            }
             /* if (requestedChanges.length > 0) { */
             /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
             /*   return; */
             /* } */
             const res = yield getReviewsByGraphQL(pullRequest);
             logger_info(JSON.stringify(res, null, 2));
-            return;
             const reviewers = findDuplicateValues(res);
+            logger_info(JSON.stringify(reviewers, null, 2));
             const reviewersByState = filterReviewersByState(reviewers, res);
+            logger_info(JSON.stringify(reviewersByState, null, 2));
+            return;
             if (reviewersByState.reviewersWhoRequiredChanges.length) {
                 logger_warning(`${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`);
                 return;
