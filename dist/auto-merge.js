@@ -34148,7 +34148,7 @@ class Merger {
             const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
             logger_info(JSON.stringify(requestedChanges, null, 2));
             if (requestedChanges.length > 0) {
-                logger_warning(`Approved required by ${requestedChanges.join(', ')}`);
+                logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
                 return;
             }
             const res = yield getReviewsByGraphQL(pullRequest);

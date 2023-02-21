@@ -194,7 +194,7 @@ export class Merger {
     info(JSON.stringify(requestedChanges, null, 2));
 
     if (requestedChanges.length > 0) {
-      warning(`Approved required by ${requestedChanges.join(', ')}`);
+      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
       return;
     }
 
