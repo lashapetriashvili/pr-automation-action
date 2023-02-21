@@ -221,7 +221,7 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   try {
     let hasNextPage = true;
-    let endCursor = '';
+    let reviewsParam = 'last 100';
     let response: Reviewer[] = [];
 
     do {
@@ -229,7 +229,7 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews(last: 100, cursor: ${endCursor}) {
+            reviews(${reviewsParam}) {
               pageInfo {
                 hasNextPage
                 endCursor
@@ -251,10 +251,8 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       const reviewsResponse = queryResult.repository.pullRequest.reviews;
       response = [reviewsResponse.nodes, ...response];
       hasNextPage = reviewsResponse.pageInfo.hasNextPage;
-      endCursor = reviewsResponse.pageInfo.endCursor;
+      reviewsParam = `last 100, endCursor: ${reviewsResponse.pageInfo.endCursor}`;
     } while (hasNextPage);
-
-    info(JSON.stringify(response, null, 2));
 
     return response;
   } catch (err) {

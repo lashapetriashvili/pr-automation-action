@@ -41,10 +41,10 @@ export async function run(): Promise<void> {
         (reviewer) => reviewer.login,
       );
 
-      /* if (requestedChanges.length > 0) { */
-      /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
-      /*   return; */
-      /* } */
+      if (requestedChanges.length > 0) {
+        warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+        return;
+      }
     }
 
     info('Checking required changes status.');
