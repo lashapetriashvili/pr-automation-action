@@ -34184,6 +34184,7 @@ class Merger {
                     return;
                 }
                 const res = yield checkReviewersState2(pullRequest);
+                logger_info(JSON.stringify(res, null, 2));
                 const reviewers = findDuplicateValues(res);
                 const reviewersByState = filterReviewersByState(reviewers, res);
                 if (reviewersByState.reviewersWhoRequiredChanges.length) {

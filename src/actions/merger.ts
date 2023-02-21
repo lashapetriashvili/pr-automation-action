@@ -211,6 +211,8 @@ export class Merger {
 
       const res = await checkReviewersState2(pullRequest);
 
+      info(JSON.stringify(res, null, 2));
+
       const reviewers: any = findDuplicateValues(res);
 
       const reviewersByState: any = filterReviewersByState(reviewers, res);
