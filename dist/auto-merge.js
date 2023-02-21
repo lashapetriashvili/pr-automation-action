@@ -34017,7 +34017,7 @@ function getReviewsByGraphQL(pr) {
       }
     `);
                 const reviewsResponse = queryResult.repository.pullRequest.reviews;
-                response = [reviewsResponse.nodes, ...response];
+                response = [...reviewsResponse.nodes, ...response];
                 hasNextPage = reviewsResponse.pageInfo.hasNextPage;
                 reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
             } while (hasNextPage);
