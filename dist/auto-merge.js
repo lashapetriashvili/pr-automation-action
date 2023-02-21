@@ -34142,6 +34142,7 @@ class Merger {
             /* } */
             const reviewers = yield getReviewsByGraphQL(pullRequest);
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
+            logger_info(JSON.stringify(reviewersByState));
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 return;

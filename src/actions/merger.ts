@@ -210,6 +210,8 @@ export class Merger {
       reviewers,
     );
 
+    info(JSON.stringify(reviewersByState));
+
     if (reviewersByState.requiredChanges.length) {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
