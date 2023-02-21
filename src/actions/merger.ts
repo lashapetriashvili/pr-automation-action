@@ -198,10 +198,10 @@ export class Merger {
       requestedChanges = [];
     }
 
-    /* if (requestedChanges.length > 0) { */
-    /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
-    /*   return; */
-    /* } */
+    if (requestedChanges.length > 0) {
+      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+      return;
+    }
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
@@ -210,14 +210,12 @@ export class Merger {
       reviewers,
     );
 
-    info(JSON.stringify(reviewersByState));
+    /* info(JSON.stringify(reviewersByState)); */
 
     if (reviewersByState.requiredChanges.length) {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
     }
-
-    return;
 
     if (totalStatus - 1 !== totalSuccessStatuses) {
       throw new Error(
