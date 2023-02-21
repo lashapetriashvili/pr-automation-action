@@ -33954,74 +33954,44 @@ function checkReviewersState(pr, reviewerLogin) {
         }
     });
 }
-function checkReviewersState2(pr, reviewerLogin) {
+function checkReviewersState2(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         try {
-            /* const queryResult = await octokit.graphql<any>(` */
-            /*   { */
-            /*     repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") { */
-            /*       pullRequest(number: ${pr.number}) { */
-            /*         reviews(first: 10) { */
-            /*           nodes { */
-            /*             author { */
-            /*               login */
-            /*             } */
-            /*             state */
-            /*             body */
-            /*             createdAt */
-            /*             updatedAt */
-            /*             comments(first: 10) { */
-            /*               nodes { */
-            /*                 author { */
-            /*                   login */
-            /*                 } */
-            /*                 body */
-            /*                 createdAt */
-            /*                 updatedAt */
-            /*               } */
-            /*             } */
-            /*           }   */
-            /*         } */
-            /*       } */
-            /*     } */
-            /*   } */
-            /* `); */
             const queryResult = yield octokit.graphql(`
       {
-        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+        repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-totalCount
-      edges {
-        node {
-          ... on PullRequest {
-            repository {
-              nameWithOwner
-            }
-            number
-            url                        
-            reviewRequests(first: 100) {
+            reviews(first: 10) {
               nodes {
-                requestedReviewer {
-                  ... on User {
-                    name
-                    login
+                author {
+                  login
+                }
+                state
+                body
+                createdAt
+                updatedAt
+                comments(first: 10) {
+                  nodes {
+                    author {
+                      login
+                    }
+                    body
+                    createdAt
+                    updatedAt
                   }
                 }
-              }
-            }            
-          }
-        }
- }
+              }  
+            }
           }
         }
       }
     `);
-            /* const reviewsNodes = queryResult.repository.pullRequest.reviews.nodes; */
-            info(JSON.stringify(queryResult, null, 2));
+            const reviewsNodes = queryResult.repository.pullRequest.reviews.nodes;
+            return reviewsNodes;
         }
         catch (err) {
-            warning(err);
+            logger_warning(err);
             throw err;
         }
     });
@@ -34030,21 +34000,21 @@ function getReviews(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         const reviews = yield octokit.paginate('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
             pull_number: pr.number,
         });
-        logger_info(JSON.stringify(reviews, null, 2));
+        info(JSON.stringify(reviews, null, 2));
         return reviews.reduce((result, review) => {
             // if (review.state !== 'APPROVED') {
             //   return result;
             // }
             if (!review.user) {
-                logger_warning(`No review.user provided for review ${review.id}`);
+                warning(`No review.user provided for review ${review.id}`);
                 return result;
             }
             if (!review.submitted_at) {
-                logger_warning(`No review.submitted_at provided for review ${review.id}`);
+                warning(`No review.submitted_at provided for review ${review.id}`);
                 return result;
             }
             result.push({
@@ -34133,9 +34103,9 @@ class Merger {
                 pull_number: this.configInput.pullRequestNumber,
             });
             const pullRequest = getPullRequest();
-            const res = getReviews(pullRequest);
+            /* const res = getReviews(pullRequest); */
+            const res = yield checkReviewersState2(pullRequest);
             logger_info(JSON.stringify(res, null, 2));
-            /* await checkReviewersState2(pullRequest, 'test'); */
             return;
             if (this.configInput.labels.length) {
                 const labelResult = this.isLabelsValid(

@@ -193,73 +193,42 @@ export async function checkReviewersState(pr: PullRequest, reviewerLogin: string
   }
 }
 
-export async function checkReviewersState2(pr: PullRequest, reviewerLogin: string) {
+export async function checkReviewersState2(pr: PullRequest) {
   const octokit = getMyOctokit();
   try {
-    /* const queryResult = await octokit.graphql<any>(` */
-    /*   { */
-    /*     repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") { */
-    /*       pullRequest(number: ${pr.number}) { */
-    /*         reviews(first: 10) { */
-    /*           nodes { */
-    /*             author { */
-    /*               login */
-    /*             } */
-    /*             state */
-    /*             body */
-    /*             createdAt */
-    /*             updatedAt */
-    /*             comments(first: 10) { */
-    /*               nodes { */
-    /*                 author { */
-    /*                   login */
-    /*                 } */
-    /*                 body */
-    /*                 createdAt */
-    /*                 updatedAt */
-    /*               } */
-    /*             } */
-    /*           }   */
-    /*         } */
-    /*       } */
-    /*     } */
-    /*   } */
-    /* `); */
-
     const queryResult = await octokit.graphql<any>(`
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-totalCount
-      edges {
-        node {
-          ... on PullRequest {
-            repository {
-              nameWithOwner
-            }
-            number
-            url                        
-            reviewRequests(first: 100) {
+            reviews(first: 10) {
               nodes {
-                requestedReviewer {
-                  ... on User {
-                    name
-                    login
+                author {
+                  login
+                }
+                state
+                body
+                createdAt
+                updatedAt
+                comments(first: 10) {
+                  nodes {
+                    author {
+                      login
+                    }
+                    body
+                    createdAt
+                    updatedAt
                   }
                 }
-              }
-            }            
-          }
-        }
- }
+              }  
+            }
           }
         }
       }
     `);
 
-    /* const reviewsNodes = queryResult.repository.pullRequest.reviews.nodes; */
+    const reviewsNodes = queryResult.repository.pullRequest.reviews.nodes;
 
-    info(JSON.stringify(queryResult, null, 2));
+    return reviewsNodes;
   } catch (err) {
     warning(err as Error);
     throw err;
