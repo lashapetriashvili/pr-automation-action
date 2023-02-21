@@ -224,7 +224,7 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews(last: 100) {
+            reviews() {
               nodes {
                 author {
                   login
@@ -263,8 +263,6 @@ export async function getReviews(pr: PullRequest): Promise<Reviewer[]> {
       pull_number: pr.number,
     },
   );
-
-  info(JSON.stringify(reviews, null, 2));
 
   return reviews.reduce<any>((result, review) => {
     // if (review.state !== 'APPROVED') {

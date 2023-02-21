@@ -33759,7 +33759,7 @@ var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/logger.ts
 
 const isTest = process.env.NODE_ENV === 'test';
-const logger_info = isTest ? () => { } : core.info;
+const info = isTest ? () => { } : core.info;
 const logger_error = isTest ? () => { } : core.error;
 const logger_debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
@@ -33993,7 +33993,7 @@ function getReviewsByGraphQL(pr) {
       {
         repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
-            reviews(last: 100) {
+            reviews() {
               nodes {
                 author {
                   login
@@ -34029,7 +34029,6 @@ function getReviews(pr) {
             repo: context.repo.repo,
             pull_number: pr.number,
         });
-        info(JSON.stringify(reviews, null, 2));
         return reviews.reduce((result, review) => {
             // if (review.state !== 'APPROVED') {
             //   return result;
@@ -34071,7 +34070,7 @@ function run() {
     var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
-            logger_info('Staring PR auto merging.');
+            info('Staring PR auto merging.');
             const [owner, repo] = core.getInput('repository').split('/');
             const configInput = {
                 comment: core.getInput('comment'),
@@ -34089,23 +34088,24 @@ function run() {
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            logger_info('Checking requested reviewers.');
-            let requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
-            if (requestedChanges === undefined) {
-                requestedChanges = [];
+            info('Checking requested reviewers.');
+            if (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) {
+                const requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
+                /* if (requestedChanges.length > 0) { */
+                /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+                /*   return; */
+                /* } */
             }
-            if (requestedChanges.length > 0) {
-                logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-                return;
-            }
-            logger_info('Checking required changes status.');
+            info('Checking required changes status.');
             const reviewers = yield getReviewsByGraphQL(pullRequest);
+            info(JSON.stringify(reviewers, null, 2));
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 return;
             }
-            logger_info('Checking CI status.');
+            info(`${reviewersByState.approve.join(', ')} approved changes.`);
+            info('Checking CI status.');
             const { data: checks } = yield client.checks.listForRef({
                 owner: configInput.owner,
                 repo: configInput.repo,
@@ -34126,7 +34126,7 @@ function run() {
                 logger_debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
-            logger_info('Merging...');
+            info('Merging...');
             yield client.pulls.merge({
                 owner,
                 repo,

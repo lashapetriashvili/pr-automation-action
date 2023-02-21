@@ -36,22 +36,22 @@ export async function run(): Promise<void> {
     });
     info('Checking requested reviewers.');
 
-    let requestedChanges = pullRequest?.requested_reviewers?.map(
-      (reviewer) => reviewer.login,
-    );
+    if (pullRequest?.requested_reviewers) {
+      const requestedChanges = pullRequest?.requested_reviewers?.map(
+        (reviewer) => reviewer.login,
+      );
 
-    if (requestedChanges === undefined) {
-      requestedChanges = [];
-    }
-
-    if (requestedChanges.length > 0) {
-      warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-      return;
+      /* if (requestedChanges.length > 0) { */
+      /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+      /*   return; */
+      /* } */
     }
 
     info('Checking required changes status.');
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
+
+    info(JSON.stringify(reviewers, null, 2));
 
     const reviewersByState: ReviewerBySate = filterReviewersByState(
       removeDuplicateReviewer(reviewers),
@@ -62,6 +62,8 @@ export async function run(): Promise<void> {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
       return;
     }
+
+    info(`${reviewersByState.approve.join(', ')} approved changes.`);
 
     info('Checking CI status.');
 
