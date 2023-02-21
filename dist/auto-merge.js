@@ -3361,7 +3361,7 @@ internals.safeCharCodes = (function () {
 
 /***/ }),
 
-/***/ 6223:
+/***/ 1965:
 /***/ ((module) => {
 
 "use strict";
@@ -8321,7 +8321,7 @@ module.exports = new Set(internals.tlds.map((tld) => tld.toLowerCase()));
 
 
 const Assert = __nccwpck_require__(2718);
-const EscapeRegex = __nccwpck_require__(6223);
+const EscapeRegex = __nccwpck_require__(1965);
 
 
 const internals = {};
@@ -18333,7 +18333,7 @@ const Assert = __nccwpck_require__(2718);
 const Domain = __nccwpck_require__(7425);
 const Email = __nccwpck_require__(3283);
 const Ip = __nccwpck_require__(2337);
-const EscapeRegex = __nccwpck_require__(6223);
+const EscapeRegex = __nccwpck_require__(1965);
 const Tlds = __nccwpck_require__(3092);
 const Uri = __nccwpck_require__(4983);
 
@@ -33739,7 +33739,7 @@ var github = __nccwpck_require__(5438);
 const isTest = process.env.NODE_ENV === 'test';
 const logger_info = isTest ? () => { } : core.info;
 const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
-const debug = isTest ? () => { } : core.debug;
+const logger_debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
 
 // EXTERNAL MODULE: ./node_modules/yaml/dist/index.js
@@ -33829,7 +33829,7 @@ function getPullRequest() {
     if (!pr) {
         throw new Error('No pull_request data in context.payload');
     }
-    debug(`PR event payload: ${JSON.stringify(pr)}`);
+    logger_debug(`PR event payload: ${JSON.stringify(pr)}`);
     return new PullRequest(pr);
 }
 function fetchConfig() {
@@ -34027,6 +34027,49 @@ function getReviews(pr) {
     });
 }
 
+;// CONCATENATED MODULE: ./src/utils.ts
+
+function getRandomItemFromArray(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
+function withDebugLog(executeFunction) {
+    return function (param) {
+        debug(`[${executeFunction.name}]. Params: ${JSON.stringify(param)}`);
+        const result = executeFunction(param);
+        debug(`[${executeFunction.name}]. Result: ${JSON.stringify(result)}`);
+        return result;
+    };
+}
+function findDuplicateValues(arr) {
+    const res = {};
+    arr.forEach((obj) => {
+        const key = `${obj.Country}${obj.author.login}`;
+        if (!res[key]) {
+            res[key] = { login: obj.author.login, count: 0 };
+        }
+        res[key].count += 1;
+    });
+    return Object.values(res);
+}
+function filterReviewersByState(reviewers, reviewersFullData) {
+    const reviewersWhoRequiredChanges = [];
+    const reviewersWhoApprove = [];
+    reviewers.forEach((reviewer) => {
+        const filter = reviewersFullData.filter((data) => data.author.login === reviewer.login);
+        const lastElement = filter[filter.length - 1];
+        if (lastElement.state === 'APPROVED') {
+            reviewersWhoApprove.push(lastElement.author.login);
+        }
+        if (lastElement.state === 'CHANGES_REQUESTED') {
+            reviewersWhoRequiredChanges.push(lastElement.author.login);
+        }
+    });
+    return {
+        reviewersWhoRequiredChanges,
+        reviewersWhoApprove,
+    };
+}
+
 ;// CONCATENATED MODULE: ./src/actions/merger.ts
 var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -34037,6 +34080,7 @@ var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _a
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -34059,7 +34103,7 @@ class Merger {
         if (type === 'ignoreLabels' && !hasLabels.length) {
             failed = false;
         }
-        debug(`Checking all labels for type:${type} and prLabels:${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}, hasLabels:${(0,external_util_.inspect)(hasLabels)}, labels:${(0,external_util_.inspect)(labels)} and failed: ${failed}`);
+        logger_debug(`Checking all labels for type:${type} and prLabels:${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}, hasLabels:${(0,external_util_.inspect)(hasLabels)}, labels:${(0,external_util_.inspect)(labels)} and failed: ${failed}`);
         return {
             failed,
             message: `PR ${pr.id} ${type === 'labels' ? '' : "does't"} contains all ${(0,external_util_.inspect)(labels)} for PR labels ${(0,external_util_.inspect)(pr.labels.map((l) => l.name))} and and failed: ${failed}`,
@@ -34078,7 +34122,7 @@ class Merger {
         if (type === 'ignoreLabels' && !hasLabels.length) {
             failed = false;
         }
-        debug(`Checking atLeastOne labels for type:${type} and prLabels:${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}, hasLabels:${(0,external_util_.inspect)(hasLabels)}, labels:${(0,external_util_.inspect)(labels)} and failed: ${failed}`);
+        logger_debug(`Checking atLeastOne labels for type:${type} and prLabels:${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}, hasLabels:${(0,external_util_.inspect)(hasLabels)}, labels:${(0,external_util_.inspect)(labels)} and failed: ${failed}`);
         return {
             failed,
             message: `PR ${pr.id} ${type === 'labels' ? '' : "does't"} contains ${(0,external_util_.inspect)(labels)} for PR labels ${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}`,
@@ -34105,7 +34149,9 @@ class Merger {
             const pullRequest = getPullRequest();
             /* const res = getReviews(pullRequest); */
             const res = yield checkReviewersState2(pullRequest);
-            logger_info(JSON.stringify(res, null, 2));
+            const reviewers = findDuplicateValues(res);
+            const reviewersByState = filterReviewersByState(reviewers, res);
+            logger_info(JSON.stringify(reviewersByState, null, 2));
             return;
             if (this.configInput.labels.length) {
                 const labelResult = this.isLabelsValid(
@@ -34114,7 +34160,7 @@ class Merger {
                 if (labelResult.failed) {
                     throw new Error(`Checked labels failed: ${labelResult.message}`);
                 }
-                debug(`Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`);
+                logger_debug(`Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`);
                 logger_info(`Checked labels and passed with labels:${(0,external_util_.inspect)(this.configInput.labels)}`);
             }
             if (this.configInput.ignoreLabels.length) {
@@ -34124,7 +34170,7 @@ class Merger {
                 if (ignoreLabelResult.failed) {
                     throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
                 }
-                debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
+                logger_debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
                 logger_info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
             }
             if (this.configInput.checkStatus) {
@@ -34154,8 +34200,8 @@ class Merger {
                 /*     } (ignored this check) success`, */
                 /*   ); */
                 /* } */
-                debug(`All ${totalStatus} status success`);
-                debug(`Merge PR ${pr.number}`);
+                logger_debug(`All ${totalStatus} status success`);
+                logger_debug(`Merge PR ${pr.number}`);
             }
             if (this.configInput.comment) {
                 const { data: resp } = yield client.issues.createComment({
@@ -34164,7 +34210,7 @@ class Merger {
                     issue_number: this.configInput.pullRequestNumber,
                     body: this.configInput.comment,
                 });
-                debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
+                logger_debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
             yield client.pulls.merge({

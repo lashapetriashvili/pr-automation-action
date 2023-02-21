@@ -9,6 +9,7 @@ import {
   getPullRequest,
   getReviews,
 } from '../github';
+import { findDuplicateValues, filterReviewersByState } from '../utils';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -145,7 +146,11 @@ export class Merger {
 
     const res = await checkReviewersState2(pullRequest);
 
-    info(JSON.stringify(res, null, 2));
+    const reviewers: any = findDuplicateValues(res);
+
+    const reviewersByState: any = filterReviewersByState(reviewers, res);
+
+    info(JSON.stringify(reviewersByState, null, 2));
     return;
 
     if (this.configInput.labels.length) {
