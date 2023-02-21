@@ -3,7 +3,7 @@ import { context, getOctokit } from '@actions/github';
 import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
-import { Config } from './config/typings';
+import { Config, Reviewer } from './config/typings';
 import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
@@ -43,6 +43,7 @@ class PullRequest {
 
 export function getPullRequest(): PullRequest {
   const pr = context.payload.pull_request;
+
   // @todo validate PR data
   if (!pr) {
     throw new Error('No pull_request data in context.payload');
@@ -69,6 +70,7 @@ export async function fetchConfig(): Promise<Config> {
 
   const data = response.data as {
     type: string;
+
     content: string;
     encoding: 'base64';
   };
@@ -159,7 +161,7 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
   }
 }
 
-export async function getReviewsByGraphQL(pr: PullRequest) {
+export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   try {
     const queryResult = await octokit.graphql<any>(`
@@ -189,13 +191,13 @@ export async function getReviewsByGraphQL(pr: PullRequest) {
   }
 }
 
-export type Reviews = {
-  author: string;
-  state: string; // @todo type it more correctly
-  submittedAt: Date;
-};
+/* export type Reviews = { */
+/*   author: string; */
+/*   state: string; // @todo type it more correctly */
+/*   submittedAt: Date; */
+/* }; */
 
-export async function getReviews(pr: PullRequest): Promise<Reviews[]> {
+export async function getReviews(pr: PullRequest): Promise<Reviewer[]> {
   const octokit = getMyOctokit();
   const reviews = await octokit.paginate(
     'GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews',
@@ -208,7 +210,7 @@ export async function getReviews(pr: PullRequest): Promise<Reviews[]> {
 
   info(JSON.stringify(reviews, null, 2));
 
-  return reviews.reduce<Reviews[]>((result, review) => {
+  return reviews.reduce<any>((result, review) => {
     // if (review.state !== 'APPROVED') {
     //   return result;
     // }

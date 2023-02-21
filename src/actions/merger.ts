@@ -5,6 +5,7 @@ import { PullsGetResponseData } from '@octokit/types';
 import { info, debug, warning } from '../logger';
 import { getReviewsByGraphQL, getPullRequest } from '../github';
 import { findDuplicateValues, filterReviewersByState } from '../utils';
+import { Reviewer } from '../config/typings';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -187,11 +188,11 @@ export class Merger {
     ).length;
 
     // @ts-ignore
-    const requestedChanges = pr.requested_reviewers.map(
-      (reviewer: any) => reviewer.login,
-    );
+    let requestedChanges = pr?.requested_reviewers?.map((reviewer) => reviewer.login);
 
-    info(JSON.stringify(requestedChanges, null, 2));
+    if (requestedChanges === undefined) {
+      requestedChanges = [];
+    }
 
     /* if (requestedChanges.length > 0) { */
     /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
@@ -202,11 +203,15 @@ export class Merger {
 
     info(JSON.stringify(res, null, 2));
 
-    return;
-
     const reviewers: any = findDuplicateValues(res);
 
+    info(JSON.stringify(reviewers, null, 2));
+
     const reviewersByState: any = filterReviewersByState(reviewers, res);
+
+    info(JSON.stringify(reviewersByState, null, 2));
+
+    return;
 
     if (reviewersByState.reviewersWhoRequiredChanges.length) {
       warning(

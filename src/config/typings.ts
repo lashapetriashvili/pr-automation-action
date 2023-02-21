@@ -20,3 +20,18 @@ export type Config = {
   options?: Options;
   postReviewOptions?: {};
 };
+
+export type State = 'CHANGES_REQUESTED' | 'APPROVED' | 'COMMETED';
+
+export type Author = {
+  login: string;
+};
+
+export type Reviewer = {
+  author: Author;
+  state: State;
+  body: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  submittedAt?: Date;
+};
