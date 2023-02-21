@@ -33838,6 +33838,9 @@ class PullRequest {
     get number() {
         return this._pr.number;
     }
+    get requestedReviewers() {
+        return this._pr.requested_reviewers;
+    }
     get labelNames() {
         return this._pr.labels.map((label) => label.name);
     }
@@ -34080,6 +34083,12 @@ function run() {
             const client = github.getOctokit(configInput.token);
             const pullRequest = getPullRequest();
             logger_info(JSON.stringify(pullRequest, null, 2));
+            const { data: pr } = yield client.pulls.get({
+                owner,
+                repo,
+                pull_number: configInput.pullRequestNumber,
+            });
+            logger_info(JSON.stringify(pr, null, 2));
             return;
             const { data: checks } = yield client.checks.listForRef({
                 owner: configInput.owner,

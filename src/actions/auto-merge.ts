@@ -31,6 +31,14 @@ export async function run(): Promise<void> {
     const pullRequest = getPullRequest();
 
     info(JSON.stringify(pullRequest, null, 2));
+
+    const { data: pr } = await client.pulls.get({
+      owner,
+      repo,
+      pull_number: configInput.pullRequestNumber,
+    });
+
+    info(JSON.stringify(pr, null, 2));
     return;
 
     const { data: checks } = await client.checks.listForRef({

@@ -31,6 +31,10 @@ class PullRequest {
     return this._pr.number;
   }
 
+  get requestedReviewers(): string[] {
+    return this._pr.requested_reviewers
+  }
+
   get labelNames(): string[] {
     return (this._pr.labels as { name: string }[]).map((label) => label.name);
   }
