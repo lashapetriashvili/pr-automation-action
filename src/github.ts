@@ -282,6 +282,9 @@ export async function getReviews(pr: PullRequest): Promise<Reviews[]> {
       pull_number: pr.number,
     },
   );
+
+  info(JSON.stringify(reviews, null, 2));
+
   return reviews.reduce<Reviews[]>((result, review) => {
     // if (review.state !== 'APPROVED') {
     //   return result;

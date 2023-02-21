@@ -34034,6 +34034,7 @@ function getReviews(pr) {
             repo: github.context.repo.repo,
             pull_number: pr.number,
         });
+        logger_info(JSON.stringify(reviews, null, 2));
         return reviews.reduce((result, review) => {
             // if (review.state !== 'APPROVED') {
             //   return result;
