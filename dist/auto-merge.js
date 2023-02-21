@@ -33929,7 +33929,7 @@ function checkReviewersState(pr, reviewerLogin) {
         const octokit = getMyOctokit();
         try {
             const queryResult = yield octokit.graphql(`{
-    repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
       pullRequest(number: ${pr.number}) {
          reviews(first: 100) {
           nodes {
@@ -33949,7 +33949,7 @@ function checkReviewersState(pr, reviewerLogin) {
             return response;
         }
         catch (err) {
-            logger_warning(err);
+            warning(err);
             throw err;
         }
     });
@@ -34148,11 +34148,6 @@ class Merger {
             });
             const pullRequest = getPullRequest();
             /* const res = getReviews(pullRequest); */
-            const res = yield checkReviewersState2(pullRequest);
-            const reviewers = findDuplicateValues(res);
-            const reviewersByState = filterReviewersByState(reviewers, res);
-            logger_info(JSON.stringify(reviewersByState, null, 2));
-            return;
             if (this.configInput.labels.length) {
                 const labelResult = this.isLabelsValid(
                 // @ts-ignore
@@ -34185,12 +34180,14 @@ class Merger {
                 const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
                 logger_info(JSON.stringify(requestedChanges, null, 2));
                 if (requestedChanges.length > 0) {
-                    logger_info(`Approved required from ${requestedChanges.join(', ')}`);
+                    logger_warning(`Approved required by ${requestedChanges.join(', ')}`);
                     return;
                 }
-                const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
-                logger_info(JSON.stringify(checkReviewerState, null, 2));
-                if (checkReviewerState === undefined) {
+                const res = yield checkReviewersState2(pullRequest);
+                const reviewers = findDuplicateValues(res);
+                const reviewersByState = filterReviewersByState(reviewers, res);
+                if (reviewersByState.reviewersWhoRequiredChanges.length) {
+                    logger_warning(`${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`);
                     return;
                 }
                 /* if (totalStatus - 1 !== totalSuccessStatuses) { */

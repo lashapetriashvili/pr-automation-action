@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
-import { info, debug } from '../logger';
+import { info, debug, warning } from '../logger';
 import {
   checkReviewersState,
   checkReviewersState2,
@@ -144,15 +144,6 @@ export class Merger {
 
     /* const res = getReviews(pullRequest); */
 
-    const res = await checkReviewersState2(pullRequest);
-
-    const reviewers: any = findDuplicateValues(res);
-
-    const reviewersByState: any = filterReviewersByState(reviewers, res);
-
-    info(JSON.stringify(reviewersByState, null, 2));
-    return;
-
     if (this.configInput.labels.length) {
       const labelResult = this.isLabelsValid(
         // @ts-ignore
@@ -214,18 +205,20 @@ export class Merger {
       info(JSON.stringify(requestedChanges, null, 2));
 
       if (requestedChanges.length > 0) {
-        info(`Approved required from ${requestedChanges.join(', ')}`);
+        warning(`Approved required by ${requestedChanges.join(', ')}`);
         return;
       }
 
-      const checkReviewerState = await checkReviewersState(
-        pullRequest,
-        'lashapetriashvili-ezetech',
-      );
+      const res = await checkReviewersState2(pullRequest);
 
-      info(JSON.stringify(checkReviewerState, null, 2));
+      const reviewers: any = findDuplicateValues(res);
 
-      if (checkReviewerState === undefined) {
+      const reviewersByState: any = filterReviewersByState(reviewers, res);
+
+      if (reviewersByState.reviewersWhoRequiredChanges.length) {
+        warning(
+          `${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`,
+        );
         return;
       }
 
