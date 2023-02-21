@@ -265,7 +265,7 @@ export function filterReviewersByState(
   const response: ReviewerBySate = {
     requiredChanges: [],
     approve: [],
-    commeted: [],
+    commented: [],
   };
 
   reviewers.forEach((reviewer) => {
@@ -283,8 +283,8 @@ export function filterReviewersByState(
       case 'CHANGES_REQUESTED':
         response.requiredChanges.push(lastAction.author.login);
         break;
-      case 'COMMETED':
-        response.commeted.push(lastAction.author.login);
+      case 'COMMENTED':
+        response.commented.push(lastAction.author.login);
         break;
       default:
     }

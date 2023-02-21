@@ -24,10 +24,10 @@ export type Config = {
 export type ReviewerBySate = {
   requiredChanges: string[];
   approve: string[];
-  commeted: string[];
+  commented: string[];
 };
 
-export type State = 'CHANGES_REQUESTED' | 'APPROVED' | 'COMMETED';
+export type State = 'CHANGES_REQUESTED' | 'APPROVED' | 'COMMENTED';
 
 export type Author = {
   login: string;

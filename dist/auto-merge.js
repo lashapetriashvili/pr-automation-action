@@ -34036,7 +34036,7 @@ function filterReviewersByState(reviewers, reviewersFullData) {
     const response = {
         requiredChanges: [],
         approve: [],
-        commeted: [],
+        commented: [],
     };
     reviewers.forEach((reviewer) => {
         const filter = reviewersFullData.filter((data) => data.author.login === reviewer.author.login);
@@ -34048,8 +34048,8 @@ function filterReviewersByState(reviewers, reviewersFullData) {
             case 'CHANGES_REQUESTED':
                 response.requiredChanges.push(lastAction.author.login);
                 break;
-            case 'COMMETED':
-                response.commeted.push(lastAction.author.login);
+            case 'COMMENTED':
+                response.commented.push(lastAction.author.login);
                 break;
             default:
         }
