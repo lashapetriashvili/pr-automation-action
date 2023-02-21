@@ -34190,13 +34190,9 @@ class Merger {
                     logger_warning(`${reviewersByState.reviewersWhoRequiredChanges.join(', ')} required changes.`);
                     return;
                 }
-                /* if (totalStatus - 1 !== totalSuccessStatuses) { */
-                /*   throw new Error( */
-                /*     `Not all status success, ${totalSuccessStatuses} out of ${ */
-                /*       totalStatus - 1 */
-                /*     } (ignored this check) success`, */
-                /*   ); */
-                /* } */
+                if (totalStatus - 1 !== totalSuccessStatuses) {
+                    throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
+                }
                 logger_debug(`All ${totalStatus} status success`);
                 logger_debug(`Merge PR ${pr.number}`);
             }
