@@ -3361,7 +3361,7 @@ internals.safeCharCodes = (function () {
 
 /***/ }),
 
-/***/ 6223:
+/***/ 1965:
 /***/ ((module) => {
 
 "use strict";
@@ -8321,7 +8321,7 @@ module.exports = new Set(internals.tlds.map((tld) => tld.toLowerCase()));
 
 
 const Assert = __nccwpck_require__(2718);
-const EscapeRegex = __nccwpck_require__(6223);
+const EscapeRegex = __nccwpck_require__(1965);
 
 
 const internals = {};
@@ -18333,7 +18333,7 @@ const Assert = __nccwpck_require__(2718);
 const Domain = __nccwpck_require__(7425);
 const Email = __nccwpck_require__(3283);
 const Ip = __nccwpck_require__(2337);
-const EscapeRegex = __nccwpck_require__(6223);
+const EscapeRegex = __nccwpck_require__(1965);
 const Tlds = __nccwpck_require__(3092);
 const Uri = __nccwpck_require__(4983);
 
@@ -33705,6 +33705,23 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__nccwpck_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -33728,6 +33745,11 @@ var __webpack_exports__ = {};
 // ESM COMPAT FLAG
 __nccwpck_require__.r(__webpack_exports__);
 
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "run": () => (/* binding */ run)
+});
+
 // EXTERNAL MODULE: external "util"
 var external_util_ = __nccwpck_require__(3837);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
@@ -33738,7 +33760,7 @@ var github = __nccwpck_require__(5438);
 
 const isTest = process.env.NODE_ENV === 'test';
 const logger_info = isTest ? () => { } : core.info;
-const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
+const logger_error = isTest ? () => { } : core.error;
 const debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
 
@@ -34026,8 +34048,8 @@ function getReviews(pr) {
     });
 }
 
-;// CONCATENATED MODULE: ./src/actions/merger.ts
-var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+;// CONCATENATED MODULE: ./src/actions/auto-merge.ts
+var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -34041,101 +34063,36 @@ var merger_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _a
 
 
 
-class Merger {
-    constructor(configInput) {
-        this.configInput = configInput;
-    }
-    isAllLabelsValid(pr, labels, type) {
-        const hasLabels = pr.labels
-            .filter((prLabel) => {
-            return labels.includes(prLabel.name);
-        })
-            .map((label) => label.name);
-        let failed = true;
-        if (type === 'labels' && hasLabels.length === labels.length) {
-            failed = false;
-        }
-        if (type === 'ignoreLabels' && !hasLabels.length) {
-            failed = false;
-        }
-        debug(`Checking all labels for type:${type} and prLabels:${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}, hasLabels:${(0,external_util_.inspect)(hasLabels)}, labels:${(0,external_util_.inspect)(labels)} and failed: ${failed}`);
-        return {
-            failed,
-            message: `PR ${pr.id} ${type === 'labels' ? '' : "does't"} contains all ${(0,external_util_.inspect)(labels)} for PR labels ${(0,external_util_.inspect)(pr.labels.map((l) => l.name))} and and failed: ${failed}`,
-        };
-    }
-    isAtLeastOneLabelsValid(pr, labels, type) {
-        const hasLabels = pr.labels
-            .filter((prLabel) => {
-            return labels.includes(prLabel.name);
-        })
-            .map((label) => label.name);
-        let failed = true;
-        if (type === 'labels' && hasLabels.length) {
-            failed = false;
-        }
-        if (type === 'ignoreLabels' && !hasLabels.length) {
-            failed = false;
-        }
-        debug(`Checking atLeastOne labels for type:${type} and prLabels:${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}, hasLabels:${(0,external_util_.inspect)(hasLabels)}, labels:${(0,external_util_.inspect)(labels)} and failed: ${failed}`);
-        return {
-            failed,
-            message: `PR ${pr.id} ${type === 'labels' ? '' : "does't"} contains ${(0,external_util_.inspect)(labels)} for PR labels ${(0,external_util_.inspect)(pr.labels.map((l) => l.name))}`,
-        };
-    }
-    isLabelsValid(pr, labels, strategy, type) {
-        switch (strategy) {
-            case 'atLeastOne':
-                return this.isAtLeastOneLabelsValid(pr, labels, type);
-            case 'all':
-            default:
-                return this.isAllLabelsValid(pr, labels, type);
-        }
-    }
-    merge() {
-        var _a;
-        return merger_awaiter(this, void 0, void 0, function* () {
-            const client = github.getOctokit(this.configInput.token);
-            const { owner, repo } = this.configInput;
-            const { data: pr } = yield client.pulls.get({
+function run() {
+    return auto_merge_awaiter(this, void 0, void 0, function* () {
+        try {
+            const [owner, repo] = core.getInput('repository').split('/');
+            const configInput = {
+                comment: core.getInput('comment'),
                 owner,
                 repo,
-                pull_number: this.configInput.pullRequestNumber,
-            });
+                pullRequestNumber: Number(core.getInput('pullRequestNumber', { required: true })),
+                sha: core.getInput('sha', { required: true }),
+                strategy: core.getInput('strategy', { required: true }),
+                token: core.getInput('token', { required: true }),
+            };
+            debug(`Inputs: ${(0,external_util_.inspect)(configInput)}`);
+            const client = github.getOctokit(configInput.token);
             const pullRequest = getPullRequest();
-            /* const res = getReviews(pullRequest); */
-            if (this.configInput.labels.length) {
-                const labelResult = this.isLabelsValid(
-                // @ts-ignore
-                pr, this.configInput.labels, this.configInput.labelsStrategy, 'labels');
-                if (labelResult.failed) {
-                    throw new Error(`Checked labels failed: ${labelResult.message}`);
-                }
-                debug(`Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`);
-                logger_info(`Checked labels and passed with labels:${(0,external_util_.inspect)(this.configInput.labels)}`);
-            }
-            if (this.configInput.ignoreLabels.length) {
-                const ignoreLabelResult = this.isLabelsValid(
-                // @ts-ignore
-                pr, this.configInput.ignoreLabels, this.configInput.ignoreLabelsStrategy, 'ignoreLabels');
-                if (ignoreLabelResult.failed) {
-                    throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
-                }
-                debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
-                logger_info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
-            }
+            logger_info(JSON.stringify(pullRequest, null, 2));
+            return;
             const { data: checks } = yield client.checks.listForRef({
-                owner: this.configInput.owner,
-                repo: this.configInput.repo,
-                ref: this.configInput.sha,
+                owner: configInput.owner,
+                repo: configInput.repo,
+                ref: configInput.sha,
             });
-            const totalStatus = checks.total_count;
-            const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
-            // @ts-ignore
-            let requestedChanges = (_a = pr === null || pr === void 0 ? void 0 : pr.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
-            if (requestedChanges === undefined) {
-                requestedChanges = [];
-            }
+            /* let requestedChanges = pullRequest.requested_reviewers.map<{ login: string }[]>( */
+            /*   (reviewer) => reviewer.login, */
+            /* ); */
+            /**/
+            /* if (requestedChanges === undefined) { */
+            /*   requestedChanges = []; */
+            /* } */
             /* if (requestedChanges.length > 0) { */
             /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
             /*   return; */
@@ -34147,76 +34104,37 @@ class Merger {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 return;
             }
-            return;
+            const totalStatus = checks.total_count;
+            const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
             if (totalStatus - 1 !== totalSuccessStatuses) {
                 throw new Error(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
             }
             debug(`All ${totalStatus} status success`);
-            debug(`Merge PR ${pr.number}`);
-            if (this.configInput.comment) {
+            debug(`Merge PR ${pullRequest.number}`);
+            if (configInput.comment) {
                 const { data: resp } = yield client.issues.createComment({
-                    owner: this.configInput.owner,
-                    repo: this.configInput.repo,
-                    issue_number: this.configInput.pullRequestNumber,
-                    body: this.configInput.comment,
+                    owner: configInput.owner,
+                    repo: configInput.repo,
+                    issue_number: configInput.pullRequestNumber,
+                    body: configInput.comment,
                 });
-                debug(`Post comment ${(0,external_util_.inspect)(this.configInput.comment)}`);
+                debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
             yield client.pulls.merge({
                 owner,
                 repo,
-                pull_number: this.configInput.pullRequestNumber,
-                merge_method: this.configInput.strategy,
+                pull_number: configInput.pullRequestNumber,
+                merge_method: configInput.strategy,
             });
             core.setOutput('merged', true);
-        });
-    }
-}
-/* harmony default export */ const merger = ({
-    Merger,
-});
-
-;// CONCATENATED MODULE: ./src/actions/main.ts
-var main_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-
-
-
-function run() {
-    return main_awaiter(this, void 0, void 0, function* () {
-        try {
-            const [owner, repo] = core.getInput('repository').split('/');
-            const inputs = {
-                comment: core.getInput('comment'),
-                ignoreLabels: core.getInput('ignoreLabels') === ''
-                    ? []
-                    : core.getInput('ignoreLabels').split(','),
-                ignoreLabelsStrategy: core.getInput('labelsStrategy'),
-                labels: core.getInput('labels') === '' ? [] : core.getInput('labels').split(','),
-                labelsStrategy: core.getInput('labelsStrategy'),
-                owner,
-                repo,
-                pullRequestNumber: Number(core.getInput('pullRequestNumber', { required: true })),
-                sha: core.getInput('sha', { required: true }),
-                strategy: core.getInput('strategy', { required: true }),
-                token: core.getInput('token', { required: true }),
-            };
-            core.debug(`Inputs: ${(0,external_util_.inspect)(inputs)}`);
-            const merger = new Merger(inputs);
-            yield merger.merge();
+            /* const merger = new Merger(inputs); */
+            /* await merger.merge(); */
         }
-        catch (error) {
-            // @ts-ignore
-            core.setFailed(error.message);
+        catch (err) {
+            logger_error(err);
         }
+        return;
     });
 }
 run();

@@ -1,4 +1,4 @@
-import { alt } from "joi";
+import { alt } from 'joi';
 
 export type Rule = {
   reviewers: string[];
@@ -34,6 +34,18 @@ export type State = 'CHANGES_REQUESTED' | 'APPROVED' | 'COMMETED';
 export type Author = {
   login: string;
 };
+
+export type Strategy = 'merge' | 'squash' | 'rebase';
+
+export interface Inputs {
+  comment: string;
+  repo: string;
+  owner: string;
+  pullRequestNumber: number;
+  sha: string;
+  strategy: Strategy;
+  token: string;
+}
 
 export interface Reviewer {
   author: Author;
