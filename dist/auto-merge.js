@@ -33996,8 +33996,8 @@ function getReviewsByGraphQL(pr) {
                 const queryResult = yield octokit.graphql(`
       {
         repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
-          pullRequest(number: ${pr.number}, cursor: ${endCursor}) {
-            reviews(last: 100) {
+          pullRequest(number: ${pr.number}) {
+            reviews(last: 100, cursor: ${endCursor}) {
               pageInfo {
                 hasNextPage
                 endCursor

@@ -228,8 +228,8 @@ export async function getReviewsByGraphQL(pr: any): Promise<Reviewer[]> {
       const queryResult = await octokit.graphql<any>(`
       {
         repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-          pullRequest(number: ${pr.number}, cursor: ${endCursor}) {
-            reviews(last: 100) {
+          pullRequest(number: ${pr.number}) {
+            reviews(last: 100, cursor: ${endCursor}) {
               pageInfo {
                 hasNextPage
                 endCursor
