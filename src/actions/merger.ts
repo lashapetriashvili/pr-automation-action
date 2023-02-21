@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 import { PullsGetResponseData } from '@octokit/types';
 import { info, debug } from '../logger';
-import { checkReviewersState, checkReviewersState2, getPullRequest } from '../github';
+import { checkReviewersState, checkReviewersState2, getPullRequest, getReviews } from '../github';
 
 export type labelStrategies = 'all' | 'atLeastOne';
 
@@ -136,7 +136,11 @@ export class Merger {
 
     const pullRequest = getPullRequest();
 
-    await checkReviewersState2(pullRequest, 'test');
+    const res = getReviews(pullRequest);
+
+    info(JSON.stringify(res, null, 2));
+
+    /* await checkReviewersState2(pullRequest, 'test'); */
     return;
 
     if (this.configInput.labels.length) {

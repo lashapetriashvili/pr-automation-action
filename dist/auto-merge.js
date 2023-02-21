@@ -33737,7 +33737,7 @@ var github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/logger.ts
 
 const isTest = process.env.NODE_ENV === 'test';
-const info = isTest ? () => { } : core.info;
+const logger_info = isTest ? () => { } : core.info;
 const logger_error = (/* unused pure expression or super */ null && (isTest ? () => { } : logError));
 const debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
@@ -33989,7 +33989,7 @@ function checkReviewersState2(pr, reviewerLogin) {
             /* `); */
             const queryResult = yield octokit.graphql(`
       {
-        repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
 totalCount
       edges {
@@ -34021,7 +34021,7 @@ totalCount
             info(JSON.stringify(queryResult, null, 2));
         }
         catch (err) {
-            logger_warning(err);
+            warning(err);
             throw err;
         }
     });
@@ -34030,8 +34030,8 @@ function getReviews(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         const reviews = yield octokit.paginate('GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
-            owner: context.repo.owner,
-            repo: context.repo.repo,
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
             pull_number: pr.number,
         });
         return reviews.reduce((result, review) => {
@@ -34039,11 +34039,11 @@ function getReviews(pr) {
             //   return result;
             // }
             if (!review.user) {
-                warning(`No review.user provided for review ${review.id}`);
+                logger_warning(`No review.user provided for review ${review.id}`);
                 return result;
             }
             if (!review.submitted_at) {
-                warning(`No review.submitted_at provided for review ${review.id}`);
+                logger_warning(`No review.submitted_at provided for review ${review.id}`);
                 return result;
             }
             result.push({
@@ -34132,7 +34132,9 @@ class Merger {
                 pull_number: this.configInput.pullRequestNumber,
             });
             const pullRequest = getPullRequest();
-            yield checkReviewersState2(pullRequest, 'test');
+            const res = getReviews(pullRequest);
+            logger_info(JSON.stringify(res, null, 2));
+            /* await checkReviewersState2(pullRequest, 'test'); */
             return;
             if (this.configInput.labels.length) {
                 const labelResult = this.isLabelsValid(
@@ -34142,7 +34144,7 @@ class Merger {
                     throw new Error(`Checked labels failed: ${labelResult.message}`);
                 }
                 debug(`Checked labels and passed with message:${labelResult.message} with ${this.configInput.labelsStrategy}`);
-                info(`Checked labels and passed with labels:${(0,external_util_.inspect)(this.configInput.labels)}`);
+                logger_info(`Checked labels and passed with labels:${(0,external_util_.inspect)(this.configInput.labels)}`);
             }
             if (this.configInput.ignoreLabels.length) {
                 const ignoreLabelResult = this.isLabelsValid(
@@ -34152,7 +34154,7 @@ class Merger {
                     throw new Error(`Checked ignore labels failed: ${ignoreLabelResult.message}`);
                 }
                 debug(`Checked ignore labels and passed with message:${ignoreLabelResult.message} with ${this.configInput.ignoreLabelsStrategy} strategy`);
-                info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
+                logger_info(`Checked ignore labels and passed with ignoreLabels:${(0,external_util_.inspect)(this.configInput.ignoreLabels)}`);
             }
             if (this.configInput.checkStatus) {
                 const { data: checks } = yield client.checks.listForRef({
@@ -34164,13 +34166,13 @@ class Merger {
                 const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
                 // @ts-ignore
                 const requestedChanges = pr.requested_reviewers.map((reviewer) => reviewer.login);
-                info(JSON.stringify(requestedChanges, null, 2));
+                logger_info(JSON.stringify(requestedChanges, null, 2));
                 if (requestedChanges.length > 0) {
-                    info(`Approved required from ${requestedChanges.join(', ')}`);
+                    logger_info(`Approved required from ${requestedChanges.join(', ')}`);
                     return;
                 }
                 const checkReviewerState = yield checkReviewersState(pullRequest, 'lashapetriashvili-ezetech');
-                info(JSON.stringify(checkReviewerState, null, 2));
+                logger_info(JSON.stringify(checkReviewerState, null, 2));
                 if (checkReviewerState === undefined) {
                     return;
                 }
