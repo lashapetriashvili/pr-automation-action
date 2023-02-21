@@ -13,6 +13,8 @@ export async function run(): Promise<void> {
   try {
     info('Staring PR auto merging.');
 
+    let doNotMerge = false;
+
     const [owner, repo] = core.getInput('repository').split('/');
 
     const configInput: Inputs = {
@@ -40,29 +42,31 @@ export async function run(): Promise<void> {
       const requestedChanges = pullRequest?.requested_reviewers?.map(
         (reviewer) => reviewer.login,
       );
-      
+
       info(JSON.stringify(requestedChanges, null, 2));
 
       if (requestedChanges.length > 0) {
         warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-        return;
+        doNotMerge = true;
       }
     }
 
     info('Checking required changes status.');
 
+    // TODO Fix Typescript Error
+    // @ts-ignore
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
     const reviewersByState: ReviewerBySate = filterReviewersByState(
       removeDuplicateReviewer(reviewers),
       reviewers,
     );
-    
+
     info(JSON.stringify(reviewersByState, null, 2));
 
     if (reviewersByState.requiredChanges.length) {
       warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
-      return;
+      doNotMerge = true;
     }
 
     info(`${reviewersByState.approve.join(', ')} approved changes.`);
@@ -81,11 +85,16 @@ export async function run(): Promise<void> {
     ).length;
 
     if (totalStatus - 1 !== totalSuccessStatuses) {
-      throw new Error(
+      warning(
         `Not all status success, ${totalSuccessStatuses} out of ${
           totalStatus - 1
         } (ignored this check) success`,
       );
+      doNotMerge = true;
+    }
+
+    if (doNotMerge) {
+      return;
     }
 
     if (configInput.comment) {
