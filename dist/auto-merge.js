@@ -34111,7 +34111,6 @@ function run() {
             }
             info('Checking required changes status.');
             const reviewers = yield getReviewsByGraphQL(pullRequest);
-            info(JSON.stringify(reviewers, null, 2));
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);

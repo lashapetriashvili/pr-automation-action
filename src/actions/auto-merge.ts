@@ -51,8 +51,6 @@ export async function run(): Promise<void> {
 
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
-    info(JSON.stringify(reviewers, null, 2));
-
     const reviewersByState: ReviewerBySate = filterReviewersByState(
       removeDuplicateReviewer(reviewers),
       reviewers,
