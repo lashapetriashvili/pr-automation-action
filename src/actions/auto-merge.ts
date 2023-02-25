@@ -9,6 +9,21 @@ import {
   filterReviewersByState,
 } from '../github';
 
+async function fetchGithubReviews(token: string) {
+  const octokit = github.getOctokit(token);
+  const { owner, repo } = github.context.repo;
+  // TODO Fix Typescript Error
+  // @ts-ignore
+  const pull_number = github.context.payload.pull_request.number;
+  const reviews = await octokit.pulls.listReviews({
+    owner,
+    repo,
+    pull_number,
+  });
+  info('---------- fetchGithubReviews ---------------');
+  info(JSON.stringify(reviews, null, 2));
+}
+
 export async function run(): Promise<void> {
   try {
     info('Staring PR auto merging.');
@@ -26,6 +41,10 @@ export async function run(): Promise<void> {
       strategy: core.getInput('strategy', { required: true }) as Strategy,
       token: core.getInput('token', { required: true }),
     };
+
+    await fetchGithubReviews(configInput.token);
+
+    return;
 
     debug(`Inputs: ${inspect(configInput)}`);
 
@@ -46,11 +65,11 @@ export async function run(): Promise<void> {
       info('---------- pullRequest.requested_reviewers ---------------');
       info(JSON.stringify(pullRequest?.requested_reviewers, null, 2));
 
-      if (requestedChanges.length > 0) {
-        warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-        doNotMerge = true;
-        return;
-      }
+      /* if (requestedChanges.length > 0) { */
+      /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+      /*   doNotMerge = true; */
+      /*   return; */
+      /* } */
     }
 
     info('Checking required changes status.');

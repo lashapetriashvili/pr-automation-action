@@ -34072,6 +34072,22 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 
 
 
+function fetchGithubReviews(token) {
+    return auto_merge_awaiter(this, void 0, void 0, function* () {
+        const octokit = github.getOctokit(token);
+        const { owner, repo } = github.context.repo;
+        // TODO Fix Typescript Error
+        // @ts-ignore
+        const pull_number = github.context.payload.pull_request.number;
+        const reviews = yield octokit.pulls.listReviews({
+            owner,
+            repo,
+            pull_number,
+        });
+        info('---------- fetchGithubReviews ---------------');
+        info(JSON.stringify(reviews, null, 2));
+    });
+}
 function run() {
     var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
@@ -34088,6 +34104,8 @@ function run() {
                 strategy: core.getInput('strategy', { required: true }),
                 token: core.getInput('token', { required: true }),
             };
+            yield fetchGithubReviews(configInput.token);
+            return;
             logger_debug(`Inputs: ${(0,external_util_.inspect)(configInput)}`);
             const client = github.getOctokit(configInput.token);
             const { data: pullRequest } = yield client.pulls.get({
@@ -34100,11 +34118,11 @@ function run() {
                 const requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
                 info('---------- pullRequest.requested_reviewers ---------------');
                 info(JSON.stringify(pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers, null, 2));
-                if (requestedChanges.length > 0) {
-                    logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-                    doNotMerge = true;
-                    return;
-                }
+                /* if (requestedChanges.length > 0) { */
+                /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
+                /*   doNotMerge = true; */
+                /*   return; */
+                /* } */
             }
             info('Checking required changes status.');
             // TODO Fix Typescript Error
