@@ -10597,7 +10597,7 @@ function run() {
             });
             reviews.forEach((review) => {
                 // @ts-ignore
-                if (reviewers[review.state.toLowerCase()] === review.user.login) {
+                if (reviewers[review.state.toLowerCase()] !== review.user.login) {
                     // @ts-ignore
                     reviewers[review.state.toLowerCase()].push(review.user.login);
                 }

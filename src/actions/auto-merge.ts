@@ -55,7 +55,7 @@ export async function run(): Promise<void> {
 
     reviews.forEach((review) => {
       // @ts-ignore
-      if (reviewers[review.state.toLowerCase()] === review.user.login) {
+      if (reviewers[review.state.toLowerCase()] !== review.user.login) {
         // @ts-ignore
         reviewers[review.state.toLowerCase()].push(review.user.login);
       }
