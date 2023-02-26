@@ -10596,11 +10596,10 @@ function run() {
                 pull_number: configInput.pullRequestNumber,
             });
             reviews.forEach((review) => {
-                var _a;
-                const login = (_a = review === null || review === void 0 ? void 0 : review.user) === null || _a === void 0 ? void 0 : _a.login;
-                if (login !== undefined) {
+                // @ts-ignore
+                if (reviewers[review.state.toLowerCase()] === review.user.login) {
                     // @ts-ignore
-                    reviewers[review.state.toLowerCase()].push({ login: login });
+                    reviewers[review.state.toLowerCase()].push(review.user.login);
                 }
             });
             const { data: comments } = yield octokit.issues.listComments({
@@ -10616,14 +10615,46 @@ function run() {
                     reviewers.commented.push({ login: comment.user.login });
                 }
             });
-            // @ts-ignore
-            const { data: commits } = yield octokit.pulls.listCommits({
+            const requiredReviewers = reviewers.approved.filter((reviewer) => {
+                // @ts-ignore
+                return reviewer !== pullRequest.user.login;
+            });
+            if (requiredReviewers.length === 0) {
+                info('PR is not fully approved. Skipping auto merge.');
+                return;
+            }
+            const { data: checks } = yield octokit.checks.listForRef({
                 owner,
                 repo,
-                pull_number: configInput.pullRequestNumber,
+                ref: configInput.sha,
             });
-            info(JSON.stringify(reviewers, null, 2));
-            info(JSON.stringify(commits, null, 2));
+            const failedChecks = checks.check_runs.filter((check) => {
+                return check.conclusion === 'failure';
+            });
+            if (failedChecks.length > 0) {
+                info('PR has failed checks. Skipping auto merge.');
+                return;
+            }
+            const { data: statuses } = yield octokit.repos.listCommitStatusesForRef({
+                owner,
+                repo,
+                ref: configInput.sha,
+            });
+            info(JSON.stringify(statuses, null, 2));
+            const failedStatuses = statuses.filter((status) => {
+                return status.state !== 'success';
+            });
+            if (failedStatuses.length > 0) {
+                info('PR has failed statuses. Skipping auto merge.');
+                return;
+            }
+            /* const { data: merge } = await octokit.pulls.merge({ */
+            /*   owner, */
+            /*   repo, */
+            /*   pull_number: configInput.pullRequestNumber, */
+            /* }); */
+            info('PR is fully approved. Merging PR.');
+            /* info(JSON.stringify(merge, null, 2)); */
         }
         catch (err) {
             error(err);
