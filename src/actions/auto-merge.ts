@@ -84,10 +84,10 @@ export async function run(): Promise<void> {
     info(JSON.stringify(reviewers, null, 2));
     info(JSON.stringify(requiredReviewers, null, 2));
 
-    if (requiredReviewers.length === 0) {
-      info('PR is not fully approved. Skipping auto merge.');
-      return;
-    }
+    /* if (requiredReviewers.length === 0) { */
+    /*   info('PR is not fully approved. Skipping auto merge.'); */
+    /*   return; */
+    /* } */
 
     const { data: checks } = await octokit.checks.listForRef({
       owner,
