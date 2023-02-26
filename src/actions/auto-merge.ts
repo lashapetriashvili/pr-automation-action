@@ -1,8 +1,17 @@
 import { inspect } from 'util';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { Inputs, Strategy, ReviewerBySate, Reviewer } from '../config/typings';
+import { Inputs, Strategy, Reviewer } from '../config/typings';
 import { info, debug, warning, error } from '../logger';
+import { Reviews } from '../github';
+
+export type ReviewerBySate = {
+  approved: string[];
+  changes_requested: string[];
+  commented: string[];
+  dismissed: string[];
+  pending: string[];
+};
 
 export async function run(): Promise<void> {
   try {
@@ -21,7 +30,7 @@ export async function run(): Promise<void> {
     };
 
     // Get only then reviewers then not approved
-    const reviewers = {
+    const reviewers: ReviewerBySate = {
       approved: [],
       changes_requested: [],
       commented: [],
@@ -45,8 +54,12 @@ export async function run(): Promise<void> {
     });
 
     reviews.forEach((review) => {
-      // @ts-ignore
-      reviewers[review.state].push({ login: review.user.login });
+      const login = review?.user?.login;
+
+      if (login !== undefined) {
+        // @ts-ignore
+        reviewers[review.state].push({ login: login });
+      }
     });
 
     const { data: comments } = await octokit.issues.listComments({
@@ -56,8 +69,12 @@ export async function run(): Promise<void> {
     });
 
     comments.forEach((comment) => {
-      // @ts-ignore
-      reviewers.commented.push({ login: comment.user.login });
+      const login = comment?.user?.login;
+
+      if (login !== undefined) {
+        // @ts-ignore
+        reviewers.commented.push({ login: comment.user.login });
+      }
     });
 
     // @ts-ignore

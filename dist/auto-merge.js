@@ -10596,8 +10596,12 @@ function run() {
                 pull_number: configInput.pullRequestNumber,
             });
             reviews.forEach((review) => {
-                // @ts-ignore
-                reviewers[review.state].push({ login: review.user.login });
+                var _a;
+                const login = (_a = review === null || review === void 0 ? void 0 : review.user) === null || _a === void 0 ? void 0 : _a.login;
+                if (login !== undefined) {
+                    // @ts-ignore
+                    reviewers[review.state].push({ login: login });
+                }
             });
             const { data: comments } = yield octokit.issues.listComments({
                 owner,
@@ -10605,8 +10609,12 @@ function run() {
                 issue_number: configInput.pullRequestNumber,
             });
             comments.forEach((comment) => {
-                // @ts-ignore
-                reviewers.commented.push({ login: comment.user.login });
+                var _a;
+                const login = (_a = comment === null || comment === void 0 ? void 0 : comment.user) === null || _a === void 0 ? void 0 : _a.login;
+                if (login !== undefined) {
+                    // @ts-ignore
+                    reviewers.commented.push({ login: comment.user.login });
+                }
             });
             // @ts-ignore
             const { data: commits } = yield octokit.pulls.listCommits({
