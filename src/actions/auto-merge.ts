@@ -57,6 +57,7 @@ export async function run(): Promise<void> {
       const login = review?.user?.login;
 
       if (login !== undefined) {
+        info(JSON.stringify(review));
         // @ts-ignore
         reviewers[review.state].push({ login: login });
       }

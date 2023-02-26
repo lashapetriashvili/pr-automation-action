@@ -10599,6 +10599,7 @@ function run() {
                 var _a;
                 const login = (_a = review === null || review === void 0 ? void 0 : review.user) === null || _a === void 0 ? void 0 : _a.login;
                 if (login !== undefined) {
+                    info(JSON.stringify(review));
                     // @ts-ignore
                     reviewers[review.state].push({ login: login });
                 }
