@@ -7,6 +7,7 @@ import {
   getReviewsByGraphQL,
   removeDuplicateReviewer,
   filterReviewersByState,
+  getLatestCommitDate,
 } from '../github';
 
 async function fetchGithubReviews(token: string) {
@@ -42,10 +43,6 @@ export async function run(): Promise<void> {
       token: core.getInput('token', { required: true }),
     };
 
-    await fetchGithubReviews(configInput.token);
-
-    return;
-
     debug(`Inputs: ${inspect(configInput)}`);
 
     const client = github.getOctokit(configInput.token);
@@ -57,14 +54,19 @@ export async function run(): Promise<void> {
     });
     info('Checking requested reviewers.');
 
+    // TODO Fix Typescript
+    // @ts-ignore
+    await getLatestCommitDate(pullRequest);
+
+    return;
+
     if (pullRequest?.requested_reviewers) {
-      const requestedChanges = pullRequest?.requested_reviewers?.map(
-        (reviewer) => reviewer.login,
-      );
-
-      info('---------- pullRequest.requested_reviewers ---------------');
-      info(JSON.stringify(pullRequest?.requested_reviewers, null, 2));
-
+      /* const requestedChanges = pullRequest?.requested_reviewers?.map( */
+      /*   (reviewer) => reviewer.login, */
+      /* ); */
+      /**/
+      /* info('---------- pullRequest.requested_reviewers ---------------'); */
+      /* info(JSON.stringify(pullRequest?.requested_reviewers, null, 2)); */
       /* if (requestedChanges.length > 0) { */
       /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
       /*   doNotMerge = true; */

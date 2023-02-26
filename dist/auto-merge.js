@@ -33755,11 +33755,11 @@ var external_util_ = __nccwpck_require__(3837);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(5438);
+var lib_github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/logger.ts
 
 const isTest = process.env.NODE_ENV === 'test';
-const info = isTest ? () => { } : core.info;
+const logger_info = isTest ? () => { } : core.info;
 const logger_error = isTest ? () => { } : core.error;
 const logger_debug = isTest ? () => { } : core.debug;
 const logger_warning = isTest ? () => { } : core.warning;
@@ -33822,7 +33822,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
 
 function getMyOctokit() {
     const myToken = (0,core.getInput)('token');
-    const octokit = (0,github.getOctokit)(myToken);
+    const octokit = (0,lib_github.getOctokit)(myToken);
     return octokit;
 }
 class PullRequest {
@@ -33915,23 +33915,26 @@ function getLatestCommitDate(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         try {
-            const queryResult = yield octokit.graphql(`{
-    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-      pullRequest(number: ${pr.number}) {
-        title
-        number
-        commits(last: 1) {
-          edges {
-            node {
-              commit {
-                authoredDate
+            const queryResult = yield octokit.graphql(`
+      {
+        repository(owner: "${lib_github.context.repo.owner}", name: "${lib_github.context.repo.repo}") {
+          pullRequest(number: ${pr.number}) {
+            title
+            number
+            commits(last: 1) {
+              edges {
+                node {
+                  commit {
+                    authoredDate
+                  }
+                }
               }
             }
           }
         }
       }
-    }
-  }`);
+    `);
+            logger_info(`queryResult: ${JSON.stringify(queryResult)}`);
             // @todo
             const authoredDateString = queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
             const latestCommitDate = new Date(authoredDateString);
@@ -33941,7 +33944,7 @@ function getLatestCommitDate(pr) {
             };
         }
         catch (err) {
-            warning(err);
+            logger_warning(err);
             throw err;
         }
     });
@@ -33985,7 +33988,7 @@ function getReviewsByGraphQL(pr) {
             do {
                 const queryResult = yield octokit.graphql(`
       {
-        repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+        repository(owner: "${lib_github.context.repo.owner}", name: "${lib_github.context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
             reviews(${reviewsParam}) {
               pageInfo {
@@ -34007,8 +34010,8 @@ function getReviewsByGraphQL(pr) {
       }
     `);
                 const reviewsResponse = queryResult.repository.pullRequest.reviews;
-                info('--------------- reviewsResponse ------------------');
-                info(JSON.stringify(reviewsResponse, null, 2));
+                logger_info('--------------- reviewsResponse ------------------');
+                logger_info(JSON.stringify(reviewsResponse, null, 2));
                 response = [...reviewsResponse.nodes, ...response];
                 hasNextPage = reviewsResponse.pageInfo.hasNextPage;
                 reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
@@ -34089,10 +34092,9 @@ function fetchGithubReviews(token) {
     });
 }
 function run() {
-    var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
-            info('Staring PR auto merging.');
+            logger_info('Staring PR auto merging.');
             let doNotMerge = false;
             const [owner, repo] = core.getInput('repository').split('/');
             const configInput = {
@@ -34104,38 +34106,43 @@ function run() {
                 strategy: core.getInput('strategy', { required: true }),
                 token: core.getInput('token', { required: true }),
             };
-            yield fetchGithubReviews(configInput.token);
-            return;
             logger_debug(`Inputs: ${(0,external_util_.inspect)(configInput)}`);
-            const client = github.getOctokit(configInput.token);
+            const client = lib_github.getOctokit(configInput.token);
             const { data: pullRequest } = yield client.pulls.get({
                 owner,
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            info('Checking requested reviewers.');
+            logger_info('Checking requested reviewers.');
+            // TODO Fix Typescript
+            // @ts-ignore
+            yield getLatestCommitDate(pullRequest);
+            return;
             if (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) {
-                const requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
-                info('---------- pullRequest.requested_reviewers ---------------');
-                info(JSON.stringify(pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers, null, 2));
+                /* const requestedChanges = pullRequest?.requested_reviewers?.map( */
+                /*   (reviewer) => reviewer.login, */
+                /* ); */
+                /**/
+                /* info('---------- pullRequest.requested_reviewers ---------------'); */
+                /* info(JSON.stringify(pullRequest?.requested_reviewers, null, 2)); */
                 /* if (requestedChanges.length > 0) { */
                 /*   warning(`Waiting [${requestedChanges.join(', ')}] to approve.`); */
                 /*   doNotMerge = true; */
                 /*   return; */
                 /* } */
             }
-            info('Checking required changes status.');
+            logger_info('Checking required changes status.');
             // TODO Fix Typescript Error
             // @ts-ignore
             const reviewers = yield getReviewsByGraphQL(pullRequest);
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
-            info('----------------- reviewersByState ---------------');
-            info(JSON.stringify(reviewersByState, null, 2));
+            logger_info('----------------- reviewersByState ---------------');
+            logger_info(JSON.stringify(reviewersByState, null, 2));
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 doNotMerge = true;
             }
-            info('Checking CI status.');
+            logger_info('Checking CI status.');
             const { data: checks } = yield client.checks.listForRef({
                 owner: configInput.owner,
                 repo: configInput.repo,
@@ -34160,7 +34167,7 @@ function run() {
                 logger_debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
-            info('Merging...');
+            logger_info('Merging...');
             yield client.pulls.merge({
                 owner,
                 repo,

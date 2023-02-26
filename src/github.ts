@@ -127,23 +127,28 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
 }> {
   const octokit = getMyOctokit();
   try {
-    const queryResult = await octokit.graphql<any>(`{
-    repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-      pullRequest(number: ${pr.number}) {
-        title
-        number
-        commits(last: 1) {
-          edges {
-            node {
-              commit {
-                authoredDate
+    const queryResult = await octokit.graphql<any>(`
+      {
+        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
+          pullRequest(number: ${pr.number}) {
+            title
+            number
+            commits(last: 1) {
+              edges {
+                node {
+                  commit {
+                    authoredDate
+                  }
+                }
               }
             }
           }
         }
       }
-    }
-  }`);
+    `);
+
+    info(`queryResult: ${JSON.stringify(queryResult)}`);
+
     // @todo
     const authoredDateString =
       queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
