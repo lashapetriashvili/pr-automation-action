@@ -10582,6 +10582,8 @@ function run() {
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
+            info(JSON.stringify(pullRequest, null, 2));
+            return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
                 return;
