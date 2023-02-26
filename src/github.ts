@@ -138,6 +138,7 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
                 node {
                   commit {
                     authoredDate
+                    body
                   }
                 }
               }
@@ -147,7 +148,7 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
       }
     `);
 
-    info(`queryResult: ${JSON.stringify(queryResult)}`);
+    info(`queryResult: ${JSON.stringify(queryResult, null, 2)}`);
 
     // @todo
     const authoredDateString =

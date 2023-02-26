@@ -33926,6 +33926,7 @@ function getLatestCommitDate(pr) {
                 node {
                   commit {
                     authoredDate
+                    body
                   }
                 }
               }
@@ -33934,7 +33935,7 @@ function getLatestCommitDate(pr) {
         }
       }
     `);
-            logger_info(`queryResult: ${JSON.stringify(queryResult)}`);
+            logger_info(`queryResult: ${JSON.stringify(queryResult, null, 2)}`);
             // @todo
             const authoredDateString = queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
             const latestCommitDate = new Date(authoredDateString);
