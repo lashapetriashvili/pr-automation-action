@@ -56,7 +56,9 @@ export async function run(): Promise<void> {
 
     // TODO Fix Typescript
     // @ts-ignore
-    await getLatestCommitDate(pullRequest);
+    const res = await getLatestCommitDate(pullRequest);
+
+    info(JSON.stringify(res, null, 2));
 
     return;
 

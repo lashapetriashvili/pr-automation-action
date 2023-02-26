@@ -33926,7 +33926,6 @@ function getLatestCommitDate(pr) {
                 node {
                   commit {
                     authoredDate
-                    body
                   }
                 }
               }
@@ -33935,7 +33934,6 @@ function getLatestCommitDate(pr) {
         }
       }
     `);
-            logger_info(`queryResult: ${JSON.stringify(queryResult, null, 2)}`);
             // @todo
             const authoredDateString = queryResult.repository.pullRequest.commits.edges[0].node.commit.authoredDate;
             const latestCommitDate = new Date(authoredDateString);
@@ -34117,7 +34115,8 @@ function run() {
             logger_info('Checking requested reviewers.');
             // TODO Fix Typescript
             // @ts-ignore
-            yield getLatestCommitDate(pullRequest);
+            const res = yield getLatestCommitDate(pullRequest);
+            logger_info(JSON.stringify(res, null, 2));
             return;
             if (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) {
                 /* const requestedChanges = pullRequest?.requested_reviewers?.map( */
