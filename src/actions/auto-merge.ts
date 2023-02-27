@@ -30,6 +30,8 @@ export async function run(): Promise<void> {
       pull_number: configInput.pullRequestNumber,
     });
 
+    info(JSON.stringify(pullRequest.labels, null, 2));
+
     if (pullRequest.state !== 'open') {
       warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
       return;
