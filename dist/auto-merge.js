@@ -10673,6 +10673,7 @@ function run() {
                 pull_number: configInput.pullRequestNumber,
             });
             info(JSON.stringify(pullRequest.labels, null, 2));
+            info(JSON.stringify(configInput.doNotMergeLabels));
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
                 return;
