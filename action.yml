@@ -19,7 +19,7 @@ inputs:
     required: false
     description: 'Number of the pull request'
     default: ${{ github.event.pull_request.number }}
-  doNotMergeLabels:
+  do-not-merge-labels:
     required: false
     description: >
       When any of the labels in this comma-separated list is applied to a pull request, it will not be merged automatically.

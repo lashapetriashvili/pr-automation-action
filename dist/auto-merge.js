@@ -10678,7 +10678,7 @@ function run() {
                 pullRequestNumber: Number(core.getInput('pullRequestNumber', { required: true })),
                 sha: core.getInput('sha', { required: true }),
                 strategy: core.getInput('strategy', { required: true }),
-                doNotMergeLabels: core.getInput('doNotMergeLabels'),
+                doNotMergeLabels: core.getInput('do-not-merge-labels'),
                 token: core.getInput('token', { required: true }),
             };
             const client = github.getOctokit(configInput.token);
