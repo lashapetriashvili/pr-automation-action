@@ -246,17 +246,17 @@ export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> 
   }
 }
 
-export function removeDuplicateReviewer(arr: Reviewer[]): Reviewer[] {
+export function getReviewersLastReviews(arr: Reviewer[]): Reviewer[] {
   const response: {
-    [key: string]: Reviewer & { count: number };
+    [key: string]: Reviewer & { total_review: number };
   } = {};
   arr.forEach((reviewer) => {
     const key = reviewer.author.login;
     if (!response[key]) {
-      response[key] = { ...reviewer, count: 0 };
+      response[key] = { ...reviewer, total_review: 0 };
     }
 
-    response[key].count += 1;
+    response[key].total_review += 1;
   });
   return Object.values(response);
 }

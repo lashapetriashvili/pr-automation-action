@@ -5,7 +5,7 @@ import { Inputs, Strategy, ReviewerBySate, Reviewer } from '../config/typings';
 import { info, debug, warning, error } from '../logger';
 import {
   getReviewsByGraphQL,
-  removeDuplicateReviewer,
+  getReviewersLastReviews,
   filterReviewersByState,
 } from '../github';
 
@@ -92,20 +92,23 @@ export async function run(): Promise<void> {
       }
     }
 
+    const { data: reviews } = await client.pulls.listReviews({
+      owner,
+      repo,
+      pull_number: configInput.pullRequestNumber,
+    });
+
+    info(JSON.stringify(reviews, null, 2));
+    return;
+
     info('Checking required changes status.');
 
     // TODO Fix Typescript Error
     // @ts-ignore
     const reviewers: Reviewer[] = await getReviewsByGraphQL(pullRequest);
 
-    const res = removeDuplicateReviewer(reviewers);
-
-    info(JSON.stringify(res, null, 2));
-
-    return;
-
     const reviewersByState: ReviewerBySate = filterReviewersByState(
-      removeDuplicateReviewer(reviewers),
+      getReviewersLastReviews(reviewers),
       reviewers,
     );
 

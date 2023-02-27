@@ -34023,14 +34023,14 @@ function getReviewsByGraphQL(pr) {
         }
     });
 }
-function removeDuplicateReviewer(arr) {
+function getReviewersLastReviews(arr) {
     const response = {};
     arr.forEach((reviewer) => {
         const key = reviewer.author.login;
         if (!response[key]) {
-            response[key] = Object.assign(Object.assign({}, reviewer), { count: 0 });
+            response[key] = Object.assign(Object.assign({}, reviewer), { total_review: 0 });
         }
-        response[key].count += 1;
+        response[key].total_review += 1;
     });
     return Object.values(response);
 }
@@ -34145,14 +34145,18 @@ function run() {
                     doNotMerge = true;
                 }
             }
+            const { data: reviews } = yield client.pulls.listReviews({
+                owner,
+                repo,
+                pull_number: configInput.pullRequestNumber,
+            });
+            info(JSON.stringify(reviews, null, 2));
+            return;
             info('Checking required changes status.');
             // TODO Fix Typescript Error
             // @ts-ignore
             const reviewers = yield getReviewsByGraphQL(pullRequest);
-            const res = removeDuplicateReviewer(reviewers);
-            info(JSON.stringify(res, null, 2));
-            return;
-            const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
+            const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviewers), reviewers);
             logger_debug(JSON.stringify(reviewersByState, null, 2));
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
