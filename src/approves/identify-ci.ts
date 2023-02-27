@@ -1,4 +1,6 @@
+import { PullsGetResponseData } from '@octokit/types';
 import { Checks } from '../config/typings';
+
 import { warning, info } from '../logger';
 
 export function checkCI(checks: Checks): boolean {
@@ -25,6 +27,23 @@ export function checkCI(checks: Checks): boolean {
         totalStatus - 1
       } (ignored this check) success`,
     );
+    return false;
+  }
+
+  return true;
+}
+
+export function checkDoNotMergeLabels(
+  labels: PullsGetResponseData['labels'],
+  doNotMergeLabels: string,
+): boolean {
+  const doNotMergeLabelsList = doNotMergeLabels.split(',');
+  const check = labels.find((label) => {
+    return doNotMergeLabelsList.includes(label.name);
+  });
+
+  if (check) {
+    warning(`Pull request has a ${doNotMergeLabels} label.`);
     return false;
   }
 

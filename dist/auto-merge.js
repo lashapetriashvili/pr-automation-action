@@ -10624,12 +10624,27 @@ function checkCI(checks) {
     }
     return true;
 }
+function checkDoNotMergeLabels(labels, doNotMergeLabels) {
+    const doNotMergeLabelsList = doNotMergeLabels.split(',');
+    const check = labels.find((label) => {
+        return doNotMergeLabelsList.includes(label.name);
+    });
+    if (check) {
+        warning(`Pull request has a ${doNotMergeLabels} label.`);
+        return false;
+    }
+    return true;
+}
 
 ;// CONCATENATED MODULE: ./src/approves/is-pr-fully-approved.ts
 
 
-function isPrFullyApproved(pullRequest, reviews, checks) {
+function isPrFullyApproved(configInput, pullRequest, reviews, checks) {
     let isMergeable = true;
+    if (configInput.doNotMergeLabels &&
+        !checkDoNotMergeLabels(pullRequest.labels, configInput.doNotMergeLabels)) {
+        return false;
+    }
     isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
     isMergeable = checkReviewersRequiredChanges(reviews);
     isMergeable = checkCI(checks);
@@ -10672,8 +10687,6 @@ function run() {
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            info(JSON.stringify(pullRequest.labels, null, 2));
-            info(JSON.stringify(configInput.doNotMergeLabels));
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
                 return;
@@ -10689,7 +10702,7 @@ function run() {
                 ref: configInput.sha,
             });
             // @ts-ignore
-            if (isPrFullyApproved(pullRequest, reviews, checks)) {
+            if (isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
                 return;
             }
             if (configInput.comment) {

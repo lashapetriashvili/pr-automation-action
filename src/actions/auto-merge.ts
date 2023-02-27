@@ -30,10 +30,6 @@ export async function run(): Promise<void> {
       pull_number: configInput.pullRequestNumber,
     });
 
-    info(JSON.stringify(pullRequest.labels, null, 2));
-
-    info(JSON.stringify(configInput.doNotMergeLabels));
-
     if (pullRequest.state !== 'open') {
       warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
       return;
@@ -52,7 +48,7 @@ export async function run(): Promise<void> {
     });
 
     // @ts-ignore
-    if (isPrFullyApproved(pullRequest, reviews, checks)) {
+    if (isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
       return;
     }
 
