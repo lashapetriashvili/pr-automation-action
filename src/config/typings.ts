@@ -52,6 +52,7 @@ export interface Inputs {
   sha: string;
   strategy: Strategy;
   token: string;
+  doNotMergeLabels: string;
 }
 
 export interface Reviewer {

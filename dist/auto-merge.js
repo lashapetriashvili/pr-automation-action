@@ -10550,6 +10550,60 @@ const error = isTest ? () => { } : core.error;
 const debug = (/* unused pure expression or super */ null && (isTest ? () => { } : logDebug));
 const warning = isTest ? () => { } : core.warning;
 
+;// CONCATENATED MODULE: ./src/approves/identify-reviews.ts
+
+function getReviewersLastReviews(listReviews) {
+    const response = {};
+    listReviews.forEach((review) => {
+        const key = review.user.login;
+        if (!response[key]) {
+            response[key] = Object.assign(Object.assign({}, review), { total_review: 0 });
+        }
+        response[key].total_review += 1;
+    });
+    return Object.values(response);
+}
+function filterReviewersByState(reviewersFullData) {
+    const response = {
+        requiredChanges: [],
+        approve: [],
+        commented: [],
+    };
+    reviewersFullData.forEach((reviewer) => {
+        switch (reviewer.state) {
+            case 'APPROVED':
+                response.approve.push(reviewer.user.login);
+                break;
+            case 'CHANGES_REQUESTED':
+                response.requiredChanges.push(reviewer.user.login);
+                break;
+            case 'COMMENTED':
+                response.commented.push(reviewer.user.login);
+                break;
+            default:
+        }
+    });
+    return response;
+}
+function checkRequestedReviewers(requestedReviewers) {
+    const requestedChanges = requestedReviewers.map((reviewer) => reviewer.login);
+    if (requestedChanges.length > 0) {
+        warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+        return false;
+    }
+    return true;
+}
+function checkReviewersRequiredChanges(reviews) {
+    const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
+    info(JSON.stringify(reviewersByState, null, 2));
+    if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
+        warning(`${reviewersByState.requiredChanges.join(', ')} don't approved or commented changes.`);
+        return false;
+    }
+    info(`${reviewersByState.approve.join(', ')} approved changes.`);
+    return true;
+}
+
 ;// CONCATENATED MODULE: ./src/approves/identify-ci.ts
 
 function checkCI(checks) {
@@ -10558,7 +10612,6 @@ function checkCI(checks) {
             return true;
         }
     }).length;
-    info(`${totalInProgress} CI checks in progress.`);
     if (totalInProgress > 1) {
         warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
         return false;
@@ -10574,11 +10627,11 @@ function checkCI(checks) {
 
 ;// CONCATENATED MODULE: ./src/approves/is-pr-fully-approved.ts
 
+
 function isPrFullyApproved(pullRequest, reviews, checks) {
     let isMergeable = true;
-    /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
-    /**/
-    /* isMergeable = checkReviewersRequiredChanges(reviews); */
+    isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
+    isMergeable = checkReviewersRequiredChanges(reviews);
     isMergeable = checkCI(checks);
     return isMergeable;
 }
@@ -10610,6 +10663,7 @@ function run() {
                 pullRequestNumber: Number(core.getInput('pullRequestNumber', { required: true })),
                 sha: core.getInput('sha', { required: true }),
                 strategy: core.getInput('strategy', { required: true }),
+                doNotMergeLabels: core.getInput('doNotMergeLabels'),
                 token: core.getInput('token', { required: true }),
             };
             const client = github.getOctokit(configInput.token);

@@ -15,9 +15,9 @@ export function isPrFullyApproved(
 ): boolean {
   let isMergeable = true;
 
-  /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
-  /**/
-  /* isMergeable = checkReviewersRequiredChanges(reviews); */
+  isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
+
+  isMergeable = checkReviewersRequiredChanges(reviews);
 
   isMergeable = checkCI(checks);
 

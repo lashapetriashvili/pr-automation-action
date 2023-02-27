@@ -8,8 +8,6 @@ export function checkCI(checks: Checks): boolean {
     }
   }).length;
 
-  info(`${totalInProgress} CI checks in progress.`);
-
   if (totalInProgress > 1) {
     warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
 

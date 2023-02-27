@@ -18,6 +18,7 @@ export async function run(): Promise<void> {
       pullRequestNumber: Number(core.getInput('pullRequestNumber', { required: true })),
       sha: core.getInput('sha', { required: true }),
       strategy: core.getInput('strategy', { required: true }) as Strategy,
+      doNotMergeLabels: core.getInput('doNotMergeLabels'),
       token: core.getInput('token', { required: true }),
     };
 
