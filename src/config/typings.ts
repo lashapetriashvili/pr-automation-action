@@ -21,7 +21,7 @@ export type Config = {
   postReviewOptions?: {};
 };
 
-export type ReviewerBySate = {
+export type ReviewerByState = {
   requiredChanges: string[];
   approve: string[];
   commented: string[];
@@ -34,6 +34,12 @@ export type Author = {
 };
 
 export type Strategy = 'merge' | 'squash' | 'rebase';
+
+export type Checks = {
+  check_runs: {
+    status: string;
+  }[];
+};
 
 export interface Inputs {
   comment: string;

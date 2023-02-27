@@ -3,7 +3,7 @@ import { context, getOctokit } from '@actions/github';
 import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
-import { Author, Config, Reviewer, ReviewerBySate } from './config/typings';
+import { Config, Reviewer, ReviewerByState } from './config/typings';
 import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
@@ -30,7 +30,6 @@ class PullRequest {
   get number(): number {
     return this._pr.number;
   }
-
   get labelNames(): string[] {
     return (this._pr.labels as { name: string }[]).map((label) => label.name);
   }
@@ -244,56 +243,4 @@ export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> 
     warning(err as Error);
     throw err;
   }
-}
-
-export function getReviewersLastReviews(arr: Reviewer[]): Reviewer[] {
-  const response: {
-    [key: string]: Reviewer & { total_review: number };
-  } = {};
-  arr.forEach((reviewer) => {
-    if (reviewer?.user) {
-      const key = reviewer.user.login;
-      if (!response[key]) {
-        response[key] = { ...reviewer, total_review: 0 };
-      }
-
-      response[key].total_review += 1;
-    }
-  });
-  return Object.values(response);
-}
-
-export function filterReviewersByState(
-  reviewers: Reviewer[],
-  reviewersFullData: Reviewer[],
-): ReviewerBySate {
-  const response: ReviewerBySate = {
-    requiredChanges: [],
-    approve: [],
-    commented: [],
-  };
-
-  reviewers.forEach((reviewer) => {
-    const filter = reviewersFullData.filter(
-      (data) => data.author.login === reviewer.author.login,
-    );
-
-    const lastAction = filter[filter.length - 1];
-
-    switch (lastAction.state) {
-      case 'APPROVED':
-        response.approve.push(lastAction.author.login);
-        break;
-
-      case 'CHANGES_REQUESTED':
-        response.requiredChanges.push(lastAction.author.login);
-        break;
-      case 'COMMENTED':
-        response.commented.push(lastAction.author.login);
-        break;
-      default:
-    }
-  });
-
-  return response;
 }
