@@ -47,6 +47,7 @@ export interface Inputs {
 
 export interface Reviewer {
   author: Author;
+  user: Author;
   state: State;
   body: string;
   createdAt?: Date;

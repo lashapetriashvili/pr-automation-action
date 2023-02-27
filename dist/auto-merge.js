@@ -34026,11 +34026,13 @@ function getReviewsByGraphQL(pr) {
 function getReviewersLastReviews(arr) {
     const response = {};
     arr.forEach((reviewer) => {
-        const key = reviewer.author.login;
-        if (!response[key]) {
-            response[key] = Object.assign(Object.assign({}, reviewer), { total_review: 0 });
+        if (reviewer === null || reviewer === void 0 ? void 0 : reviewer.user) {
+            const key = reviewer.user.login;
+            if (!response[key]) {
+                response[key] = Object.assign(Object.assign({}, reviewer), { total_review: 0 });
+            }
+            response[key].total_review += 1;
         }
-        response[key].total_review += 1;
     });
     return Object.values(response);
 }

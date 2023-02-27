@@ -3,7 +3,7 @@ import { context, getOctokit } from '@actions/github';
 import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { validateConfig } from './config';
-import { Config, Reviewer, ReviewerBySate } from './config/typings';
+import { Author, Config, Reviewer, ReviewerBySate } from './config/typings';
 import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
@@ -251,12 +251,14 @@ export function getReviewersLastReviews(arr: Reviewer[]): Reviewer[] {
     [key: string]: Reviewer & { total_review: number };
   } = {};
   arr.forEach((reviewer) => {
-    const key = reviewer.author.login;
-    if (!response[key]) {
-      response[key] = { ...reviewer, total_review: 0 };
-    }
+    if (reviewer?.user) {
+      const key = reviewer.user.login;
+      if (!response[key]) {
+        response[key] = { ...reviewer, total_review: 0 };
+      }
 
-    response[key].total_review += 1;
+      response[key].total_review += 1;
+    }
   });
   return Object.values(response);
 }
