@@ -47,6 +47,14 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
+    info('List of reviews:');
+    info(JSON.stringify(reviews, null, 2));
+
+    info('List of checks:');
+    info(JSON.stringify(checks, null, 2));
+
+    return;
+
     // @ts-ignore
     if (isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
       return;

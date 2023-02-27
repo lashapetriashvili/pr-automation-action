@@ -8,6 +8,7 @@ export function getReviewersLastReviews(
   const response: {
     [key: string]: PullsGetReviewResponseData & { total_review: number };
   } = {};
+
   listReviews.forEach((review) => {
     const key = review.user.login;
     if (!response[key]) {

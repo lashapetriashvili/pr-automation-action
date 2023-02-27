@@ -10607,8 +10607,10 @@ function checkReviewersRequiredChanges(reviews) {
 ;// CONCATENATED MODULE: ./src/approves/identify-ci.ts
 
 function checkCI(checks) {
+    info(JSON.stringify(checks, null, 2));
     const totalInProgress = checks.check_runs.filter((check) => {
-        if (check.status === 'in_progress') {
+        if (check.status === 'in_progress' &&
+            (check.conclusion === '' || check.conclusion === null)) {
             return true;
         }
     }).length;
@@ -10701,6 +10703,11 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            info('List of reviews:');
+            info(JSON.stringify(reviews, null, 2));
+            info('List of checks:');
+            info(JSON.stringify(checks, null, 2));
+            return;
             // @ts-ignore
             if (isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
                 return;
