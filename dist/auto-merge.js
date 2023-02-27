@@ -33917,7 +33917,7 @@ function getLatestCommitDate(pr) {
         try {
             const queryResult = yield octokit.graphql(`
       {
-        repository(owner: "${github.context.repo.owner}", name: "${github.context.repo.repo}") {
+        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
           pullRequest(number: ${pr.number}) {
             title
             number
@@ -33943,7 +33943,7 @@ function getLatestCommitDate(pr) {
             };
         }
         catch (err) {
-            logger_warning(err);
+            warning(err);
             throw err;
         }
     });
@@ -34074,20 +34074,46 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 
 
 
-/* async function fetchGithubReviews(token: string) { */
-/*   const octokit = github.getOctokit(token); */
-/*   const { owner, repo } = github.context.repo; */
-/*   // TODO Fix Typescript Error */
-/*   // @ts-ignore */
-/*   const pull_number = github.context.payload.pull_request.number; */
-/*   const reviews = await octokit.pulls.listReviews({ */
-/*     owner, */
-/*     repo, */
-/*     pull_number, */
-/*   }); */
-/*   info('---------- fetchGithubReviews ---------------'); */
-/*   info(JSON.stringify(reviews, null, 2)); */
-/* } */
+/*
+run after:
+ - every approve
+ - after label add/remove
+ - after CI checks status change
+LOGIC:
+- identify by config and changed files correct groups that have to approve with what amount of approvals.
+- identify if current approved users satisfy to the rules for required approvals
+- if any change requested, return
+- if any change was requested and this person didn't approve after, return
+- if tests are failed, return
+- if PR to master, change issue status in Jira
+  - change status only if Jira issue, at this moment, belong to correct status — Code Review
+  - return
+- if any PR restrictions to merge, return. Like do-not-merge label or tests are failed
+- merge PR
+- change issue status in Jira
+ */
+/*
+TASK B0 (not blocking anything)
+  GitHub action to run after:
+    - every approve
+    - after label add/remove
+    - after CI checks status change
+TASK C0-C1 Jira move to next status/Github merge
+  - if PR to master, change issue status in Jira
+  - change status only if Jira issue, at this moment,
+      belong to correct status — Code Review
+  - GitHub merge PR
+    - change issue status in Jira
+TASK D0 identify approver groups
+  - identifyApprovers function
+TASK A0 (blocking next tasks) GitHub PR data retrieval
+  - getLatestCommitDate function
+  - getReviews function
+TASK A1 (blocked by 0A) identify current state
+  - identifyCurrentState function
+TASK A2 (blocked by A0) if PR is fully approved
+  - is-pr-fully-approved file
+*/
 function run() {
     var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
@@ -34112,42 +34138,35 @@ function run() {
                 pull_number: configInput.pullRequestNumber,
             });
             info('Checking requested reviewers.');
-            // TODO Fix Typescript
-            // @ts-ignore
-            const res = yield getLatestCommitDate(pullRequest);
-            info('---------- getLatestCommitDate ---------------');
-            info(JSON.stringify(res, null, 2));
             if (pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) {
                 const requestedChanges = (_a = pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers) === null || _a === void 0 ? void 0 : _a.map((reviewer) => reviewer.login);
-                info('---------- pullRequest.requested_reviewers ---------------');
-                info(JSON.stringify(pullRequest === null || pullRequest === void 0 ? void 0 : pullRequest.requested_reviewers, null, 2));
                 if (requestedChanges.length > 0) {
                     logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
                     doNotMerge = true;
-                    return;
                 }
             }
             info('Checking required changes status.');
             // TODO Fix Typescript Error
             // @ts-ignore
             const reviewers = yield getReviewsByGraphQL(pullRequest);
+            const res = removeDuplicateReviewer(reviewers);
+            info(JSON.stringify(res, null, 2));
+            return;
             const reviewersByState = filterReviewersByState(removeDuplicateReviewer(reviewers), reviewers);
-            info('----------------- reviewersByState ---------------');
-            info(JSON.stringify(reviewersByState, null, 2));
+            logger_debug(JSON.stringify(reviewersByState, null, 2));
             if (reviewersByState.requiredChanges.length) {
                 logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
                 doNotMerge = true;
             }
+            info(`${reviewersByState.approve.join(', ')} approved changes.`);
             info('Checking CI status.');
             const { data: checks } = yield client.checks.listForRef({
                 owner: configInput.owner,
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
-            const totalStatus = checks.total_count;
-            const totalSuccessStatuses = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
-            if (totalStatus - 1 !== totalSuccessStatuses) {
-                logger_warning(`Not all status success, ${totalSuccessStatuses} out of ${totalStatus - 1} (ignored this check) success`);
+            if (checks.check_runs.some((check) => check.status !== 'completed')) {
+                logger_warning('Waiting for CI checks to complete.');
                 doNotMerge = true;
             }
             if (doNotMerge) {
@@ -34160,7 +34179,7 @@ function run() {
                     issue_number: configInput.pullRequestNumber,
                     body: configInput.comment,
                 });
-                info(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
+                logger_debug(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
             info('Merging...');
