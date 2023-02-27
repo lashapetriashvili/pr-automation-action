@@ -10609,8 +10609,7 @@ function checkReviewersRequiredChanges(reviews) {
 function checkCI(checks) {
     info(JSON.stringify(checks, null, 2));
     const totalInProgress = checks.check_runs.filter((check) => {
-        if (check.status === 'in_progress' &&
-            (check.conclusion === '' || check.conclusion === null)) {
+        if (check.status === 'in_progress' && check.conclusion === null) {
             return true;
         }
     }).length;
@@ -10703,6 +10702,8 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            info('List of requested_reviewers:');
+            info(JSON.stringify(pullRequest.requested_reviewers, null, 2));
             info('List of reviews:');
             info(JSON.stringify(reviews, null, 2));
             info('List of checks:');

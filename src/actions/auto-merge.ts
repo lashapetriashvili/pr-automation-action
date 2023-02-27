@@ -47,6 +47,9 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
+    info('List of requested_reviewers:');
+    info(JSON.stringify(pullRequest.requested_reviewers, null, 2));
+
     info('List of reviews:');
     info(JSON.stringify(reviews, null, 2));
 

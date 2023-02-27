@@ -7,10 +7,7 @@ export function checkCI(checks: Checks): boolean {
   info(JSON.stringify(checks, null, 2));
 
   const totalInProgress = checks.check_runs.filter((check) => {
-    if (
-      check.status === 'in_progress' &&
-      (check.conclusion === '' || check.conclusion === null)
-    ) {
+    if (check.status === 'in_progress' && check.conclusion === null) {
       return true;
     }
   }).length;
