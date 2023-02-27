@@ -47,17 +47,6 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
-    info('List of requested_reviewers:');
-    info(JSON.stringify(pullRequest.requested_reviewers, null, 2));
-
-    info('List of reviews:');
-    info(JSON.stringify(reviews, null, 2));
-
-    info('List of checks:');
-    info(JSON.stringify(checks, null, 2));
-
-    return;
-
     // @ts-ignore
     if (isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
       return;
@@ -75,12 +64,14 @@ export async function run(): Promise<void> {
       core.setOutput('commentID', resp.id);
     }
 
-    /* await client.pulls.merge({ */
-    /*   owner, */
-    /*   repo, */
-    /*   pull_number: configInput.pullRequestNumber, */
-    /*   merge_method: configInput.strategy, */
-    /* }); */
+    await client.pulls.merge({
+      owner,
+      repo,
+      pull_number: configInput.pullRequestNumber,
+      merge_method: configInput.strategy,
+    });
+
+    info(`Merged pull request #${configInput.pullRequestNumber}`);
 
     core.setOutput('merged', true);
   } catch (err) {
