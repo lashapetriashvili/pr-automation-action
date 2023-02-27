@@ -10554,7 +10554,7 @@ const warning = isTest ? () => { } : core.warning;
 
 function checkCI(checks) {
     const totalInProgress = checks.check_runs.filter((check) => {
-        if (check.conclusion === 'in_progress') {
+        if (check.status === 'in_progress') {
             return true;
         }
     }).length;

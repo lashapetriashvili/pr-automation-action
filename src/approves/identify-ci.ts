@@ -3,7 +3,7 @@ import { warning, info } from '../logger';
 
 export function checkCI(checks: Checks): boolean {
   const totalInProgress = checks.check_runs.filter((check) => {
-    if (check.conclusion === 'in_progress') {
+    if (check.status === 'in_progress') {
       return true;
     }
   }).length;
