@@ -99,6 +99,11 @@ export async function run(): Promise<void> {
     });
 
     info(JSON.stringify(reviews, null, 2));
+
+    // @ts-ignore
+    const res = getReviewersLastReviews(reviews);
+
+    info(JSON.stringify(res, null, 2));
     return;
 
     info('Checking required changes status.');
