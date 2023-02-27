@@ -36,8 +36,11 @@ export type Author = {
 export type Strategy = 'merge' | 'squash' | 'rebase';
 
 export type Checks = {
+  total_count: number;
   check_runs: {
+    name: string;
     status: string;
+    conclusion: string;
   }[];
 };
 
