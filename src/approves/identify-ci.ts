@@ -1,5 +1,5 @@
 import { Checks } from '../config/typings';
-import { warning } from '../logger';
+import { warning, info } from '../logger';
 
 export function checkCI(checks: Checks): boolean {
   const totalInProgress = checks.check_runs.filter((check) => {
@@ -8,6 +8,8 @@ export function checkCI(checks: Checks): boolean {
     }
   }).length;
 
+  info(`${totalInProgress} CI checks in progress.`);
+
   if (totalInProgress > 1) {
     warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
 
@@ -15,13 +17,13 @@ export function checkCI(checks: Checks): boolean {
   }
 
   const totalStatus = checks.total_count;
-  const totalSuccessStatuses = checks.check_runs.filter(
+  const totalSuccess = checks.check_runs.filter(
     (check) => check.conclusion === 'success' || check.conclusion === 'skipped',
   ).length;
 
-  if (totalStatus - 1 !== totalSuccessStatuses) {
+  if (totalStatus - 1 !== totalSuccess) {
     warning(
-      `Not all status success, ${totalSuccessStatuses} out of ${
+      `Not all status success, ${totalSuccess} out of ${
         totalStatus - 1
       } (ignored this check) success`,
     );
