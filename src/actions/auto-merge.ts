@@ -44,15 +44,13 @@ export async function run(): Promise<void> {
       ),
     );
 
-    info(
-      Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString(
-        'base64',
-      ),
-    );
+    const issueDetail = await jira.request(
+    `${jiraEndpoint}/rest/api/3/issue/TEST-3`
+  );
 
-    const availableTransitions = await jira.request(
-      `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
-    );
+    /* const availableTransitions = await jira.request( */
+    /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
+    /* ); */
 
     /* const res = await jira.request( */
     /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
@@ -60,13 +58,7 @@ export async function run(): Promise<void> {
     /*   { transition: { id: '51' } }, */
     /* ); */
 
-    info(
-      JSON.stringify(
-        `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
-        null,
-        2,
-      ),
-    );
+    info(JSON.stringify(issueDetail, null, 2));
 
     return;
 

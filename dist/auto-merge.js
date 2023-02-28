@@ -17789,14 +17789,16 @@ function run() {
             });
             const jiraEndpoint = 'https://test-github-actions.atlassian.net';
             const jira = new JiraClient(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
-            info(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
-            const availableTransitions = yield jira.request(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
+            const issueDetail = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`);
+            /* const availableTransitions = await jira.request( */
+            /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
+            /* ); */
             /* const res = await jira.request( */
             /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
             /*   'POST', */
             /*   { transition: { id: '51' } }, */
             /* ); */
-            info(JSON.stringify(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, null, 2));
+            info(JSON.stringify(issueDetail, null, 2));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
