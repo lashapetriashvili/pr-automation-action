@@ -4,6 +4,7 @@ import * as github from '@actions/github';
 import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
+import JiraClient from '../jira';
 
 export async function run(): Promise<void> {
   try {
@@ -30,6 +31,18 @@ export async function run(): Promise<void> {
       pull_number: configInput.pullRequestNumber,
     });
 
+    const jiraAccount = 'test-github-actions.atlassian.net';
+    const jiraToken =
+      'ATATT3xFfGF0BcsDjXeO8aQKln17axZRbAjvdrQ3fUuJX1B9obsg1j7PfMO5uReRQQ08-Edjcb3oG70fReeBkGyx8Gn9zudjIzG4K9xARRuy04lYHEF9RBZVq-uvpqk7Y9WcqHTPS5qrbnKHEif3kzP0_tdQKbv4YNUjD1dzqvPbXKb1xTu9NVs=77EB8100';
+
+    const jira = new JiraClient(
+      Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64'),
+    );
+
+    await jira.request('/rest/api/3/issue/TEST-3', 'GET').then((res) => {
+      info(JSON.stringify(res, null, 2));
+    });
+
     info(JSON.stringify(pullRequest, null, 2));
 
     return;
@@ -52,7 +65,7 @@ export async function run(): Promise<void> {
     });
 
     // @ts-ignore
-    if (isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
+    if (!isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
       return;
     }
 
