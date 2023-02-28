@@ -21,12 +21,15 @@ export async function run(): Promise<void> {
       strategy: core.getInput('strategy', { required: true }) as Strategy,
       doNotMergeLabels: core.getInput('do-not-merge-labels'),
       token: core.getInput('token', { required: true }),
-      jiraToken: core.getInput('jira-token', { required: true }),
-      jiraAccount: core.getInput('jira-account', { required: true }),
-      jiraEndpoint: core.getInput('jira-endpoint', { required: true }),
-      jiraMoveIssueFrom: core.getInput('jira-move-issue-from', { required: true }),
-      jiraMoveIssueTo: core.getInput('jira-move-issue-to', { required: true }),
+      jiraToken: core.getInput('jira-token', { required: false }),
+      jiraAccount: core.getInput('jira-account', { required: false }),
+      jiraEndpoint: core.getInput('jira-endpoint', { required: false }),
+      jiraMoveIssueFrom: core.getInput('jira-move-issue-from', { required: false }),
+      jiraMoveIssueTo: core.getInput('jira-move-issue-to', { required: false }),
     };
+
+    info(JSON.stringify(configInput, null, 2));
+    return;
 
     const client = github.getOctokit(configInput.token);
 
