@@ -17789,7 +17789,7 @@ function run() {
             });
             const jiraEndpoint = 'https://test-github-actions.atlassian.net';
             const jira = new JiraClient(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
-            info(`${configInput.jiraAccount}:${configInput.jiraToken}`);
+            info(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
             const availableTransitions = yield jira.request(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
             /* const res = await jira.request( */
             /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */

@@ -39,10 +39,16 @@ export async function run(): Promise<void> {
     const jiraEndpoint = 'https://test-github-actions.atlassian.net';
 
     const jira = new JiraClient(
-      Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'),
+      Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString(
+        'base64',
+      ),
     );
 
-    info(`${configInput.jiraAccount}:${configInput.jiraToken}`);
+    info(
+      Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString(
+        'base64',
+      ),
+    );
 
     const availableTransitions = await jira.request(
       `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
