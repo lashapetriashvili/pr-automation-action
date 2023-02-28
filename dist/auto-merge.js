@@ -17790,7 +17790,7 @@ function run() {
             /* const availableTransitions = await jira.request( */
             /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
             /* ); */
-            const res = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, "POST", { transition: { id: '51' } });
+            const res = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, 'PUT', { transition: { id: '51' } });
             info(JSON.stringify(res, null, 2));
             return;
             if (pullRequest.state !== 'open') {

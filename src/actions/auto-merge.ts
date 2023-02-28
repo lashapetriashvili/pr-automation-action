@@ -49,8 +49,8 @@ export async function run(): Promise<void> {
 
     const res = await jira.request(
       `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
-      "POST",
-      { transition: { id: '51' } }
+      'PUT',
+      { transition: { id: '51' } },
     );
 
     info(JSON.stringify(res, null, 2));
