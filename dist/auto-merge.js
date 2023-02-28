@@ -17720,6 +17720,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     });
 };
 
+
 const options = (token) => {
     return {
         headers: {
@@ -17733,10 +17734,13 @@ class JiraClient {
     constructor(token) {
         this.token = token;
         this.request = (url, method = 'GET', body) => __awaiter(this, void 0, void 0, function* () {
+            info(JSON.stringify({ url, method, body }, null, 2));
             const res = body
                 ? yield fetch(url, Object.assign({ method, body: JSON.stringify(body) }, options(this.token)))
                 : yield fetch(url, Object.assign({ method }, options(this.token)));
             if (res.status === 200) {
+                info('Jira request success');
+                info(JSON.stringify(res, null, 2));
                 const json = yield res.json();
                 return json;
             }
