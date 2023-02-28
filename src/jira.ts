@@ -32,6 +32,8 @@ export default class JiraClient {
 
     info('Jira request success');
     info(JSON.stringify(res, null, 2));
+        info(JSON.stringify(this.token, null, 2));
+
 
     if (res.status === 200) {
       const json = await res.json();

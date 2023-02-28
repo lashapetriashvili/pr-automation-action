@@ -17740,6 +17740,7 @@ class JiraClient {
                 : yield fetch(url, Object.assign({ method }, options(this.token)));
             info('Jira request success');
             info(JSON.stringify(res, null, 2));
+            info(JSON.stringify(this.token, null, 2));
             if (res.status === 200) {
                 const json = yield res.json();
                 return json;
@@ -17792,7 +17793,7 @@ function run() {
                 pull_number: configInput.pullRequestNumber,
             });
             const jiraEndpoint = 'https://test-github-actions.atlassian.net';
-            const jira = new JiraClient(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
+            const jira = new JiraClient('bGFzaGEucGV0cm8xQGdtYWlsLmNvbTpBVEFUVDN4RmZHRjBCY3NEalhlTzhhUUtsbjE3YXhaUmJBanZkclEzZlV1SlgxQjlAvYnNnMWo3UGZNTzV1UmVSUVEwOC1FZGpjYjNvRzcwZlJlZUJrR3l4OEduOXp1ZGpJekc0Szl4QVJSdXkwNGxZSEVGOVJCWlZxLXV2cHFrN1k5V2NxSFRQUzVxcmJuS0hFaWYza3pQMF90ZFFLYnY0WU5VakQxZHpxdlBiWEtiMXhUdTlOVnM9NzdFQjgxMDA=');
             const issueDetail = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`);
             /* const availableTransitions = await jira.request( */
             /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
