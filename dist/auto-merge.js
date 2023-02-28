@@ -17738,9 +17738,9 @@ class JiraClient {
             const res = body
                 ? yield fetch(url, Object.assign({ method, body: JSON.stringify(body) }, options(this.token)))
                 : yield fetch(url, Object.assign({ method }, options(this.token)));
+            info('Jira request success');
+            info(JSON.stringify(res, null, 2));
             if (res.status === 200) {
-                info('Jira request success');
-                info(JSON.stringify(res, null, 2));
                 const json = yield res.json();
                 return json;
             }
