@@ -31,7 +31,7 @@ export async function run(): Promise<void> {
       pull_number: configInput.pullRequestNumber,
     });
 
-    const jiraAccount = 'test-github-actions.atlassian.net';
+    const jiraAccount = 'lasha.petro1@gmail.com';
     const jiraToken =
       'ATATT3xFfGF0BcsDjXeO8aQKln17axZRbAjvdrQ3fUuJX1B9obsg1j7PfMO5uReRQQ08-Edjcb3oG70fReeBkGyx8Gn9zudjIzG4K9xARRuy04lYHEF9RBZVq-uvpqk7Y9WcqHTPS5qrbnKHEif3kzP0_tdQKbv4YNUjD1dzqvPbXKb1xTu9NVs=77EB8100';
 
