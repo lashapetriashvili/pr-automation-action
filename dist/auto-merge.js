@@ -17775,6 +17775,11 @@ function run() {
                 strategy: core.getInput('strategy', { required: true }),
                 doNotMergeLabels: core.getInput('do-not-merge-labels'),
                 token: core.getInput('token', { required: true }),
+                jiraToken: core.getInput('jira-token', { required: true }),
+                jiraAccount: core.getInput('jira-account', { required: true }),
+                jiraEndpoint: core.getInput('jira-endpoint', { required: true }),
+                jiraMoveIssueFrom: core.getInput('jira-move-issue-from', { required: true }),
+                jiraMoveIssueTo: core.getInput('jira-move-issue-to', { required: true }),
             };
             const client = github.getOctokit(configInput.token);
             const { data: pullRequest } = yield client.pulls.get({
@@ -17782,12 +17787,10 @@ function run() {
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            const jiraAccount = 'lasha.petro1@gmail.com';
-            const jiraToken = 'ATATT3xFfGF0BcsDjXeO8aQKln17axZRbAjvdrQ3fUuJX1B9obsg1j7PfMO5uReRQQ08-Edjcb3oG70fReeBkGyx8Gn9zudjIzG4K9xARRuy04lYHEF9RBZVq-uvpqk7Y9WcqHTPS5qrbnKHEif3kzP0_tdQKbv4YNUjD1dzqvPbXKb1xTu9NVs=77EB8100';
             const jiraEndpoint = 'https://test-github-actions.atlassian.net';
-            const jira = new JiraClient(Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64'));
+            const jira = new JiraClient(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
             /* const res = await jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`); */
-            const availableTransitions = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
+            const availableTransitions = yield jira.request(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
             const res = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, 'PUT', { transition: { id: '51' } });
             info(JSON.stringify(availableTransitions, null, 2));
             return;

@@ -53,6 +53,11 @@ export interface Inputs {
   strategy: Strategy;
   token: string;
   doNotMergeLabels: string;
+  jiraToken: string;
+  jiraAccount: string;
+  jiraEndpoint: string;
+  jiraMoveIssueFrom: string;
+  jiraMoveIssueTo: string;
 }
 
 export interface Reviewer {
