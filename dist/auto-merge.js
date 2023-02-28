@@ -17784,10 +17784,11 @@ function run() {
             });
             const jiraAccount = 'lasha.petro1@gmail.com';
             const jiraToken = 'ATATT3xFfGF0BcsDjXeO8aQKln17axZRbAjvdrQ3fUuJX1B9obsg1j7PfMO5uReRQQ08-Edjcb3oG70fReeBkGyx8Gn9zudjIzG4K9xARRuy04lYHEF9RBZVq-uvpqk7Y9WcqHTPS5qrbnKHEif3kzP0_tdQKbv4YNUjD1dzqvPbXKb1xTu9NVs=77EB8100';
+            const jiraEndpoint = 'https://test-github-actions.atlassian.net';
             const jira = new JiraClient(Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64'));
-            const res = yield jira
-                .request('https://test-github-actions.atlassian.net/rest/api/3/issue/TEST-3');
-            info(JSON.stringify(res, null, 2));
+            const res = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`);
+            const availableTransitions = yield jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
+            info(JSON.stringify(availableTransitions, null, 2));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
