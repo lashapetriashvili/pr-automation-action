@@ -39,11 +39,10 @@ export async function run(): Promise<void> {
       Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64'),
     );
 
-    await jira.request('https://test-github-actions.atlassian.net/rest/api/3/issue/TEST-3', 'GET').then((res) => {
-      info(JSON.stringify(res, null, 2));
-    });
+    const res = await jira
+      .request('https://test-github-actions.atlassian.net/rest/api/3/issue/TEST-3')
 
-    info(JSON.stringify(pullRequest, null, 2));
+    info(JSON.stringify(res, null, 2));
 
     return;
 
