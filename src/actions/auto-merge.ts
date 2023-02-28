@@ -42,17 +42,17 @@ export async function run(): Promise<void> {
       Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'),
     );
 
-    /* const res = await jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`); */
+    info(`${configInput.jiraAccount}:${configInput.jiraToken}`);
 
     const availableTransitions = await jira.request(
       `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
     );
 
-    const res = await jira.request(
-      `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
-      'POST',
-      { transition: { id: '51' } },
-    );
+    /* const res = await jira.request( */
+    /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
+    /*   'POST', */
+    /*   { transition: { id: '51' } }, */
+    /* ); */
 
     info(JSON.stringify(availableTransitions, null, 2));
 
