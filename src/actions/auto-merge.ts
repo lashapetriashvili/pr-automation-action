@@ -41,13 +41,19 @@ export async function run(): Promise<void> {
       Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64'),
     );
 
-    const res = await jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`);
+    /* const res = await jira.request(`${jiraEndpoint}/rest/api/3/issue/TEST-3`); */
 
-    const availableTransitions = await jira.request(
+    /* const availableTransitions = await jira.request( */
+    /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
+    /* ); */
+
+    const res = await jira.request(
       `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
+      "POST",
+      { transition: { id: '51' } }
     );
 
-    info(JSON.stringify(availableTransitions, null, 2));
+    info(JSON.stringify(res, null, 2));
 
     return;
 
