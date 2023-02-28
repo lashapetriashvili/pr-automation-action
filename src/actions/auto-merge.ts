@@ -60,7 +60,13 @@ export async function run(): Promise<void> {
     /*   { transition: { id: '51' } }, */
     /* ); */
 
-    info(JSON.stringify(availableTransitions, null, 2));
+    info(
+      JSON.stringify(
+        `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
+        null,
+        2,
+      ),
+    );
 
     return;
 

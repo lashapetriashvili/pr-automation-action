@@ -17796,7 +17796,7 @@ function run() {
             /*   'POST', */
             /*   { transition: { id: '51' } }, */
             /* ); */
-            info(JSON.stringify(availableTransitions, null, 2));
+            info(JSON.stringify(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, null, 2));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
