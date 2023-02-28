@@ -4,7 +4,7 @@ import * as github from '@actions/github';
 import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
-import JiraClient from '../jira';
+import { JiraClient } from '../jira';
 
 export async function run(): Promise<void> {
   try {
@@ -36,31 +36,40 @@ export async function run(): Promise<void> {
       pull_number: configInput.pullRequestNumber,
     });
 
-    const jiraEndpoint = 'https://test-github-actions.atlassian.net';
+    // Get a branch name
+    const branchName = pullRequest.head.ref;
 
-    const jira = new JiraClient(
-      Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString(
-        'base64',
-      ),
-    );
+    // Get a branch name where this pull request will be Merged
+    const baseBranchName = pullRequest.base.ref;
 
-  /*   const issueDetail = await jira.request( */
-  /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3` */
-  /* ); */
+    info(`Branch name: ${branchName}`);
+    info(`Base branch name: ${baseBranchName}`);
+
+    return;
+
+    /* const jira = new JiraClient( */
+    /*   Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString( */
+    /*     'base64', */
+    /*   ), */
+    /* ); */
+
+    /*   const issueDetail = await jira.request( */
+    /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3` */
+    /* ); */
 
     /* const availableTransitions = await jira.request( */
     /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
     /* ); */
 
-    const res = await jira.request(
-      `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
-      'POST',
-      { transition: { id: '51' } },
-    );
-
-    info(JSON.stringify(res, null, 2));
-
-    return;
+    /* const res = await jira.request( */
+    /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
+    /*   'POST', */
+    /*   { transition: { id: '51' } }, */
+    /* ); */
+    /**/
+    /* info(JSON.stringify(res, null, 2)); */
+    /**/
+    /* return; */
 
     if (pullRequest.state !== 'open') {
       warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
