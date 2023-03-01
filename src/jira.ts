@@ -29,6 +29,47 @@ const options = (token: string) => {
   };
 };
 
+export function getTransitionId(transitions: any[], transitionName: string) {
+  const transition = transitions.find(
+    (t: any) => t.name.toLowerCase() === transitionName.toLowerCase(),
+  );
+
+  if (!transition) {
+    throw new Error(`Transition ${transitionName} not found`);
+  }
+
+  return transition.id;
+}
+
+export function jiraClient(token: string) {
+  const options = {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Basic ${token}`,
+    },
+  };
+
+  return async <T = any>(
+    url: string,
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+    body?: any | undefined,
+  ) => {
+    const res = body
+      ? await fetch(url, {
+          method,
+          body: JSON.stringify(body),
+          ...options,
+        })
+      : await fetch(url, { method, ...options });
+
+    if (res.status === 200) {
+      const json = await res.json();
+      return json as T;
+    }
+  };
+}
+
 export class JiraClient {
   constructor(private token: string) {
     this.token = token;
@@ -39,7 +80,6 @@ export class JiraClient {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     body?: any | undefined,
   ) => {
-    info(JSON.stringify({ url, method, body }, null, 2));
     const res = body
       ? await fetch(url, {
           method,
