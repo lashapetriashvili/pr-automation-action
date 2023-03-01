@@ -17871,7 +17871,7 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
-            info(JSON.stringify(requiredChecks));
+            info(JSON.stringify(requiredChecks.check_suites));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
