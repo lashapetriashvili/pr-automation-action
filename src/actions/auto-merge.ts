@@ -36,21 +36,14 @@ export async function run(): Promise<void> {
       pull_number: configInput.pullRequestNumber,
     });
 
-    // Get a branch name
-    const branchName = pullRequest.head.ref;
+    // get Required ci checks
+    const { data: requiredChecks } = await client.checks.listSuitesForRef({
+      owner: configInput.owner,
+      repo: configInput.repo,
+      ref: configInput.sha,
+    });
 
-    // Get a branch name where this pull request will be Merged
-    const baseBranchName = pullRequest.base.ref;
-
-    /* info(`Branch name: ${branchName}`); */
-    /* info(`Base branch name: ${baseBranchName}`); */
-    /**/
-    /* if (baseBranchName !== 'master' || baseBranchName !== 'main') { */
-    /*   info(`Base branch name is not master or main. Exiting...`); */
-    /*   return; */
-    /* } */
-
-    await changeJiraIssueStatus(branchName, configInput);
+    info(JSON.stringify(requiredChecks));
 
     return;
 
@@ -88,14 +81,27 @@ export async function run(): Promise<void> {
       core.setOutput('commentID', resp.id);
     }
 
-    await client.pulls.merge({
-      owner,
-      repo,
-      pull_number: configInput.pullRequestNumber,
-      merge_method: configInput.strategy,
-    });
+    const branchName = pullRequest.head.ref;
+    const baseBranchName = pullRequest.base.ref;
 
-    info(`Merged pull request #${configInput.pullRequestNumber}`);
+    if (baseBranchName !== 'master' && baseBranchName !== 'main') {
+      await client.pulls.merge({
+        owner,
+        repo,
+        pull_number: configInput.pullRequestNumber,
+        merge_method: configInput.strategy,
+      });
+
+      info(`Merged pull request #${configInput.pullRequestNumber}`);
+    }
+
+    const jiraResponse = await changeJiraIssueStatus(branchName, configInput);
+
+    if (jiraResponse.status) {
+      info(jiraResponse.message);
+    } else {
+      warning(jiraResponse.message);
+    }
 
     core.setOutput('merged', true);
   } catch (err) {

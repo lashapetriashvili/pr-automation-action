@@ -17865,18 +17865,13 @@ function run() {
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            // Get a branch name
-            const branchName = pullRequest.head.ref;
-            // Get a branch name where this pull request will be Merged
-            const baseBranchName = pullRequest.base.ref;
-            /* info(`Branch name: ${branchName}`); */
-            /* info(`Base branch name: ${baseBranchName}`); */
-            /**/
-            /* if (baseBranchName !== 'master' || baseBranchName !== 'main') { */
-            /*   info(`Base branch name is not master or main. Exiting...`); */
-            /*   return; */
-            /* } */
-            yield changeJiraIssueStatus(branchName, configInput);
+            // get Required ci checks
+            const { data: requiredChecks } = yield client.checks.listSuitesForRef({
+                owner: configInput.owner,
+                repo: configInput.repo,
+                ref: configInput.sha,
+            });
+            info(JSON.stringify(requiredChecks));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
@@ -17906,13 +17901,24 @@ function run() {
                 info(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
                 core.setOutput('commentID', resp.id);
             }
-            yield client.pulls.merge({
-                owner,
-                repo,
-                pull_number: configInput.pullRequestNumber,
-                merge_method: configInput.strategy,
-            });
-            info(`Merged pull request #${configInput.pullRequestNumber}`);
+            const branchName = pullRequest.head.ref;
+            const baseBranchName = pullRequest.base.ref;
+            if (baseBranchName !== 'master' && baseBranchName !== 'main') {
+                yield client.pulls.merge({
+                    owner,
+                    repo,
+                    pull_number: configInput.pullRequestNumber,
+                    merge_method: configInput.strategy,
+                });
+                info(`Merged pull request #${configInput.pullRequestNumber}`);
+            }
+            const jiraResponse = yield changeJiraIssueStatus(branchName, configInput);
+            if (jiraResponse.status) {
+                info(jiraResponse.message);
+            }
+            else {
+                warning(jiraResponse.message);
+            }
             core.setOutput('merged', true);
         }
         catch (err) {

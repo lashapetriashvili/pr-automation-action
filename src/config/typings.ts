@@ -53,7 +53,6 @@ export type JiraStatusCategory = {
 };
 
 export type JiraStatus = {
-  self: string;
   description: string;
   iconUrl: string;
   name: string;
@@ -65,12 +64,6 @@ export type JiraTransitions = {
   id: string;
   name: string;
   to: JiraStatus;
-  hasScreen: false;
-  isGlobal: true;
-  isInitial: false;
-  isAvailable: true;
-  isConditional: false;
-  isLooped: false;
 };
 
 export type JiraIssue = {
