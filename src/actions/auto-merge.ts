@@ -57,7 +57,7 @@ export async function run(): Promise<void> {
     );
 
     const issueDetail = await jiraRequest(
-      `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3`,
+      `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
     );
 
     /* const availableTransitions = await jira.request( */

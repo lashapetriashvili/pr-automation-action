@@ -17837,7 +17837,7 @@ function run() {
             /*   return; */
             /* } */
             const jiraRequest = jiraClient(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
-            const issueDetail = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3`);
+            const issueDetail = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
             /* const availableTransitions = await jira.request( */
             /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
             /* ); */

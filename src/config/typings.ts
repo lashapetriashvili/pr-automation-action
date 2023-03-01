@@ -44,6 +44,28 @@ export type Checks = {
   }[];
 };
 
+export type JiraIssue = {
+  id: string;
+  key: string;
+  created: Date;
+  fields: {
+    status: {
+      self: string;
+      description: string;
+      iconUrl: string;
+      name: string;
+      id: string;
+      statusCategory: {
+        self: string;
+        id: number;
+        key: string;
+        colorName: string;
+        name: string;
+      };
+    };
+  };
+};
+
 export interface Inputs {
   comment: string;
   repo: string;
