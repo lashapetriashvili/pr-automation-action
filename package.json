@@ -8,6 +8,7 @@
     "build:auto-merge": "ncc build ./src/actions/auto-merge.ts -o dist && mv ./dist/index.js ./dist/auto-merge.js",
     "build": "npm run build:auto-assign && npm run build:auto-merge",
     "test": "tsc --noEmit && NODE_ENV=test mocha --exit -r ts-node/register \"./src/**/*.spec.ts\"",
+    "zaza": "tsc --noEmit && ts-mocha -p tsconfig.json './src/**/*.ts'",
     "lint": "eslint -f unix \"src/**/*.@(ts|tsx)\"",
     "lint:fix": "eslint --fix -f unix \"src/**/*.@(ts|tsx)\"",
     "prepare": "husky install"
