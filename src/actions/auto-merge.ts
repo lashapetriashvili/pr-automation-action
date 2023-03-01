@@ -1,10 +1,10 @@
 import { inspect } from 'util';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { Inputs, Strategy } from '../config/typings';
+import { Inputs, Strategy, JiraIssue, JiraTransitions } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
-import { JiraClient, jiraClient } from '../jira';
+import { jiraClient, getTransitionId, getIssueIdFromBranchName } from '../jira';
 
 export async function run(): Promise<void> {
   try {
@@ -50,28 +50,75 @@ export async function run(): Promise<void> {
     /*   return; */
     /* } */
 
-    const jiraRequest = jiraClient(
-      Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString(
-        'base64',
-      ),
+    const issueId = getIssueIdFromBranchName(branchName);
+
+    info(`Issue id: ${issueId}`);
+
+    if (!issueId) {
+      info(`Issue id is not found in branch name. Exiting...`);
+      return;
+    }
+
+    const jiraToken = Buffer.from(
+      `${configInput.jiraAccount}:${configInput.jiraToken}`,
+    ).toString('base64');
+
+    const jiraRequest = jiraClient(jiraToken);
+
+    const issueDetail: JiraIssue | undefined = await jiraRequest(
+      `${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}`,
     );
 
-    const issueDetail = await jiraRequest(
-      `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`,
-    );
-
-    /* const availableTransitions = await jira.request( */
-    /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
-    /* ); */
-
-    /* const res = await jira.request( */
-    /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
-    /*   'POST', */
-    /*   { transition: { id: '51' } }, */
-    /* ); */
-    /**/
+    info(`Issue detail:`);
     info(JSON.stringify(issueDetail, null, 2));
-    /**/
+
+    if (issueDetail === undefined) {
+      info(`Issue detail is not found. Exiting...`);
+      return;
+    }
+
+    if (
+      issueDetail.fields.status.name.toLowerCase() !==
+      configInput.jiraMoveIssueFrom.toLowerCase()
+    ) {
+      info(`Issue status is not ${configInput.jiraMoveIssueFrom}. Exiting...`);
+      return;
+    }
+
+    const availableTransitions:
+      | { expand: string; transitions: JiraTransitions[] }
+      | undefined = await jiraRequest(
+      `${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`,
+    );
+
+    info(`Available transitions:`);
+    info(JSON.stringify(availableTransitions, null, 2));
+
+    if (availableTransitions === undefined) {
+      info(`Available transitions are not found. Exiting...`);
+      return;
+    }
+
+    const transitionId = getTransitionId(
+      availableTransitions.transitions,
+      configInput.jiraMoveIssueTo,
+    );
+
+    info(`Transition id: ${transitionId}`);
+
+    if (!transitionId) {
+      info(`Transition id is not found. Exiting...`);
+      return;
+    }
+
+    const updateTransition = await jiraRequest(
+      `${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`,
+      'POST',
+      { transition: { id: transitionId } },
+    );
+
+    info(`Update transition:`);
+    info(JSON.stringify(updateTransition, null, 2));
     return;
 
     if (pullRequest.state !== 'open') {

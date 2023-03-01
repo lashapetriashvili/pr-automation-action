@@ -44,25 +44,41 @@ export type Checks = {
   }[];
 };
 
+export type JiraStatusCategory = {
+  self: string;
+  id: number;
+  key: string;
+  colorName: string;
+  name: string;
+};
+
+export type JiraStatus = {
+  self: string;
+  description: string;
+  iconUrl: string;
+  name: string;
+  id: string;
+  statusCategory: JiraStatusCategory;
+};
+
+export type JiraTransitions = {
+  id: string;
+  name: string;
+  to: JiraStatus;
+  hasScreen: false;
+  isGlobal: true;
+  isInitial: false;
+  isAvailable: true;
+  isConditional: false;
+  isLooped: false;
+};
+
 export type JiraIssue = {
   id: string;
   key: string;
   created: Date;
   fields: {
-    status: {
-      self: string;
-      description: string;
-      iconUrl: string;
-      name: string;
-      id: string;
-      statusCategory: {
-        self: string;
-        id: number;
-        key: string;
-        colorName: string;
-        name: string;
-      };
-    };
+    status: JiraStatus;
   };
 };
 

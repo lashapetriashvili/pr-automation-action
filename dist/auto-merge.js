@@ -17338,7 +17338,7 @@ const supportedSchemas = new Set(['data:', 'http:', 'https:']);
  * @param   {*} [options_] - Fetch options
  * @return  {Promise<import('./response').default>}
  */
-async function src_fetch(url, options_) {
+async function fetch(url, options_) {
 	return new Promise((resolve, reject) => {
 		// Build request object
 		const request = new Request(url, options_);
@@ -17526,7 +17526,7 @@ async function src_fetch(url, options_) {
 						}
 
 						// HTTP-redirect fetch step 15
-						resolve(src_fetch(new Request(locationURL, requestOptions)));
+						resolve(fetch(new Request(locationURL, requestOptions)));
 						finalize();
 						return;
 					}
@@ -17720,7 +17720,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     });
 };
 
-function getIssueIdFromBranch(branch) {
+function getIssueIdFromBranchName(branch) {
     const split = branch.split('-');
     if (split.length < 2) {
         return null;
@@ -17733,19 +17733,10 @@ function getIssueIdFromBranch(branch) {
     }
     return `${split[0]}-${split[1]}`;
 }
-const options = (token) => {
-    return {
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: `Basic ${token}`,
-        },
-    };
-};
 function getTransitionId(transitions, transitionName) {
     const transition = transitions.find((t) => t.name.toLowerCase() === transitionName.toLowerCase());
     if (!transition) {
-        throw new Error(`Transition ${transitionName} not found`);
+        return null;
     }
     return transition.id;
 }
@@ -17759,28 +17750,13 @@ function jiraClient(token) {
     };
     return (url, method = 'GET', body) => __awaiter(this, void 0, void 0, function* () {
         const res = body
-            ? yield src_fetch(url, Object.assign({ method, body: JSON.stringify(body) }, options))
-            : yield src_fetch(url, Object.assign({ method }, options));
+            ? yield fetch(url, Object.assign({ method, body: JSON.stringify(body) }, options))
+            : yield fetch(url, Object.assign({ method }, options));
         if (res.status === 200) {
             const json = yield res.json();
             return json;
         }
     });
-}
-class JiraClient {
-    constructor(token) {
-        this.token = token;
-        this.request = (url, method = 'GET', body) => __awaiter(this, void 0, void 0, function* () {
-            const res = body
-                ? yield fetch(url, Object.assign({ method, body: JSON.stringify(body) }, options(this.token)))
-                : yield fetch(url, Object.assign({ method }, options(this.token)));
-            if (res.status === 200) {
-                const json = yield res.json();
-                return json;
-            }
-        });
-        this.token = token;
-    }
 }
 
 ;// CONCATENATED MODULE: ./src/actions/auto-merge.ts
@@ -17836,19 +17812,42 @@ function run() {
             /*   info(`Base branch name is not master or main. Exiting...`); */
             /*   return; */
             /* } */
-            const jiraRequest = jiraClient(Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64'));
-            const issueDetail = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`);
-            /* const availableTransitions = await jira.request( */
-            /*   `${configInput.jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
-            /* ); */
-            /* const res = await jira.request( */
-            /*   `${jiraEndpoint}/rest/api/3/issue/TEST-3/transitions`, */
-            /*   'POST', */
-            /*   { transition: { id: '51' } }, */
-            /* ); */
-            /**/
+            const issueId = getIssueIdFromBranchName(branchName);
+            info(`Issue id: ${issueId}`);
+            if (!issueId) {
+                info(`Issue id is not found in branch name. Exiting...`);
+                return;
+            }
+            const jiraToken = Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64');
+            const jiraRequest = jiraClient(jiraToken);
+            const issueDetail = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}`);
+            info(`Issue detail:`);
             info(JSON.stringify(issueDetail, null, 2));
-            /**/
+            if (issueDetail === undefined) {
+                info(`Issue detail is not found. Exiting...`);
+                return;
+            }
+            if (issueDetail.fields.status.name.toLowerCase() !==
+                configInput.jiraMoveIssueFrom.toLowerCase()) {
+                info(`Issue status is not ${configInput.jiraMoveIssueFrom}. Exiting...`);
+                return;
+            }
+            const availableTransitions = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`);
+            info(`Available transitions:`);
+            info(JSON.stringify(availableTransitions, null, 2));
+            if (availableTransitions === undefined) {
+                info(`Available transitions are not found. Exiting...`);
+                return;
+            }
+            const transitionId = getTransitionId(availableTransitions.transitions, configInput.jiraMoveIssueTo);
+            info(`Transition id: ${transitionId}`);
+            if (!transitionId) {
+                info(`Transition id is not found. Exiting...`);
+                return;
+            }
+            const updateTransition = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`, 'POST', { transition: { id: transitionId } });
+            info(`Update transition:`);
+            info(JSON.stringify(updateTransition, null, 2));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
