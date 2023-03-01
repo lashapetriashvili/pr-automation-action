@@ -43,7 +43,15 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
-    info(JSON.stringify(requiredChecks.check_suites));
+    // Require status checks to pass before merging
+    // Require branches to be up to date before merging
+    const { data: requiredStatusChecks } = await client.repos.getBranchProtection({
+      owner,
+      repo,
+      branch: pullRequest.head.ref,
+    });
+
+    info(JSON.stringify(requiredStatusChecks));
 
     return;
 
