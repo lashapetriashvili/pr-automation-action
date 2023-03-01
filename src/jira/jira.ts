@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { JiraTransitions } from './config/typings';
+import { JiraTransitions } from '../config/typings';
 
 export function getIssueIdFromBranchName(branch: string): string | null {
   const split = branch.split('-');
@@ -19,7 +19,10 @@ export function getIssueIdFromBranchName(branch: string): string | null {
   return `${split[0]}-${split[1]}`;
 }
 
-export function getTransitionId(transitions: JiraTransitions[], transitionName: string): string | null {
+export function getTransitionId(
+  transitions: JiraTransitions[],
+  transitionName: string,
+): string | null {
   const transition = transitions.find(
     (t) => t.name.toLowerCase() === transitionName.toLowerCase(),
   );
@@ -31,7 +34,9 @@ export function getTransitionId(transitions: JiraTransitions[], transitionName: 
   return transition.id;
 }
 
-export function jiraClient(token: string) {
+export function jiraClient(jiraAccount: string, jiraToken: string) {
+  const token = Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64');
+
   const options = {
     headers: {
       Accept: 'application/json',

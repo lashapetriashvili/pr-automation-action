@@ -17709,7 +17709,7 @@ function fixResponseChunkedTransferBadEnding(request, errorCallback) {
 	});
 }
 
-;// CONCATENATED MODULE: ./src/jira.ts
+;// CONCATENATED MODULE: ./src/jira/jira.ts
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17740,7 +17740,8 @@ function getTransitionId(transitions, transitionName) {
     }
     return transition.id;
 }
-function jiraClient(token) {
+function jiraClient(jiraAccount, jiraToken) {
+    const token = Buffer.from(`${jiraAccount}:${jiraToken}`).toString('base64');
     const options = {
         headers: {
             Accept: 'application/json',
@@ -17756,6 +17757,69 @@ function jiraClient(token) {
             const json = yield res.json();
             return json;
         }
+    });
+}
+
+;// CONCATENATED MODULE: ./src/jira/change-jira-issue-status.ts
+var change_jira_issue_status_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+
+
+function changeJiraIssueStatus(branchName, configInput) {
+    return change_jira_issue_status_awaiter(this, void 0, void 0, function* () {
+        const issueId = getIssueIdFromBranchName(branchName);
+        if (!issueId) {
+            return {
+                status: false,
+                message: 'Issue id is not found in branch name.',
+            };
+        }
+        const request = jiraClient(configInput.jiraAccount, configInput.jiraToken);
+        const issueDetail = yield request(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}`);
+        info(`Issue detail:`);
+        info(JSON.stringify(issueDetail, null, 2));
+        if (issueDetail === undefined) {
+            return {
+                status: false,
+                message: 'Issue detail is not found.',
+            };
+        }
+        if (issueDetail.fields.status.name.toLowerCase() !==
+            configInput.jiraMoveIssueFrom.toLowerCase()) {
+            return {
+                status: false,
+                message: `Issue status is not ${configInput.jiraMoveIssueFrom}.`,
+            };
+        }
+        const availableTransitions = yield request(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`);
+        info(`Available transitions:`);
+        info(JSON.stringify(availableTransitions, null, 2));
+        if (availableTransitions === undefined) {
+            return {
+                status: false,
+                message: 'Available transitions are not found.',
+            };
+        }
+        const transitionId = getTransitionId(availableTransitions.transitions, configInput.jiraMoveIssueTo);
+        info(`Transition id: ${transitionId}`);
+        if (!transitionId) {
+            return {
+                status: false,
+                message: 'Transition id is not found.',
+            };
+        }
+        const updateTransition = yield request(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`, 'POST', { transition: { id: transitionId } });
+        return {
+            status: true,
+            message: 'Jira issue status is updated',
+        };
     });
 }
 
@@ -17812,42 +17876,7 @@ function run() {
             /*   info(`Base branch name is not master or main. Exiting...`); */
             /*   return; */
             /* } */
-            const issueId = getIssueIdFromBranchName(branchName);
-            info(`Issue id: ${issueId}`);
-            if (!issueId) {
-                info(`Issue id is not found in branch name. Exiting...`);
-                return;
-            }
-            const jiraToken = Buffer.from(`${configInput.jiraAccount}:${configInput.jiraToken}`).toString('base64');
-            const jiraRequest = jiraClient(jiraToken);
-            const issueDetail = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}`);
-            info(`Issue detail:`);
-            info(JSON.stringify(issueDetail, null, 2));
-            if (issueDetail === undefined) {
-                info(`Issue detail is not found. Exiting...`);
-                return;
-            }
-            if (issueDetail.fields.status.name.toLowerCase() !==
-                configInput.jiraMoveIssueFrom.toLowerCase()) {
-                info(`Issue status is not ${configInput.jiraMoveIssueFrom}. Exiting...`);
-                return;
-            }
-            const availableTransitions = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`);
-            info(`Available transitions:`);
-            info(JSON.stringify(availableTransitions, null, 2));
-            if (availableTransitions === undefined) {
-                info(`Available transitions are not found. Exiting...`);
-                return;
-            }
-            const transitionId = getTransitionId(availableTransitions.transitions, configInput.jiraMoveIssueTo);
-            info(`Transition id: ${transitionId}`);
-            if (!transitionId) {
-                info(`Transition id is not found. Exiting...`);
-                return;
-            }
-            const updateTransition = yield jiraRequest(`${configInput.jiraEndpoint}/rest/api/3/issue/${issueId}/transitions`, 'POST', { transition: { id: transitionId } });
-            info(`Update transition:`);
-            info(JSON.stringify(updateTransition, null, 2));
+            yield changeJiraIssueStatus(branchName, configInput);
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
