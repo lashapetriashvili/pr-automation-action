@@ -1,10 +1,10 @@
 import { inspect } from 'util';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import { Inputs, Strategy, JiraIssue, JiraTransitions } from '../config/typings';
+import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
-import changeJiraIssueStatus from '../jira/change-jira-issue-status';
+import { fetchConfig } from '../github';
 
 export async function run(): Promise<void> {
   try {
@@ -21,12 +21,26 @@ export async function run(): Promise<void> {
       strategy: core.getInput('strategy', { required: true }) as Strategy,
       doNotMergeLabels: core.getInput('do-not-merge-labels'),
       token: core.getInput('token', { required: true }),
-      jiraToken: core.getInput('jira-token', { required: true }),
-      jiraAccount: core.getInput('jira-account', { required: true }),
-      jiraEndpoint: core.getInput('jira-endpoint', { required: true }),
-      jiraMoveIssueFrom: core.getInput('jira-move-issue-from', { required: true }),
-      jiraMoveIssueTo: core.getInput('jira-move-issue-to', { required: true }),
     };
+
+    let config;
+
+    try {
+      config = await fetchConfig();
+    } catch (err) {
+      if ((err as Record<string, unknown>).status === 404) {
+        warning(
+          'No configuration file is found in the base branch; terminating the process',
+        );
+        info(JSON.stringify(err));
+        return;
+      }
+      throw err;
+    }
+
+    info(JSON.stringify(config, null, 2));
+
+    return;
 
     const client = github.getOctokit(configInput.token);
 
@@ -35,17 +49,6 @@ export async function run(): Promise<void> {
       repo,
       pull_number: configInput.pullRequestNumber,
     });
-
-    // get Required ci checks
-    const { data: requiredChecks } = await client.checks.listSuitesForRef({
-      owner: configInput.owner,
-      repo: configInput.repo,
-      ref: configInput.sha,
-    });
-
-    info(JSON.stringify(requiredChecks, null, 2));
-
-    return;
 
     if (pullRequest.state !== 'open') {
       warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
@@ -81,27 +84,14 @@ export async function run(): Promise<void> {
       core.setOutput('commentID', resp.id);
     }
 
-    const branchName = pullRequest.head.ref;
-    const baseBranchName = pullRequest.base.ref;
+    await client.pulls.merge({
+      owner,
+      repo,
+      pull_number: configInput.pullRequestNumber,
+      merge_method: configInput.strategy,
+    });
 
-    if (baseBranchName !== 'master' && baseBranchName !== 'main') {
-      await client.pulls.merge({
-        owner,
-        repo,
-        pull_number: configInput.pullRequestNumber,
-        merge_method: configInput.strategy,
-      });
-
-      info(`Merged pull request #${configInput.pullRequestNumber}`);
-    }
-
-    const jiraResponse = await changeJiraIssueStatus(branchName, configInput);
-
-    if (jiraResponse.status) {
-      info(jiraResponse.message);
-    } else {
-      warning(jiraResponse.message);
-    }
+    info(`Merged pull request #${configInput.pullRequestNumber}`);
 
     core.setOutput('merged', true);
   } catch (err) {
