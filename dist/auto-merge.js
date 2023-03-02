@@ -17871,14 +17871,7 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
-            // Require status checks to pass before merging
-            // Require branches to be up to date before merging
-            const { data: requiredStatusChecks } = yield client.repos.getBranchProtection({
-                owner,
-                repo,
-                branch: pullRequest.head.ref,
-            });
-            info(JSON.stringify(requiredStatusChecks));
+            info(JSON.stringify(requiredChecks, null, 2));
             return;
             if (pullRequest.state !== 'open') {
                 warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
