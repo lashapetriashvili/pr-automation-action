@@ -40179,7 +40179,10 @@ function getReviewsByGraphQL(pr) {
 
 function getReviewersLastReviews(listReviews) {
     const response = {};
-    listReviews.forEach((review) => {
+    listReviews
+        .slice()
+        .reverse()
+        .forEach((review) => {
         const key = review.user.login;
         if (!response[key]) {
             response[key] = Object.assign(Object.assign({}, review), { total_review: 0 });

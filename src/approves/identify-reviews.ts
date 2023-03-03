@@ -9,14 +9,17 @@ export function getReviewersLastReviews(
     [key: string]: PullsGetReviewResponseData & { total_review: number };
   } = {};
 
-  listReviews.forEach((review) => {
-    const key = review.user.login;
-    if (!response[key]) {
-      response[key] = { ...review, total_review: 0 };
-    }
+  listReviews
+    .slice()
+    .reverse()
+    .forEach((review) => {
+      const key = review.user.login;
+      if (!response[key]) {
+        response[key] = { ...review, total_review: 0 };
+      }
 
-    response[key].total_review += 1;
-  });
+      response[key].total_review += 1;
+    });
   return Object.values(response);
 }
 
