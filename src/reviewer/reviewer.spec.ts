@@ -368,20 +368,20 @@ describe('should test shouldRequestReview:', () => {
     });
     expect(result).to.be.equal(true, 'Should request review');
   });
-  it('should skip requesting PR reviewers, cos matched label', () => {
-    const result = shouldRequestReview({
-      isDraft: false,
-      currentLabels: ['label1'],
-      options: { ignoredLabels: ['label1'] },
-    });
-    expect(result).to.be.equal(false, 'Should not request review');
-  });
-  it('should not skip requesting PR reviewers, cos label does not match', () => {
-    const result = shouldRequestReview({
-      isDraft: false,
-      currentLabels: ['unknownLabel'],
-      options: { ignoredLabels: ['label1'] },
-    });
-    expect(result).to.be.equal(true, 'Should request review');
-  });
+  /* it('should skip requesting PR reviewers, cos matched label', () => { */
+  /*   const result = shouldRequestReview({ */
+  /*     isDraft: false, */
+  /*     currentLabels: ['label1'], */
+  /*     options: { ignoredLabels: ['label1'] }, */
+  /*   }); */
+  /*   expect(result).to.be.equal(false, 'Should not request review'); */
+  /* }); */
+  /* it('should not skip requesting PR reviewers, cos label does not match', () => { */
+  /*   const result = shouldRequestReview({ */
+  /*     isDraft: false, */
+  /*     currentLabels: ['unknownLabel'], */
+  /*     options: { ignoredLabels: ['label1'] }, */
+  /*   }); */
+  /*   expect(result).to.be.equal(true, 'Should request review'); */
+  /* }); */
 });

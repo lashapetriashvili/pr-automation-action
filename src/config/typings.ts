@@ -11,6 +11,7 @@ export type DefaultRules = {
 
 type Options = {
   ignoredLabels: string[];
+  requiredChecks: string[];
 };
 
 export type Config = {
