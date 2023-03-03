@@ -8,8 +8,7 @@ import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
 import {
   identifyFileChangeGroups,
   identifyReviewers,
-  shouldRequestReview,
-} from '../reviewer';
+} from '../approves/identify-approvers';
 
 export async function run(): Promise<void> {
   try {
@@ -59,7 +58,6 @@ export async function run(): Promise<void> {
       rulesByCreator: config.rulesByCreator,
       defaultRules: config.defaultRules,
       requestedReviewerLogins: pr.requestedReviewerLogins,
-      getFullResult: true,
     });
 
     info(JSON.stringify(reviewers, null, 2));

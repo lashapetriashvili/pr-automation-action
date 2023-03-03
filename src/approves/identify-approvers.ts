@@ -1,7 +1,6 @@
 import * as minimatch from 'minimatch';
 import { info } from '../logger';
 import { Config, DefaultRules, Rule } from '../config/typings';
-import { getRandomItemFromArray } from '../utils';
 
 export function shouldRequestReview({
   isDraft,
@@ -62,8 +61,10 @@ function getReviewersBasedOnRule({
     const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
       return !selectedList.includes(reviewer);
     });
-    const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
-    selectedList.push(randomReviewer);
+
+    if (reviewersWithoutRandomlySelected.length) {
+      selectedList.push(reviewersWithoutRandomlySelected[0]);
+    }
   }
   selectedList.forEach((randomlySelected) => {
     result.add(randomlySelected);
@@ -81,9 +82,9 @@ function identifyReviewersByDefaultRules({
   fileChangesGroups: string[];
   requestedReviewerLogins: string[];
   createdBy: string;
-}): string[] {
+}): Rule[] {
   const rulesByFileGroup = byFileGroups;
-  const set = new Set<string>();
+  const set = new Set<Rule>();
   fileChangesGroups.forEach((fileGroup) => {
     const rules = rulesByFileGroup[fileGroup];
     if (!rules) {
@@ -96,7 +97,12 @@ function identifyReviewersByDefaultRules({
         requestedReviewerLogins,
         createdBy,
       });
-      reviewers.forEach((reviewer) => set.add(reviewer));
+
+      set.add({
+        reviewers: [...reviewers],
+        required: rule.required,
+        assign: rule.assign,
+      });
     });
   });
   return [...set];
@@ -114,7 +120,7 @@ export function identifyReviewers({
   defaultRules?: Config['defaultRules'];
   fileChangesGroups: string[];
   requestedReviewerLogins: string[];
-}): string[] {
+}): Rule[] {
   const rules = rulesByCreator[createdBy];
   if (!rules) {
     info(`No rules for creator ${createdBy} were found.`);
@@ -137,7 +143,7 @@ export function identifyReviewers({
     },
     {},
   );
-  const result = new Set<string>();
+  const result = new Set<Rule>();
   rules.forEach((rule) => {
     if (rule.ifChanged) {
       const matchFileChanges = rule.ifChanged.some((group) =>
@@ -153,7 +159,12 @@ export function identifyReviewers({
       createdBy,
       requestedReviewerLogins,
     });
-    reviewers.forEach((reviewer) => result.add(reviewer));
+
+    result.add({
+      reviewers: [...reviewers],
+      required: rule.required,
+      assign: rule.assign,
+    });
   });
   return [...result];
 }

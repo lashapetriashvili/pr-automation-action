@@ -35369,24 +35369,9 @@ function isPrFullyApproved(configInput, pullRequest, reviews, checks) {
     return isMergeable;
 }
 
-;// CONCATENATED MODULE: ./src/utils.ts
-
-function getRandomItemFromArray(items) {
-    return items[Math.floor(Math.random() * items.length)];
-}
-function withDebugLog(executeFunction) {
-    return function (param) {
-        debug(`[${executeFunction.name}]. Params: ${JSON.stringify(param)}`);
-        const result = executeFunction(param);
-        debug(`[${executeFunction.name}]. Result: ${JSON.stringify(result)}`);
-        return result;
-    };
-}
-
 // EXTERNAL MODULE: ./node_modules/minimatch/minimatch.js
 var minimatch = __nccwpck_require__(3973);
-;// CONCATENATED MODULE: ./src/reviewer/reviewer.ts
-
+;// CONCATENATED MODULE: ./src/approves/identify-approvers.ts
 
 
 function shouldRequestReview({ isDraft, options, currentLabels, }) {
@@ -35404,7 +35389,7 @@ function shouldRequestReview({ isDraft, options, currentLabels, }) {
     }
     return true;
 }
-function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, getRandomReviewers = true, }) {
+function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, }) {
     const result = new Set();
     if (!assign) {
         reviewers.forEach((reviewer) => {
@@ -35427,12 +35412,8 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
         const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
             return !selectedList.includes(reviewer);
         });
-        if (getRandomReviewers) {
-            const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
-            selectedList.push(randomReviewer);
-        }
-        else {
-            selectedList.push(...reviewersWithoutRandomlySelected);
+        if (reviewersWithoutRandomlySelected.length) {
+            selectedList.push(reviewersWithoutRandomlySelected[0]);
         }
     }
     selectedList.forEach((randomlySelected) => {
@@ -35440,10 +35421,9 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
     });
     return result;
 }
-function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, requestedReviewerLogins, getFullResult = false, }) {
+function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, requestedReviewerLogins, }) {
     const rulesByFileGroup = byFileGroups;
     const set = new Set();
-    const fullResult = [];
     fileChangesGroups.forEach((fileGroup) => {
         const rules = rulesByFileGroup[fileGroup];
         if (!rules) {
@@ -35455,25 +35435,18 @@ function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, crea
                 reviewers: rule.reviewers,
                 requestedReviewerLogins,
                 createdBy,
-                getRandomReviewers: !getFullResult,
             });
-            reviewers.forEach((reviewer) => set.add(reviewer));
-            fullResult.push({
-                // @ts-ignore
-                reviewers,
-                assign: rule.assign,
+            set.add({
+                reviewers: [...reviewers],
                 required: rule.required,
+                assign: rule.assign,
             });
         });
     });
-    if (getFullResult) {
-        return fullResult;
-    }
     return [...set];
 }
-function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, getFullResult = false, }) {
+function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, }) {
     const rules = rulesByCreator[createdBy];
-    logger_info(JSON.stringify(rules, null, 2));
     if (!rules) {
         logger_info(`No rules for creator ${createdBy} were found.`);
         if (defaultRules) {
@@ -35483,7 +35456,6 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
                 fileChangesGroups,
                 createdBy,
                 requestedReviewerLogins,
-                getFullResult,
             });
         }
         else {
@@ -35495,7 +35467,6 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
         return result;
     }, {});
     const result = new Set();
-    const fullResult = [];
     rules.forEach((rule) => {
         if (rule.ifChanged) {
             const matchFileChanges = rule.ifChanged.some((group) => Boolean(fileChangesGroupsMap[group]));
@@ -35508,20 +35479,13 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
             reviewers: rule.reviewers,
             createdBy,
             requestedReviewerLogins,
-            getRandomReviewers: !getFullResult,
         });
-        logger_info(JSON.stringify(reviewers, null, 2));
-        reviewers.forEach((reviewer) => result.add(reviewer));
-        fullResult.push({
-            // @ts-ignore
-            reviewers,
-            assign: rule.assign,
+        result.add({
+            reviewers: [...reviewers],
             required: rule.required,
+            assign: rule.assign,
         });
     });
-    if (getFullResult) {
-        return fullResult;
-    }
     return [...result];
 }
 function identifyFileChangeGroups({ fileChangesGroups, changedFiles, }) {
@@ -35538,13 +35502,6 @@ function identifyFileChangeGroups({ fileChangesGroups, changedFiles, }) {
     });
     return [...set];
 }
-
-;// CONCATENATED MODULE: ./src/reviewer/index.ts
-
-
-const reviewer_shouldRequestReview = withDebugLog(shouldRequestReview);
-const reviewer_identifyReviewers = withDebugLog(identifyReviewers);
-const reviewer_identifyFileChangeGroups = withDebugLog(identifyFileChangeGroups);
 
 ;// CONCATENATED MODULE: ./src/actions/auto-merge.ts
 var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -35593,18 +35550,17 @@ function run() {
             const pr = getPullRequest();
             const { isDraft, author } = pr;
             const changedFiles = yield fetchChangedFiles({ pr });
-            const fileChangesGroups = reviewer_identifyFileChangeGroups({
+            const fileChangesGroups = identifyFileChangeGroups({
                 fileChangesGroups: config.fileChangesGroups,
                 changedFiles,
             });
             logger_info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
-            const reviewers = reviewer_identifyReviewers({
+            const reviewers = identifyReviewers({
                 createdBy: author,
                 fileChangesGroups,
                 rulesByCreator: config.rulesByCreator,
                 defaultRules: config.defaultRules,
                 requestedReviewerLogins: pr.requestedReviewerLogins,
-                getFullResult: true,
             });
             logger_info(JSON.stringify(reviewers, null, 2));
             return;
