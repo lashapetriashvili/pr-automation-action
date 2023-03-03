@@ -40252,7 +40252,7 @@ function checkCI(checks, requiredChecks) {
             return checkRun.name === name;
         });
         if (check && (check.status !== 'completed' || check.conclusion !== 'success')) {
-            logger_warning(`Waiting for ${name} check to pass.`);
+            logger_warning(`Waiting for "${name}" CI check to pass.`);
             result = false;
         }
     });

@@ -16,7 +16,7 @@ export function checkCI(checks: Checks, requiredChecks: string[] | undefined): b
     });
 
     if (check && (check.status !== 'completed' || check.conclusion !== 'success')) {
-      warning(`Waiting for ${name} check to pass.`);
+      warning(`Waiting for "${name}" CI check to pass.`);
       result = false;
     }
   });
