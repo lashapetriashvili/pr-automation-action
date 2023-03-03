@@ -13,7 +13,7 @@ export function isPrFullyApproved(
   pullRequest: PullsGetResponseData,
   reviews: PullsGetReviewResponseData[],
   checks: Checks,
-  reviewersWithRules: Rule[]
+  reviewersWithRules: Rule[],
 ): boolean {
   let isMergeable = false;
 
@@ -24,7 +24,7 @@ export function isPrFullyApproved(
     return false;
   }
 
-  isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
+  /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
 
   isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
 

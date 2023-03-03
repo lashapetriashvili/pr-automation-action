@@ -35304,7 +35304,7 @@ function filterReviewersByState(reviewersFullData) {
 function checkRequestedReviewers(requestedReviewers) {
     const requestedChanges = requestedReviewers.map((reviewer) => reviewer.login);
     if (requestedChanges.length > 0) {
-        logger_warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
+        warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
         return false;
     }
     return true;
@@ -35332,7 +35332,6 @@ function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
 ;// CONCATENATED MODULE: ./src/approves/identify-ci.ts
 
 function checkCI(checks) {
-    logger_info(JSON.stringify(checks, null, 2));
     const totalInProgress = checks.check_runs.filter((check) => {
         if (check.status === 'in_progress' && check.conclusion === null) {
             return true;
@@ -35371,7 +35370,7 @@ function isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersW
         !checkDoNotMergeLabels(pullRequest.labels, configInput.doNotMergeLabels)) {
         return false;
     }
-    isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
+    /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
     isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
     isMergeable = checkCI(checks);
     return isMergeable;

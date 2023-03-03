@@ -4,8 +4,6 @@ import { Checks } from '../config/typings';
 import { warning, info } from '../logger';
 
 export function checkCI(checks: Checks): boolean {
-  info(JSON.stringify(checks, null, 2));
-
   const totalInProgress = checks.check_runs.filter((check) => {
     if (check.status === 'in_progress' && check.conclusion === null) {
       return true;
