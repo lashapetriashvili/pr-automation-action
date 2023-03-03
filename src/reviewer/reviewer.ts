@@ -187,6 +187,9 @@ export function identifyReviewers({
       requestedReviewerLogins,
       getRandomReviewers: !getFullResult,
     });
+
+    info(JSON.stringify(reviewers, null, 2));
+
     reviewers.forEach((reviewer) => result.add(reviewer));
 
     fullResult.push({

@@ -35510,6 +35510,7 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
             requestedReviewerLogins,
             getRandomReviewers: !getFullResult,
         });
+        logger_info(JSON.stringify(reviewers, null, 2));
         reviewers.forEach((reviewer) => result.add(reviewer));
         fullResult.push({
             // @ts-ignore
