@@ -35269,7 +35269,7 @@ function getReviewsByGraphQL(pr) {
 ;// CONCATENATED MODULE: ./src/approves/identify-ci.ts
 
 function checkCI(checks) {
-    logger_info(JSON.stringify(checks));
+    logger_info(JSON.stringify(checks, null, 2));
     const totalInProgress = checks.check_runs.filter((check) => {
         if (check.status === 'in_progress' && check.conclusion === null) {
             return true;
