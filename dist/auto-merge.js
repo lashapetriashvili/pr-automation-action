@@ -42885,7 +42885,6 @@ function run() {
             else {
                 logger_warning(jiraResponse.message);
             }
-            logger_info(`Merged pull request #${configInput.pullRequestNumber}`);
             core.setOutput('merged', true);
         }
         catch (err) {

@@ -139,8 +139,6 @@ export async function run(): Promise<void> {
       warning(jiraResponse.message);
     }
 
-    info(`Merged pull request #${configInput.pullRequestNumber}`);
-
     core.setOutput('merged', true);
   } catch (err) {
     error(err as Error);
