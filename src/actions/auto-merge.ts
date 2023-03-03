@@ -59,10 +59,10 @@ export async function run(): Promise<void> {
       rulesByCreator: config.rulesByCreator,
       defaultRules: config.defaultRules,
       requestedReviewerLogins: pr.requestedReviewerLogins,
-      getRandomReviewers: false,
+      getFullResult: true,
     });
 
-    info(`Identified reviewers: ${reviewers.join(', ')}`);
+    info(JSON.stringify(reviewers, null, 2));
 
     return;
 

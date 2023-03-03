@@ -35413,7 +35413,6 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
             }
             return result.add(reviewer);
         });
-        logger_info(JSON.stringify(result, null, 2));
         return result;
     }
     const preselectAlreadySelectedReviewers = reviewers.reduce((alreadySelectedReviewers, reviewer) => {
@@ -35433,7 +35432,6 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
             selectedList.push(randomReviewer);
         }
         else {
-            logger_info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
             selectedList.push(...reviewersWithoutRandomlySelected);
         }
     }
@@ -35442,9 +35440,10 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
     });
     return result;
 }
-function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, requestedReviewerLogins, }) {
+function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, requestedReviewerLogins, getFullResult = false, }) {
     const rulesByFileGroup = byFileGroups;
     const set = new Set();
+    const fullResult = [];
     fileChangesGroups.forEach((fileGroup) => {
         const rules = rulesByFileGroup[fileGroup];
         if (!rules) {
@@ -35456,13 +35455,23 @@ function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, crea
                 reviewers: rule.reviewers,
                 requestedReviewerLogins,
                 createdBy,
+                getRandomReviewers: !getFullResult,
             });
             reviewers.forEach((reviewer) => set.add(reviewer));
+            fullResult.push({
+                // @ts-ignore
+                reviewers,
+                assign: rule.assign,
+                required: rule.required,
+            });
         });
     });
+    if (getFullResult) {
+        return fullResult;
+    }
     return [...set];
 }
-function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, getRandomReviewers = false, }) {
+function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, getFullResult = false, }) {
     const rules = rulesByCreator[createdBy];
     logger_info(JSON.stringify(rules, null, 2));
     if (!rules) {
@@ -35474,6 +35483,7 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
                 fileChangesGroups,
                 createdBy,
                 requestedReviewerLogins,
+                getFullResult,
             });
         }
         else {
@@ -35485,6 +35495,7 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
         return result;
     }, {});
     const result = new Set();
+    const fullResult = [];
     rules.forEach((rule) => {
         if (rule.ifChanged) {
             const matchFileChanges = rule.ifChanged.some((group) => Boolean(fileChangesGroupsMap[group]));
@@ -35497,10 +35508,19 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
             reviewers: rule.reviewers,
             createdBy,
             requestedReviewerLogins,
-            getRandomReviewers,
+            getRandomReviewers: !getFullResult,
         });
         reviewers.forEach((reviewer) => result.add(reviewer));
+        fullResult.push({
+            // @ts-ignore
+            reviewers,
+            assign: rule.assign,
+            required: rule.required,
+        });
     });
+    if (getFullResult) {
+        return fullResult;
+    }
     return [...result];
 }
 function identifyFileChangeGroups({ fileChangesGroups, changedFiles, }) {
@@ -35583,9 +35603,9 @@ function run() {
                 rulesByCreator: config.rulesByCreator,
                 defaultRules: config.defaultRules,
                 requestedReviewerLogins: pr.requestedReviewerLogins,
-                getRandomReviewers: false,
+                getFullResult: true,
             });
-            logger_info(`Identified reviewers: ${reviewers.join(', ')}`);
+            logger_info(JSON.stringify(reviewers, null, 2));
             return;
             const client = github.getOctokit(configInput.token);
             const { data: pullRequest } = yield client.pulls.get({

@@ -48,7 +48,6 @@ function getReviewersBasedOnRule({
       return result.add(reviewer);
     });
 
-    info(JSON.stringify(result, null, 2));
     return result;
   }
   const preselectAlreadySelectedReviewers = reviewers.reduce<string[]>(
@@ -73,7 +72,6 @@ function getReviewersBasedOnRule({
 
       selectedList.push(randomReviewer);
     } else {
-      info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
       selectedList.push(...reviewersWithoutRandomlySelected);
     }
   }
@@ -88,14 +86,17 @@ function identifyReviewersByDefaultRules({
   fileChangesGroups,
   createdBy,
   requestedReviewerLogins,
+  getFullResult = false,
 }: {
   byFileGroups: DefaultRules['byFileGroups'];
   fileChangesGroups: string[];
   requestedReviewerLogins: string[];
   createdBy: string;
-}): string[] {
+  getFullResult?: boolean;
+}): any {
   const rulesByFileGroup = byFileGroups;
   const set = new Set<string>();
+  const fullResult: Rule[] = [];
   fileChangesGroups.forEach((fileGroup) => {
     const rules = rulesByFileGroup[fileGroup];
     if (!rules) {
@@ -107,10 +108,23 @@ function identifyReviewersByDefaultRules({
         reviewers: rule.reviewers,
         requestedReviewerLogins,
         createdBy,
+        getRandomReviewers: !getFullResult,
       });
       reviewers.forEach((reviewer) => set.add(reviewer));
+
+      fullResult.push({
+        // @ts-ignore
+        reviewers,
+        assign: rule.assign,
+        required: rule.required,
+      });
     });
   });
+
+  if (getFullResult) {
+    return fullResult;
+  }
+
   return [...set];
 }
 
@@ -120,15 +134,15 @@ export function identifyReviewers({
   fileChangesGroups,
   defaultRules,
   requestedReviewerLogins,
-  getRandomReviewers = false,
+  getFullResult = false,
 }: {
   createdBy: string;
   rulesByCreator: Config['rulesByCreator'];
   defaultRules?: Config['defaultRules'];
   fileChangesGroups: string[];
   requestedReviewerLogins: string[];
-  getRandomReviewers?: boolean;
-}): string[] {
+  getFullResult?: boolean;
+}): any {
   const rules = rulesByCreator[createdBy];
 
   info(JSON.stringify(rules, null, 2));
@@ -142,6 +156,7 @@ export function identifyReviewers({
         fileChangesGroups,
         createdBy,
         requestedReviewerLogins,
+        getFullResult,
       });
     } else {
       return [];
@@ -155,6 +170,7 @@ export function identifyReviewers({
     {},
   );
   const result = new Set<string>();
+  const fullResult: Rule[] = [];
   rules.forEach((rule) => {
     if (rule.ifChanged) {
       const matchFileChanges = rule.ifChanged.some((group) =>
@@ -169,10 +185,22 @@ export function identifyReviewers({
       reviewers: rule.reviewers,
       createdBy,
       requestedReviewerLogins,
-      getRandomReviewers,
+      getRandomReviewers: !getFullResult,
     });
     reviewers.forEach((reviewer) => result.add(reviewer));
+
+    fullResult.push({
+      // @ts-ignore
+      reviewers,
+      assign: rule.assign,
+      required: rule.required,
+    });
   });
+
+  if (getFullResult) {
+    return fullResult;
+  }
+
   return [...result];
 }
 

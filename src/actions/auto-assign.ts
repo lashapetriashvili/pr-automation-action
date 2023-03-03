@@ -61,14 +61,14 @@ export async function run(): Promise<void> {
     });
     info(`Identified reviewers: ${reviewers.join(', ')}`);
 
-    const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
-    if (reviewersToAssign.length === 0) {
-      info(`No reviewers were matched for author ${author}. Terminating the process`);
-      return;
-    }
-    await github.assignReviewers(pr, reviewersToAssign);
-
-    info(`Requesting review to ${reviewersToAssign.join(', ')}`);
+    /* const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author); */
+    /* if (reviewersToAssign.length === 0) { */
+    /*   info(`No reviewers were matched for author ${author}. Terminating the process`); */
+    /*   return; */
+    /* } */
+    /* await github.assignReviewers(pr, reviewersToAssign); */
+    /**/
+    /* info(`Requesting review to ${reviewersToAssign.join(', ')}`); */
 
     info('Done');
   } catch (err) {
