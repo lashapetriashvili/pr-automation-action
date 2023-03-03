@@ -5,10 +5,9 @@ import * as github from '../github';
 import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
-import {
-  identifyFileChangeGroups,
-  identifyReviewers,
-} from '../approves/identify-approvers';
+import { identifyReviewers } from '../approves/identify-approvers';
+
+import { identifyFileChangeGroups } from '../reviewer';
 
 export async function run(): Promise<void> {
   try {
@@ -87,7 +86,7 @@ export async function run(): Promise<void> {
 
     if (
       // @ts-ignore
-      !isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)
+      isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)
     ) {
       return;
     }

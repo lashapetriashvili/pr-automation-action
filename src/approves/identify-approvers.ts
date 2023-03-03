@@ -1,31 +1,5 @@
-import * as minimatch from 'minimatch';
 import { info } from '../logger';
 import { Config, DefaultRules, Rule } from '../config/typings';
-
-export function shouldRequestReview({
-  isDraft,
-  options,
-  currentLabels,
-}: {
-  isDraft: boolean;
-  options?: Config['options'];
-  currentLabels: string[];
-}): boolean {
-  if (isDraft) {
-    return false;
-  }
-  if (!options) {
-    return true;
-  }
-  const includesIgnoredLabels = currentLabels.some((currentLabel) => {
-    return options.ignoredLabels.includes(currentLabel);
-  });
-  if (includesIgnoredLabels) {
-    return false;
-  }
-
-  return true;
-}
 
 function getReviewers({
   reviewers,
@@ -132,25 +106,4 @@ export function identifyReviewers({
     });
   });
   return [...result];
-}
-
-export function identifyFileChangeGroups({
-  fileChangesGroups,
-  changedFiles,
-}: {
-  fileChangesGroups: Config['fileChangesGroups'];
-  changedFiles: string[];
-}): string[] {
-  const set = new Set<string>();
-  changedFiles.forEach((changedFile) => {
-    for (const [groupName, patterns] of Object.entries(fileChangesGroups)) {
-      patterns.forEach((pattern) => {
-        const matches = minimatch(changedFile, pattern);
-        if (matches) {
-          set.add(groupName);
-        }
-      });
-    }
-  });
-  return [...set];
 }

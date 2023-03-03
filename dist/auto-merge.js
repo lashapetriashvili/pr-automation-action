@@ -35376,26 +35376,8 @@ function isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersW
     return isMergeable;
 }
 
-// EXTERNAL MODULE: ./node_modules/minimatch/minimatch.js
-var minimatch = __nccwpck_require__(3973);
 ;// CONCATENATED MODULE: ./src/approves/identify-approvers.ts
 
-
-function shouldRequestReview({ isDraft, options, currentLabels, }) {
-    if (isDraft) {
-        return false;
-    }
-    if (!options) {
-        return true;
-    }
-    const includesIgnoredLabels = currentLabels.some((currentLabel) => {
-        return options.ignoredLabels.includes(currentLabel);
-    });
-    if (includesIgnoredLabels) {
-        return false;
-    }
-    return true;
-}
 function getReviewers({ reviewers, createdBy, }) {
     const result = new Set();
     reviewers.forEach((reviewer) => {
@@ -35468,6 +35450,132 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
     });
     return [...result];
 }
+
+;// CONCATENATED MODULE: ./src/utils.ts
+
+function getRandomItemFromArray(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
+function withDebugLog(executeFunction) {
+    return function (param) {
+        debug(`[${executeFunction.name}]. Params: ${JSON.stringify(param)}`);
+        const result = executeFunction(param);
+        debug(`[${executeFunction.name}]. Result: ${JSON.stringify(result)}`);
+        return result;
+    };
+}
+
+// EXTERNAL MODULE: ./node_modules/minimatch/minimatch.js
+var minimatch = __nccwpck_require__(3973);
+;// CONCATENATED MODULE: ./src/reviewer/reviewer.ts
+
+
+
+function shouldRequestReview({ isDraft, options, currentLabels, }) {
+    if (isDraft) {
+        return false;
+    }
+    if (!options) {
+        return true;
+    }
+    const includesIgnoredLabels = currentLabels.some((currentLabel) => {
+        return options.ignoredLabels.includes(currentLabel);
+    });
+    if (includesIgnoredLabels) {
+        return false;
+    }
+    return true;
+}
+function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, }) {
+    const result = new Set();
+    if (!assign) {
+        reviewers.forEach((reviewer) => {
+            if (reviewer === createdBy) {
+                return;
+            }
+            return result.add(reviewer);
+        });
+        return result;
+    }
+    const preselectAlreadySelectedReviewers = reviewers.reduce((alreadySelectedReviewers, reviewer) => {
+        const alreadyRequested = requestedReviewerLogins.includes(reviewer);
+        if (alreadyRequested) {
+            alreadySelectedReviewers.push(reviewer);
+        }
+        return alreadySelectedReviewers;
+    }, []);
+    const selectedList = [...preselectAlreadySelectedReviewers];
+    while (selectedList.length < assign) {
+        const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
+            return !selectedList.includes(reviewer);
+        });
+        const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
+        selectedList.push(randomReviewer);
+    }
+    selectedList.forEach((randomlySelected) => {
+        result.add(randomlySelected);
+    });
+    return result;
+}
+function reviewer_identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, requestedReviewerLogins, }) {
+    const rulesByFileGroup = byFileGroups;
+    const set = new Set();
+    fileChangesGroups.forEach((fileGroup) => {
+        const rules = rulesByFileGroup[fileGroup];
+        if (!rules) {
+            return;
+        }
+        rules.forEach((rule) => {
+            const reviewers = getReviewersBasedOnRule({
+                assign: rule.assign,
+                reviewers: rule.reviewers,
+                requestedReviewerLogins,
+                createdBy,
+            });
+            reviewers.forEach((reviewer) => set.add(reviewer));
+        });
+    });
+    return [...set];
+}
+function reviewer_identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, }) {
+    const rules = rulesByCreator[createdBy];
+    if (!rules) {
+        logger_info(`No rules for creator ${createdBy} were found.`);
+        if (defaultRules) {
+            logger_info('Using default rules');
+            return reviewer_identifyReviewersByDefaultRules({
+                byFileGroups: defaultRules.byFileGroups,
+                fileChangesGroups,
+                createdBy,
+                requestedReviewerLogins,
+            });
+        }
+        else {
+            return [];
+        }
+    }
+    const fileChangesGroupsMap = fileChangesGroups.reduce((result, group) => {
+        result[group] = group;
+        return result;
+    }, {});
+    const result = new Set();
+    rules.forEach((rule) => {
+        if (rule.ifChanged) {
+            const matchFileChanges = rule.ifChanged.some((group) => Boolean(fileChangesGroupsMap[group]));
+            if (!matchFileChanges) {
+                return;
+            }
+        }
+        const reviewers = getReviewersBasedOnRule({
+            assign: rule.assign,
+            reviewers: rule.reviewers,
+            createdBy,
+            requestedReviewerLogins,
+        });
+        reviewers.forEach((reviewer) => result.add(reviewer));
+    });
+    return [...result];
+}
 function identifyFileChangeGroups({ fileChangesGroups, changedFiles, }) {
     const set = new Set();
     changedFiles.forEach((changedFile) => {
@@ -35483,6 +35591,13 @@ function identifyFileChangeGroups({ fileChangesGroups, changedFiles, }) {
     return [...set];
 }
 
+;// CONCATENATED MODULE: ./src/reviewer/index.ts
+
+
+const reviewer_shouldRequestReview = withDebugLog(shouldRequestReview);
+const src_reviewer_identifyReviewers = withDebugLog(reviewer_identifyReviewers);
+const reviewer_identifyFileChangeGroups = withDebugLog(identifyFileChangeGroups);
+
 ;// CONCATENATED MODULE: ./src/actions/auto-merge.ts
 var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -35493,6 +35608,7 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+
 
 
 
@@ -35529,7 +35645,7 @@ function run() {
             const pr = getPullRequest();
             const { isDraft, author } = pr;
             const changedFiles = yield fetchChangedFiles({ pr });
-            const fileChangesGroups = identifyFileChangeGroups({
+            const fileChangesGroups = reviewer_identifyFileChangeGroups({
                 fileChangesGroups: config.fileChangesGroups,
                 changedFiles,
             });
@@ -35563,7 +35679,7 @@ function run() {
             });
             if (
             // @ts-ignore
-            !isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)) {
+            isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)) {
                 return;
             }
             if (configInput.comment) {
