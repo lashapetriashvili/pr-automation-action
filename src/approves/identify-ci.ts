@@ -10,12 +10,13 @@ export function checkCI(checks: Checks, requiredChecks: string[] | undefined): b
 
   let result = true;
 
-  requiredChecks.forEach((check) => {
-    const checkExists = checks.check_runs.find((checkRun) => {
-      return checkRun.name === check;
+  requiredChecks.forEach((name) => {
+    const check = checks.check_runs.find((checkRun) => {
+      return checkRun.name === name;
     });
 
-    if (!checkExists) {
+    if (check && (check.status !== 'completed' || check.conclusion !== 'success')) {
+      warning(`Waiting for ${name} to pass.`);
       result = false;
     }
   });

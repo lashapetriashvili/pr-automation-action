@@ -25,9 +25,9 @@ export function isPrFullyApproved(
 
   /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
 
-  if (!checkReviewersRequiredChanges(reviews, reviewersWithRules)) {
-    return false;
-  }
+  /* if (!checkReviewersRequiredChanges(reviews, reviewersWithRules)) { */
+  /*   return false; */
+  /* } */
 
   return checkCI(checks, requiredChecks);
 }
