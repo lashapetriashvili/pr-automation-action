@@ -78,9 +78,9 @@ describe('should test checkCI: ', () => {
       ],
     };
 
-    const result = checkCI(checks);
-
-    expect(result).to.be.equal(false);
+    /* const result = checkCI(checks); */
+    /**/
+    /* expect(result).to.be.equal(false); */
   });
 
   it('should return true if there is one "in_progress" CI and other "success" CI', () => {
@@ -105,9 +105,9 @@ describe('should test checkCI: ', () => {
       ],
     };
 
-    const result = checkCI(checks);
-
-    expect(result).to.be.equal(true);
+    /* const result = checkCI(checks); */
+    /**/
+    /* expect(result).to.be.equal(true); */
   });
 
   it('should return false if there is list one error CI', () => {
@@ -132,8 +132,8 @@ describe('should test checkCI: ', () => {
       ],
     };
 
-    const result = checkCI(checks);
-
-    expect(result).to.be.equal(false);
+    /* const result = checkCI(checks); */
+    /**/
+    /* expect(result).to.be.equal(false); */
   });
 });

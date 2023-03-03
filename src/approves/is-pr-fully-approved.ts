@@ -14,6 +14,7 @@ export function isPrFullyApproved(
   reviews: PullsGetReviewResponseData[],
   checks: Checks,
   reviewersWithRules: Rule[],
+  requiredChecks: string[] | undefined,
 ): boolean {
   if (
     configInput.doNotMergeLabels &&
@@ -24,9 +25,9 @@ export function isPrFullyApproved(
 
   /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
 
-  /* if (!checkReviewersRequiredChanges(reviews, reviewersWithRules)) { */
-  /*   return false; */
-  /* } */
+  if (!checkReviewersRequiredChanges(reviews, reviewersWithRules)) {
+    return false;
+  }
 
-  return checkCI(checks);
+  return checkCI(checks, requiredChecks);
 }
