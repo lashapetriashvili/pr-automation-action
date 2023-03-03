@@ -35266,86 +35266,23 @@ function getReviewsByGraphQL(pr) {
     });
 }
 
-;// CONCATENATED MODULE: ./src/approves/identify-reviews.ts
-
-function getReviewersLastReviews(listReviews) {
-    const response = {};
-    listReviews.forEach((review) => {
-        const key = review.user.login;
-        if (!response[key]) {
-            response[key] = Object.assign(Object.assign({}, review), { total_review: 0 });
-        }
-        response[key].total_review += 1;
-    });
-    return Object.values(response);
-}
-function filterReviewersByState(reviewersFullData) {
-    const response = {
-        requiredChanges: [],
-        approve: [],
-        commented: [],
-    };
-    reviewersFullData.forEach((reviewer) => {
-        switch (reviewer.state) {
-            case 'APPROVED':
-                response.approve.push(reviewer.user.login);
-                break;
-            case 'CHANGES_REQUESTED':
-                response.requiredChanges.push(reviewer.user.login);
-                break;
-            case 'COMMENTED':
-                response.commented.push(reviewer.user.login);
-                break;
-            default:
-        }
-    });
-    return response;
-}
-function checkRequestedReviewers(requestedReviewers) {
-    const requestedChanges = requestedReviewers.map((reviewer) => reviewer.login);
-    if (requestedChanges.length > 0) {
-        warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-        return false;
-    }
-    return true;
-}
-function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
-    let result = true;
-    const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
-    if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
-        logger_warning(`${reviewersByState.requiredChanges.join(', ')} don't approved or commented changes.`);
-        return false;
-    }
-    reviewersWithRules.forEach((rule) => {
-        if (rule.required) {
-            const requiredReviewers = rule.reviewers.filter((reviewer) => {
-                return reviewersByState.approve.includes(reviewer);
-            });
-            if (requiredReviewers.length < rule.required) {
-                logger_warning(`Waiting ${rule.required} reviews from ${rule.reviewers.join(', ')} to approve.`);
-                result = false;
-            }
-        }
-    });
-    return result;
-}
-
 ;// CONCATENATED MODULE: ./src/approves/identify-ci.ts
 
 function checkCI(checks) {
+    logger_info(JSON.stringify(checks));
     const totalInProgress = checks.check_runs.filter((check) => {
         if (check.status === 'in_progress' && check.conclusion === null) {
             return true;
         }
     }).length;
     if (totalInProgress > 1) {
-        warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
+        logger_warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
         return false;
     }
     const totalStatus = checks.total_count;
     const totalSuccess = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
     if (totalStatus - 1 !== totalSuccess) {
-        warning(`Not all status success, ${totalSuccess} out of ${totalStatus - 1} (ignored this check) success`);
+        logger_warning(`Not all status success, ${totalSuccess} out of ${totalStatus - 1} (ignored this check) success`);
         return false;
     }
     return true;
@@ -35364,17 +35301,16 @@ function checkDoNotMergeLabels(labels, doNotMergeLabels) {
 
 ;// CONCATENATED MODULE: ./src/approves/is-pr-fully-approved.ts
 
-
 function isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules) {
-    let isMergeable = false;
     if (configInput.doNotMergeLabels &&
         !checkDoNotMergeLabels(pullRequest.labels, configInput.doNotMergeLabels)) {
         return false;
     }
     /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
-    isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
-    /* isMergeable = checkCI(checks); */
-    return isMergeable;
+    /* if (!checkReviewersRequiredChanges(reviews, reviewersWithRules)) { */
+    /*   return false; */
+    /* } */
+    return checkCI(checks);
 }
 
 ;// CONCATENATED MODULE: ./src/approves/identify-approvers.ts
@@ -35678,10 +35614,11 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
-            const isMergeable = isPrFullyApproved(configInput, 
+            if (!isPrFullyApproved(configInput, 
             // @ts-ignore
-            pullRequest, reviews, checks, reviewersWithRules);
-            logger_info(JSON.stringify(isMergeable));
+            pullRequest, reviews, checks, reviewersWithRules)) {
+                return;
+            }
             if (configInput.comment) {
                 /* const { data: resp } = await client.issues.createComment({ */
                 /*   owner: configInput.owner, */

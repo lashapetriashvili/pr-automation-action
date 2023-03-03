@@ -84,16 +84,18 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
-    const isMergeable = isPrFullyApproved(
-      configInput,
-      // @ts-ignore
-      pullRequest,
-      reviews,
-      checks,
-      reviewersWithRules,
-    );
-
-    info(JSON.stringify(isMergeable));
+    if (
+      !isPrFullyApproved(
+        configInput,
+        // @ts-ignore
+        pullRequest,
+        reviews,
+        checks,
+        reviewersWithRules,
+      )
+    ) {
+      return;
+    }
 
     if (configInput.comment) {
       /* const { data: resp } = await client.issues.createComment({ */
