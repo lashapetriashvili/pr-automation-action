@@ -66,11 +66,11 @@ export function checkReviewersRequiredChanges(
 ): boolean {
   let result = true;
 
+  info(JSON.stringify(reviews, null, 2));
+
   const reviewersByState: ReviewerByState = filterReviewersByState(
     getReviewersLastReviews(reviews),
   );
-
-  info(JSON.stringify(reviewersByState, null, 2));
 
   if (reviewersByState.requiredChanges.length) {
     warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);

@@ -40220,8 +40220,8 @@ function checkRequestedReviewers(requestedReviewers) {
 }
 function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
     let result = true;
+    logger_info(JSON.stringify(reviews, null, 2));
     const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
-    logger_info(JSON.stringify(reviewersByState, null, 2));
     if (reviewersByState.requiredChanges.length) {
         logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
         return false;
