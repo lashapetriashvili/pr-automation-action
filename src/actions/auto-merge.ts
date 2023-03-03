@@ -84,8 +84,14 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
-    // @ts-ignore
-    const isMergeable = isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)
+    const isMergeable = isPrFullyApproved(
+      configInput,
+      // @ts-ignore
+      pullRequest,
+      reviews,
+      checks,
+      reviewersWithRules,
+    );
 
     info(JSON.stringify(isMergeable));
 

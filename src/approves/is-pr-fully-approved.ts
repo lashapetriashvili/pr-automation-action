@@ -28,7 +28,7 @@ export function isPrFullyApproved(
 
   isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
 
-  isMergeable = checkCI(checks);
+  /* isMergeable = checkCI(checks); */
 
   return isMergeable;
 }

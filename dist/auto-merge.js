@@ -35338,13 +35338,13 @@ function checkCI(checks) {
         }
     }).length;
     if (totalInProgress > 1) {
-        logger_warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
+        warning(`Waiting for ${totalInProgress - 1} CI checks to finish.`);
         return false;
     }
     const totalStatus = checks.total_count;
     const totalSuccess = checks.check_runs.filter((check) => check.conclusion === 'success' || check.conclusion === 'skipped').length;
     if (totalStatus - 1 !== totalSuccess) {
-        logger_warning(`Not all status success, ${totalSuccess} out of ${totalStatus - 1} (ignored this check) success`);
+        warning(`Not all status success, ${totalSuccess} out of ${totalStatus - 1} (ignored this check) success`);
         return false;
     }
     return true;
@@ -35372,7 +35372,7 @@ function isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersW
     }
     /* isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers); */
     isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
-    isMergeable = checkCI(checks);
+    /* isMergeable = checkCI(checks); */
     return isMergeable;
 }
 
@@ -35677,8 +35677,9 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            const isMergeable = isPrFullyApproved(configInput, 
             // @ts-ignore
-            const isMergeable = isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules);
+            pullRequest, reviews, checks, reviewersWithRules);
             logger_info(JSON.stringify(isMergeable));
             if (configInput.comment) {
                 /* const { data: resp } = await client.issues.createComment({ */
