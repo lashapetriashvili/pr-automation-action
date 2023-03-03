@@ -42786,7 +42786,7 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 
 
 function run() {
-    var _a;
+    var _a, _b;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
             logger_info('Staring PR auto merging.');
@@ -42854,9 +42854,14 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            const res = isPrFullyApproved(configInput, 
+            // @ts-ignore
+            pullRequest, reviews, checks, reviewersWithRules, (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.requiredChecks);
+            logger_info(JSON.stringify(res));
+            return;
             if (!isPrFullyApproved(configInput, 
             // @ts-ignore
-            pullRequest, reviews, checks, reviewersWithRules, (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.requiredChecks)) {
+            pullRequest, reviews, checks, reviewersWithRules, (_b = config === null || config === void 0 ? void 0 : config.options) === null || _b === void 0 ? void 0 : _b.requiredChecks)) {
                 return;
             }
             if (configInput.comment) {

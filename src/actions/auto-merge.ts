@@ -91,6 +91,20 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
+    const res = isPrFullyApproved(
+      configInput,
+      // @ts-ignore
+      pullRequest,
+      reviews,
+      checks,
+      reviewersWithRules,
+      config?.options?.requiredChecks,
+    );
+
+    info(JSON.stringify(res));
+
+    return;
+
     if (
       !isPrFullyApproved(
         configInput,
