@@ -37,41 +37,11 @@ function getReviewersBasedOnRule({
   requestedReviewerLogins: string[];
 }) {
   const result = new Set<string>();
-  if (!assign) {
-    reviewers.forEach((reviewer) => {
-      if (reviewer === createdBy) {
-        return;
-      }
-      return result.add(reviewer);
-    });
-    return result;
-  }
-  const preselectAlreadySelectedReviewers = reviewers.reduce<string[]>(
-    (alreadySelectedReviewers, reviewer) => {
-      const alreadyRequested = requestedReviewerLogins.includes(reviewer);
-      if (alreadyRequested) {
-        alreadySelectedReviewers.push(reviewer);
-      }
-      return alreadySelectedReviewers;
-    },
-    [],
-  );
-  const selectedList = [...preselectAlreadySelectedReviewers];
-
-  info(JSON.stringify(selectedList, null, 2));
-  info(JSON.stringify(reviewers, null, 2));
-
-  while (selectedList.length < assign) {
-    const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
-      return !selectedList.includes(reviewer);
-    });
-
-    if (reviewersWithoutRandomlySelected.length) {
-      selectedList.push(reviewersWithoutRandomlySelected[0]);
+  reviewers.forEach((reviewer) => {
+    if (reviewer === createdBy) {
+      return;
     }
-  }
-  selectedList.forEach((randomlySelected) => {
-    result.add(randomlySelected);
+    return result.add(reviewer);
   });
   return result;
 }

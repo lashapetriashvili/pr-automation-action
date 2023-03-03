@@ -35391,35 +35391,11 @@ function shouldRequestReview({ isDraft, options, currentLabels, }) {
 }
 function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, }) {
     const result = new Set();
-    if (!assign) {
-        reviewers.forEach((reviewer) => {
-            if (reviewer === createdBy) {
-                return;
-            }
-            return result.add(reviewer);
-        });
-        return result;
-    }
-    const preselectAlreadySelectedReviewers = reviewers.reduce((alreadySelectedReviewers, reviewer) => {
-        const alreadyRequested = requestedReviewerLogins.includes(reviewer);
-        if (alreadyRequested) {
-            alreadySelectedReviewers.push(reviewer);
+    reviewers.forEach((reviewer) => {
+        if (reviewer === createdBy) {
+            return;
         }
-        return alreadySelectedReviewers;
-    }, []);
-    const selectedList = [...preselectAlreadySelectedReviewers];
-    logger_info(JSON.stringify(selectedList, null, 2));
-    logger_info(JSON.stringify(reviewers, null, 2));
-    while (selectedList.length < assign) {
-        const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
-            return !selectedList.includes(reviewer);
-        });
-        if (reviewersWithoutRandomlySelected.length) {
-            selectedList.push(reviewersWithoutRandomlySelected[0]);
-        }
-    }
-    selectedList.forEach((randomlySelected) => {
-        result.add(randomlySelected);
+        return result.add(reviewer);
     });
     return result;
 }
