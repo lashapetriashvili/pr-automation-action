@@ -62,7 +62,14 @@ function getReviewersBasedOnRule({
     const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
       return !selectedList.includes(reviewer);
     });
+
+    info('reviewersWithoutRandomlySelected');
+    info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
+
     const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
+    info('randomReviewer');
+    info(JSON.stringify(randomReviewer, null, 2));
+
     selectedList.push(randomReviewer);
   }
   selectedList.forEach((randomlySelected) => {

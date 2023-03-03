@@ -1,10 +1,15 @@
 import { inspect } from 'util';
 import * as core from '@actions/core';
-import * as github from '@actions/github';
+import * as githubAction from '@actions/github';
+import * as github from '../github';
 import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
-import { fetchConfig } from '../github';
+import {
+  identifyFileChangeGroups,
+  identifyReviewers,
+  shouldRequestReview,
+} from '../reviewer';
 
 export async function run(): Promise<void> {
   try {
@@ -26,7 +31,7 @@ export async function run(): Promise<void> {
     let config;
 
     try {
-      config = await fetchConfig();
+      config = await github.fetchConfig();
     } catch (err) {
       if ((err as Record<string, unknown>).status === 404) {
         warning(
@@ -38,11 +43,29 @@ export async function run(): Promise<void> {
       throw err;
     }
 
-    info(JSON.stringify(config, null, 2));
+    const pr = github.getPullRequest();
+    const { isDraft, author } = pr;
+
+    const changedFiles = await github.fetchChangedFiles({ pr });
+    const fileChangesGroups = identifyFileChangeGroups({
+      fileChangesGroups: config.fileChangesGroups,
+      changedFiles,
+    });
+    info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
+
+    const reviewers = identifyReviewers({
+      createdBy: author,
+      fileChangesGroups,
+      rulesByCreator: config.rulesByCreator,
+      defaultRules: config.defaultRules,
+      requestedReviewerLogins: pr.requestedReviewerLogins,
+    });
+
+    info(`Identified reviewers: ${reviewers.join(', ')}`);
 
     return;
 
-    const client = github.getOctokit(configInput.token);
+    const client = githubAction.getOctokit(configInput.token);
 
     const { data: pullRequest } = await client.pulls.get({
       owner,
