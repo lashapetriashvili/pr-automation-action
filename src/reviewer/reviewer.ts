@@ -37,6 +37,8 @@ function getReviewersBasedOnRule({
   createdBy: string;
   requestedReviewerLogins: string[];
 }) {
+  info('getReviewersBasedOnRule');
+
   const result = new Set<string>();
   if (!assign) {
     reviewers.forEach((reviewer) => {
@@ -129,6 +131,10 @@ export function identifyReviewers({
   requestedReviewerLogins: string[];
 }): string[] {
   const rules = rulesByCreator[createdBy];
+
+  info('rules');
+  info(JSON.stringify(rules, null, 2));
+
   if (!rules) {
     info(`No rules for creator ${createdBy} were found.`);
     if (defaultRules) {

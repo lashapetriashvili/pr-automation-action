@@ -35405,6 +35405,7 @@ function shouldRequestReview({ isDraft, options, currentLabels, }) {
     return true;
 }
 function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, }) {
+    logger_info('getReviewersBasedOnRule');
     const result = new Set();
     if (!assign) {
         reviewers.forEach((reviewer) => {
@@ -35464,6 +35465,8 @@ function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, crea
 }
 function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, }) {
     const rules = rulesByCreator[createdBy];
+    logger_info('rules');
+    logger_info(JSON.stringify(rules, null, 2));
     if (!rules) {
         logger_info(`No rules for creator ${createdBy} were found.`);
         if (defaultRules) {
