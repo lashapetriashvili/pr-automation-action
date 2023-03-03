@@ -35008,6 +35008,7 @@ const schema = lib.object()
     .keys({
     options: lib.object({
         ignoredLabels: lib.array().items(lib.string()),
+        requiredChecks: lib.array().items(lib.string()),
     }).optional(),
     defaultRules: lib.object({
         byFileGroups: lib.object().pattern(lib.string(), lib.array().items(lib.object({
