@@ -52,17 +52,13 @@ export async function run(): Promise<void> {
     });
     info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
 
-    const reviewers = identifyReviewers({
+    const reviewersWithRules = identifyReviewers({
       createdBy: author,
       fileChangesGroups,
       rulesByCreator: config.rulesByCreator,
       defaultRules: config.defaultRules,
       requestedReviewerLogins: pr.requestedReviewerLogins,
     });
-
-    info(JSON.stringify(reviewers, null, 2));
-
-    return;
 
     const client = githubAction.getOctokit(configInput.token);
 
@@ -89,29 +85,31 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
-    // @ts-ignore
-    if (!isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
+    if (
+      // @ts-ignore
+      !isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)
+    ) {
       return;
     }
 
     if (configInput.comment) {
-      const { data: resp } = await client.issues.createComment({
-        owner: configInput.owner,
-        repo: configInput.repo,
-        issue_number: configInput.pullRequestNumber,
-        body: configInput.comment,
-      });
-
-      info(`Post comment ${inspect(configInput.comment)}`);
-      core.setOutput('commentID', resp.id);
+      /* const { data: resp } = await client.issues.createComment({ */
+      /*   owner: configInput.owner, */
+      /*   repo: configInput.repo, */
+      /*   issue_number: configInput.pullRequestNumber, */
+      /*   body: configInput.comment, */
+      /* }); */
+      /**/
+      /* info(`Post comment ${inspect(configInput.comment)}`); */
+      /* core.setOutput('commentID', resp.id); */
     }
 
-    await client.pulls.merge({
-      owner,
-      repo,
-      pull_number: configInput.pullRequestNumber,
-      merge_method: configInput.strategy,
-    });
+    /* await client.pulls.merge({ */
+    /*   owner, */
+    /*   repo, */
+    /*   pull_number: configInput.pullRequestNumber, */
+    /*   merge_method: configInput.strategy, */
+    /* }); */
 
     info(`Merged pull request #${configInput.pullRequestNumber}`);
 

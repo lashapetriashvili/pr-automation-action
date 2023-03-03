@@ -27,14 +27,11 @@ export function shouldRequestReview({
   return true;
 }
 
-function getReviewersBasedOnRule({
-  assign,
+function getReviewers({
   reviewers,
   createdBy,
-  requestedReviewerLogins,
 }: Pick<Rule, 'assign' | 'reviewers'> & {
   createdBy: string;
-  requestedReviewerLogins: string[];
 }) {
   const result = new Set<string>();
   reviewers.forEach((reviewer) => {
@@ -50,7 +47,6 @@ function identifyReviewersByDefaultRules({
   byFileGroups,
   fileChangesGroups,
   createdBy,
-  requestedReviewerLogins,
 }: {
   byFileGroups: DefaultRules['byFileGroups'];
   fileChangesGroups: string[];
@@ -65,10 +61,8 @@ function identifyReviewersByDefaultRules({
       return;
     }
     rules.forEach((rule) => {
-      const reviewers = getReviewersBasedOnRule({
-        assign: rule.assign,
+      const reviewers = getReviewers({
         reviewers: rule.reviewers,
-        requestedReviewerLogins,
         createdBy,
       });
 
@@ -127,17 +121,14 @@ export function identifyReviewers({
         return;
       }
     }
-    const reviewers = getReviewersBasedOnRule({
-      assign: rule.assign,
+    const reviewers = getReviewers({
       reviewers: rule.reviewers,
       createdBy,
-      requestedReviewerLogins,
     });
 
     result.add({
       reviewers: [...reviewers],
       required: rule.required,
-      assign: rule.assign,
     });
   });
   return [...result];

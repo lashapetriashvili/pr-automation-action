@@ -1,5 +1,5 @@
 import { PullsGetReviewResponseData, PullsGetResponseData } from '@octokit/types';
-import { ReviewerByState } from '../config/typings';
+import { ReviewerByState, Rule } from '../config/typings';
 import { info, warning } from '../logger';
 
 export function getReviewersLastReviews(
@@ -60,7 +60,10 @@ export function checkRequestedReviewers(
   return true;
 }
 
-export function checkReviewersRequiredChanges(reviews: PullsGetReviewResponseData[]) {
+export function checkReviewersRequiredChanges(
+  reviews: PullsGetReviewResponseData[],
+  reviewersWithRules: Rule[],
+) {
   const reviewersByState: ReviewerByState = filterReviewersByState(
     getReviewersLastReviews(reviews),
   );
@@ -74,7 +77,22 @@ export function checkReviewersRequiredChanges(reviews: PullsGetReviewResponseDat
     return false;
   }
 
-  info(`${reviewersByState.approve.join(', ')} approved changes.`);
+  reviewersWithRules.forEach((rule) => {
+    if (rule.required) {
+      const requiredReviewers = rule.reviewers.filter((reviewer) => {
+        return reviewersByState.approve.includes(reviewer);
+      });
+
+      if (requiredReviewers.length < rule.required) {
+        warning(
+          `Waiting ${rule.required} reviews from ${rule.reviewers.join(
+            ', ',
+          )} to approve.`,
+        );
+        return false;
+      }
+    }
+  });
 
   return true;
 }

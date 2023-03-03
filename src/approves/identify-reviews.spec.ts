@@ -95,13 +95,19 @@ describe('should test checkReviewersRequiredChanges:', () => {
   ];
 
   it('should return true if there are no reviewers', () => {
-    const result = checkReviewersRequiredChanges([]);
+    const result = checkReviewersRequiredChanges([], []);
 
     expect(result).to.be.equal(true);
   });
 
   it('should return false if there are reviewer and it\'s state equal "CHANGES_REQUESTED', () => {
-    const result = checkReviewersRequiredChanges(reviewers);
+    const result = checkReviewersRequiredChanges(reviewers, [
+      {
+        reviewers: ['user1'],
+        required: 1,
+        assign: 1,
+      },
+    ]);
 
     expect(result).to.be.equal(false);
   });
@@ -247,7 +253,13 @@ const reviewers: PullsGetReviewResponseData[] = [
 
 describe('should test checkReviewersRequiredChanges:', () => {
   it('should return false if there are two reviewers but one\'s state is a "CHANGES_REQUESTED', () => {
-    const result = checkReviewersRequiredChanges(reviewers);
+    const result = checkReviewersRequiredChanges(reviewers, [
+      {
+        reviewers: ['user1'],
+        required: 1,
+        assign: 1,
+      },
+    ]);
 
     expect(result).to.be.equal(false);
   });

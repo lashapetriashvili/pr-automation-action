@@ -34994,8 +34994,6 @@ __nccwpck_require__.d(__webpack_exports__, {
   "run": () => (/* binding */ run)
 });
 
-// EXTERNAL MODULE: external "util"
-var external_util_ = __nccwpck_require__(3837);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
@@ -35311,13 +35309,23 @@ function checkRequestedReviewers(requestedReviewers) {
     }
     return true;
 }
-function checkReviewersRequiredChanges(reviews) {
+function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
     const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
     if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
         logger_warning(`${reviewersByState.requiredChanges.join(', ')} don't approved or commented changes.`);
         return false;
     }
-    logger_info(`${reviewersByState.approve.join(', ')} approved changes.`);
+    reviewersWithRules.forEach((rule) => {
+        if (rule.required) {
+            const requiredReviewers = rule.reviewers.filter((reviewer) => {
+                return reviewersByState.approve.includes(reviewer);
+            });
+            if (requiredReviewers.length < rule.required) {
+                logger_warning(`Waiting ${rule.required} reviews from ${rule.reviewers.join(', ')} to approve.`);
+                return false;
+            }
+        }
+    });
     return true;
 }
 
@@ -35357,14 +35365,14 @@ function checkDoNotMergeLabels(labels, doNotMergeLabels) {
 ;// CONCATENATED MODULE: ./src/approves/is-pr-fully-approved.ts
 
 
-function isPrFullyApproved(configInput, pullRequest, reviews, checks) {
+function isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules) {
     let isMergeable = false;
     if (configInput.doNotMergeLabels &&
         !checkDoNotMergeLabels(pullRequest.labels, configInput.doNotMergeLabels)) {
         return false;
     }
     isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
-    isMergeable = checkReviewersRequiredChanges(reviews);
+    isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
     isMergeable = checkCI(checks);
     return isMergeable;
 }
@@ -35389,7 +35397,7 @@ function shouldRequestReview({ isDraft, options, currentLabels, }) {
     }
     return true;
 }
-function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, }) {
+function getReviewers({ reviewers, createdBy, }) {
     const result = new Set();
     reviewers.forEach((reviewer) => {
         if (reviewer === createdBy) {
@@ -35399,7 +35407,7 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
     });
     return result;
 }
-function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, requestedReviewerLogins, }) {
+function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, createdBy, }) {
     const rulesByFileGroup = byFileGroups;
     const set = new Set();
     fileChangesGroups.forEach((fileGroup) => {
@@ -35408,10 +35416,8 @@ function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, crea
             return;
         }
         rules.forEach((rule) => {
-            const reviewers = getReviewersBasedOnRule({
-                assign: rule.assign,
+            const reviewers = getReviewers({
                 reviewers: rule.reviewers,
-                requestedReviewerLogins,
                 createdBy,
             });
             set.add({
@@ -35452,16 +35458,13 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
                 return;
             }
         }
-        const reviewers = getReviewersBasedOnRule({
-            assign: rule.assign,
+        const reviewers = getReviewers({
             reviewers: rule.reviewers,
             createdBy,
-            requestedReviewerLogins,
         });
         result.add({
             reviewers: [...reviewers],
             required: rule.required,
-            assign: rule.assign,
         });
     });
     return [...result];
@@ -35491,7 +35494,6 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-
 
 
 
@@ -35533,15 +35535,13 @@ function run() {
                 changedFiles,
             });
             logger_info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
-            const reviewers = identifyReviewers({
+            const reviewersWithRules = identifyReviewers({
                 createdBy: author,
                 fileChangesGroups,
                 rulesByCreator: config.rulesByCreator,
                 defaultRules: config.defaultRules,
                 requestedReviewerLogins: pr.requestedReviewerLogins,
             });
-            logger_info(JSON.stringify(reviewers, null, 2));
-            return;
             const client = github.getOctokit(configInput.token);
             const { data: pullRequest } = yield client.pulls.get({
                 owner,
@@ -35562,26 +35562,28 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            if (
             // @ts-ignore
-            if (!isPrFullyApproved(configInput, pullRequest, reviews, checks)) {
+            !isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)) {
                 return;
             }
             if (configInput.comment) {
-                const { data: resp } = yield client.issues.createComment({
-                    owner: configInput.owner,
-                    repo: configInput.repo,
-                    issue_number: configInput.pullRequestNumber,
-                    body: configInput.comment,
-                });
-                logger_info(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
-                core.setOutput('commentID', resp.id);
+                /* const { data: resp } = await client.issues.createComment({ */
+                /*   owner: configInput.owner, */
+                /*   repo: configInput.repo, */
+                /*   issue_number: configInput.pullRequestNumber, */
+                /*   body: configInput.comment, */
+                /* }); */
+                /**/
+                /* info(`Post comment ${inspect(configInput.comment)}`); */
+                /* core.setOutput('commentID', resp.id); */
             }
-            yield client.pulls.merge({
-                owner,
-                repo,
-                pull_number: configInput.pullRequestNumber,
-                merge_method: configInput.strategy,
-            });
+            /* await client.pulls.merge({ */
+            /*   owner, */
+            /*   repo, */
+            /*   pull_number: configInput.pullRequestNumber, */
+            /*   merge_method: configInput.strategy, */
+            /* }); */
             logger_info(`Merged pull request #${configInput.pullRequestNumber}`);
             core.setOutput('merged', true);
         }

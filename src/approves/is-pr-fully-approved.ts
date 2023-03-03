@@ -1,5 +1,5 @@
 import { PullsGetReviewResponseData, PullsGetResponseData } from '@octokit/types';
-import { Checks, Inputs } from '../config/typings';
+import { Checks, Inputs, Rule } from '../config/typings';
 
 import {
   checkReviewersRequiredChanges,
@@ -13,6 +13,7 @@ export function isPrFullyApproved(
   pullRequest: PullsGetResponseData,
   reviews: PullsGetReviewResponseData[],
   checks: Checks,
+  reviewersWithRules: Rule[]
 ): boolean {
   let isMergeable = false;
 
@@ -25,7 +26,7 @@ export function isPrFullyApproved(
 
   isMergeable = checkRequestedReviewers(pullRequest.requested_reviewers);
 
-  isMergeable = checkReviewersRequiredChanges(reviews);
+  isMergeable = checkReviewersRequiredChanges(reviews, reviewersWithRules);
 
   isMergeable = checkCI(checks);
 
