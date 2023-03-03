@@ -35677,11 +35677,9 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
-            if (
             // @ts-ignore
-            isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules)) {
-                return;
-            }
+            const isMergeable = isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersWithRules);
+            logger_info(JSON.stringify(isMergeable));
             if (configInput.comment) {
                 /* const { data: resp } = await client.issues.createComment({ */
                 /*   owner: configInput.owner, */
