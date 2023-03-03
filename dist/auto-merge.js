@@ -40222,7 +40222,7 @@ function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
     let result = true;
     const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
     if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
-        logger_warning(`${reviewersByState.requiredChanges.join(', ')} don't approved or commented changes.`);
+        logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
         return false;
     }
     reviewersWithRules.forEach((rule) => {

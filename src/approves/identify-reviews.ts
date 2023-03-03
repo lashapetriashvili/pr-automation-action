@@ -71,11 +71,7 @@ export function checkReviewersRequiredChanges(
   );
 
   if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
-    warning(
-      `${reviewersByState.requiredChanges.join(
-        ', ',
-      )} don't approved or commented changes.`,
-    );
+    warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
     return false;
   }
 
