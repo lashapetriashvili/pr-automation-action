@@ -58,6 +58,10 @@ function getReviewersBasedOnRule({
     [],
   );
   const selectedList = [...preselectAlreadySelectedReviewers];
+
+  info('zaza' + selectedList.length);
+  info('zaza111' + assign);
+
   while (selectedList.length < assign) {
     const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
       return !selectedList.includes(reviewer);
