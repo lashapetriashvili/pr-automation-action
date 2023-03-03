@@ -35413,6 +35413,7 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
             }
             return result.add(reviewer);
         });
+        logger_info(JSON.stringify(result, null, 2));
         return result;
     }
     const preselectAlreadySelectedReviewers = reviewers.reduce((alreadySelectedReviewers, reviewer) => {

@@ -45,6 +45,8 @@ function getReviewersBasedOnRule({
       }
       return result.add(reviewer);
     });
+
+    info(JSON.stringify(result, null, 2));
     return result;
   }
   const preselectAlreadySelectedReviewers = reviewers.reduce<string[]>(
