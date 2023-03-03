@@ -91,6 +91,8 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
+    info('asd');
+
     const res = isPrFullyApproved(
       configInput,
       // @ts-ignore

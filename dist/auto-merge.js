@@ -42854,6 +42854,7 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            logger_info('asd');
             const res = isPrFullyApproved(configInput, 
             // @ts-ignore
             pullRequest, reviews, checks, reviewersWithRules, (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.requiredChecks);
