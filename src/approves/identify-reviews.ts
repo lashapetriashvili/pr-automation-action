@@ -64,6 +64,8 @@ export function checkReviewersRequiredChanges(
   reviews: PullsGetReviewResponseData[],
   reviewersWithRules: Rule[],
 ) {
+  let result = true;
+
   const reviewersByState: ReviewerByState = filterReviewersByState(
     getReviewersLastReviews(reviews),
   );
@@ -89,10 +91,10 @@ export function checkReviewersRequiredChanges(
             ', ',
           )} to approve.`,
         );
-        return false;
+        result = false;
       }
     }
   });
 
-  return true;
+  return result;
 }

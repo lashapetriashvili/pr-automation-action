@@ -35310,6 +35310,7 @@ function checkRequestedReviewers(requestedReviewers) {
     return true;
 }
 function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
+    let result = true;
     const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
     if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
         logger_warning(`${reviewersByState.requiredChanges.join(', ')} don't approved or commented changes.`);
@@ -35322,11 +35323,11 @@ function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
             });
             if (requiredReviewers.length < rule.required) {
                 logger_warning(`Waiting ${rule.required} reviews from ${rule.reviewers.join(', ')} to approve.`);
-                return false;
+                result = false;
             }
         }
     });
-    return true;
+    return result;
 }
 
 ;// CONCATENATED MODULE: ./src/approves/identify-ci.ts
