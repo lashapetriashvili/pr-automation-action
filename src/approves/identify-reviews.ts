@@ -70,7 +70,9 @@ export function checkReviewersRequiredChanges(
     getReviewersLastReviews(reviews),
   );
 
-  if (reviewersByState.requiredChanges.length || reviewersByState.commented.length) {
+  info(JSON.stringify(reviewersByState, null, 2));
+
+  if (reviewersByState.requiredChanges.length) {
     warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
     return false;
   }
