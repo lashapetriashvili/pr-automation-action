@@ -40223,7 +40223,6 @@ function checkRequestedReviewers(requestedReviewers) {
 }
 function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
     let result = true;
-    logger_info(JSON.stringify(reviews, null, 2));
     const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
     if (reviewersByState.requiredChanges.length) {
         logger_warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);

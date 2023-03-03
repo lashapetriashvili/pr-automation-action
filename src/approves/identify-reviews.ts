@@ -69,8 +69,6 @@ export function checkReviewersRequiredChanges(
 ): boolean {
   let result = true;
 
-  info(JSON.stringify(reviews, null, 2));
-
   const reviewersByState: ReviewerByState = filterReviewersByState(
     getReviewersLastReviews(reviews),
   );
