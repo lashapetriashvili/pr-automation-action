@@ -91,22 +91,6 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
-    info('asd');
-
-    const res = isPrFullyApproved(
-      configInput,
-      // @ts-ignore
-      pullRequest,
-      reviews,
-      checks,
-      reviewersWithRules,
-      config?.options?.requiredChecks,
-    );
-
-    info(JSON.stringify(res));
-
-    return;
-
     if (
       !isPrFullyApproved(
         configInput,
@@ -122,15 +106,15 @@ export async function run(): Promise<void> {
     }
 
     if (configInput.comment) {
-      const { data: resp } = await client.issues.createComment({
-        owner: configInput.owner,
-        repo: configInput.repo,
-        issue_number: configInput.pullRequestNumber,
-        body: configInput.comment,
-      });
-
-      info(`Post comment ${inspect(configInput.comment)}`);
-      core.setOutput('commentID', resp.id);
+      /* const { data: resp } = await client.issues.createComment({ */
+      /*   owner: configInput.owner, */
+      /*   repo: configInput.repo, */
+      /*   issue_number: configInput.pullRequestNumber, */
+      /*   body: configInput.comment, */
+      /* }); */
+      /**/
+      /* info(`Post comment ${inspect(configInput.comment)}`); */
+      /* core.setOutput('commentID', resp.id); */
     }
 
     const branchName = pullRequest.head.ref;

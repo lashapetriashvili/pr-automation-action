@@ -39900,8 +39900,6 @@ __nccwpck_require__.d(__webpack_exports__, {
   "run": () => (/* binding */ run)
 });
 
-// EXTERNAL MODULE: external "util"
-var external_util_ = __nccwpck_require__(3837);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
@@ -40284,7 +40282,7 @@ function isPrFullyApproved(configInput, pullRequest, reviews, checks, reviewersW
     if (!checkCI(checks, requiredChecks)) {
         return false;
     }
-    checkReviewersRequiredChanges(reviews, reviewersWithRules);
+    return checkReviewersRequiredChanges(reviews, reviewersWithRules);
 }
 
 ;// CONCATENATED MODULE: ./src/approves/identify-approvers.ts
@@ -42784,9 +42782,8 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 
 
 
-
 function run() {
-    var _a, _b;
+    var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
         try {
             logger_info('Staring PR auto merging.');
@@ -42854,26 +42851,21 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
-            logger_info('asd');
-            const res = isPrFullyApproved(configInput, 
-            // @ts-ignore
-            pullRequest, reviews, checks, reviewersWithRules, (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.requiredChecks);
-            logger_info(JSON.stringify(res));
-            return;
             if (!isPrFullyApproved(configInput, 
             // @ts-ignore
-            pullRequest, reviews, checks, reviewersWithRules, (_b = config === null || config === void 0 ? void 0 : config.options) === null || _b === void 0 ? void 0 : _b.requiredChecks)) {
+            pullRequest, reviews, checks, reviewersWithRules, (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.requiredChecks)) {
                 return;
             }
             if (configInput.comment) {
-                const { data: resp } = yield client.issues.createComment({
-                    owner: configInput.owner,
-                    repo: configInput.repo,
-                    issue_number: configInput.pullRequestNumber,
-                    body: configInput.comment,
-                });
-                logger_info(`Post comment ${(0,external_util_.inspect)(configInput.comment)}`);
-                core.setOutput('commentID', resp.id);
+                /* const { data: resp } = await client.issues.createComment({ */
+                /*   owner: configInput.owner, */
+                /*   repo: configInput.repo, */
+                /*   issue_number: configInput.pullRequestNumber, */
+                /*   body: configInput.comment, */
+                /* }); */
+                /**/
+                /* info(`Post comment ${inspect(configInput.comment)}`); */
+                /* core.setOutput('commentID', resp.id); */
             }
             const branchName = pullRequest.head.ref;
             const baseBranchName = pullRequest.base.ref;
