@@ -35404,8 +35404,7 @@ function shouldRequestReview({ isDraft, options, currentLabels, }) {
     }
     return true;
 }
-function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, }) {
-    logger_info('getReviewersBasedOnRule');
+function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReviewerLogins, getRandomReviewers = true, }) {
     const result = new Set();
     if (!assign) {
         reviewers.forEach((reviewer) => {
@@ -35425,18 +35424,18 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
         return alreadySelectedReviewers;
     }, []);
     const selectedList = [...preselectAlreadySelectedReviewers];
-    logger_info('zaza' + selectedList.length);
-    logger_info('zaza111' + assign);
     while (selectedList.length < assign) {
         const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
             return !selectedList.includes(reviewer);
         });
-        logger_info('reviewersWithoutRandomlySelected');
-        logger_info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
-        const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
-        logger_info('randomReviewer');
-        logger_info(JSON.stringify(randomReviewer, null, 2));
-        selectedList.push(randomReviewer);
+        if (getRandomReviewers) {
+            const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
+            selectedList.push(randomReviewer);
+        }
+        else {
+            logger_info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
+            selectedList.push(...reviewersWithoutRandomlySelected);
+        }
     }
     selectedList.forEach((randomlySelected) => {
         result.add(randomlySelected);
@@ -35463,9 +35462,8 @@ function identifyReviewersByDefaultRules({ byFileGroups, fileChangesGroups, crea
     });
     return [...set];
 }
-function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, }) {
+function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defaultRules, requestedReviewerLogins, getRandomReviewers = false, }) {
     const rules = rulesByCreator[createdBy];
-    logger_info('rules');
     logger_info(JSON.stringify(rules, null, 2));
     if (!rules) {
         logger_info(`No rules for creator ${createdBy} were found.`);
@@ -35499,6 +35497,7 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
             reviewers: rule.reviewers,
             createdBy,
             requestedReviewerLogins,
+            getRandomReviewers,
         });
         reviewers.forEach((reviewer) => result.add(reviewer));
     });
@@ -35584,6 +35583,7 @@ function run() {
                 rulesByCreator: config.rulesByCreator,
                 defaultRules: config.defaultRules,
                 requestedReviewerLogins: pr.requestedReviewerLogins,
+                getRandomReviewers: false,
             });
             logger_info(`Identified reviewers: ${reviewers.join(', ')}`);
             return;

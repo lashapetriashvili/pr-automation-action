@@ -33,12 +33,12 @@ function getReviewersBasedOnRule({
   reviewers,
   createdBy,
   requestedReviewerLogins,
+  getRandomReviewers = true,
 }: Pick<Rule, 'assign' | 'reviewers'> & {
   createdBy: string;
   requestedReviewerLogins: string[];
+  getRandomReviewers?: boolean;
 }) {
-  info('getReviewersBasedOnRule');
-
   const result = new Set<string>();
   if (!assign) {
     reviewers.forEach((reviewer) => {
@@ -63,22 +63,19 @@ function getReviewersBasedOnRule({
   );
   const selectedList = [...preselectAlreadySelectedReviewers];
 
-  info('zaza' + selectedList.length);
-  info('zaza111' + assign);
-
   while (selectedList.length < assign) {
     const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
       return !selectedList.includes(reviewer);
     });
 
-    info('reviewersWithoutRandomlySelected');
-    info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
+    if (getRandomReviewers) {
+      const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
 
-    const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
-    info('randomReviewer');
-    info(JSON.stringify(randomReviewer, null, 2));
-
-    selectedList.push(randomReviewer);
+      selectedList.push(randomReviewer);
+    } else {
+      info(JSON.stringify(reviewersWithoutRandomlySelected, null, 2));
+      selectedList.push(...reviewersWithoutRandomlySelected);
+    }
   }
   selectedList.forEach((randomlySelected) => {
     result.add(randomlySelected);
@@ -123,16 +120,17 @@ export function identifyReviewers({
   fileChangesGroups,
   defaultRules,
   requestedReviewerLogins,
+  getRandomReviewers = false,
 }: {
   createdBy: string;
   rulesByCreator: Config['rulesByCreator'];
   defaultRules?: Config['defaultRules'];
   fileChangesGroups: string[];
   requestedReviewerLogins: string[];
+  getRandomReviewers?: boolean;
 }): string[] {
   const rules = rulesByCreator[createdBy];
 
-  info('rules');
   info(JSON.stringify(rules, null, 2));
 
   if (!rules) {
@@ -171,6 +169,7 @@ export function identifyReviewers({
       reviewers: rule.reviewers,
       createdBy,
       requestedReviewerLogins,
+      getRandomReviewers,
     });
     reviewers.forEach((reviewer) => result.add(reviewer));
   });
