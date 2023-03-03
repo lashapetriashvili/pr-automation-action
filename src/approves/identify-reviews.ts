@@ -63,7 +63,7 @@ export function checkRequestedReviewers(
 export function checkReviewersRequiredChanges(
   reviews: PullsGetReviewResponseData[],
   reviewersWithRules: Rule[],
-) {
+): boolean {
   let result = true;
 
   const reviewersByState: ReviewerByState = filterReviewersByState(
