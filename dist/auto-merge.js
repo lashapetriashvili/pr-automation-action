@@ -35614,6 +35614,8 @@ function run() {
                 repo: configInput.repo,
                 ref: configInput.sha,
             });
+            logger_info(JSON.stringify(config, null, 2));
+            return;
             if (!isPrFullyApproved(configInput, 
             // @ts-ignore
             pullRequest, reviews, checks, reviewersWithRules)) {

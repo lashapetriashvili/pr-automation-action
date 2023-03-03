@@ -84,6 +84,10 @@ export async function run(): Promise<void> {
       ref: configInput.sha,
     });
 
+    info(JSON.stringify(config, null, 2));
+
+    return;
+
     if (
       !isPrFullyApproved(
         configInput,
@@ -91,7 +95,7 @@ export async function run(): Promise<void> {
         pullRequest,
         reviews,
         checks,
-        reviewersWithRules,
+        reviewersWithRules
       )
     ) {
       return;
