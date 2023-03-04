@@ -1,0 +1,53 @@
+options:
+  requiredChecks:
+    - Auto Request Review
+  ignoredLabels:
+    - Feature Branch 1
+rulesByCreator:
+  lashapetriashvili:
+    - reviewers:
+        - lasha3044
+        - lashapetriashvili-ezetech
+      required: 2
+      assign: 2
+  lashapetriashvili-ezetech:
+    - reviewers:
+        - lasha3044
+        - lashapetriashvili
+      required: 1
+      assign: 1
+
+# List of file froups
+fileChangesGroups:
+  common-files:
+    - README.md
+    - package-lock.json
+    - package.json
+    - 'src/common/**/*'
+  server-files:
+    - 'src/server/**/*'
+  client-files:
+    - 'src/client/**/*'
+
+defaultRules:
+  byFileGroups:
+    common-files:
+      - reviewers:
+        - lashapetriashvili
+        - lasha3044
+        - lashapetriashvili-ezetech
+        required: 1
+        assign: 1
+    server-files:
+      - reviewers:
+        - lashapetriashvili
+        - lasha3044
+        - lashapetriashvili-ezetech
+        required: 1
+        assign: 1
+    client-files:
+      - reviewers:
+        - lashapetriashvili
+        - lashapetriashvili-ezetech
+        required: 1
+        assign: 1

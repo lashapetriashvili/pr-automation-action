@@ -63,6 +63,10 @@ export function checkRequestedReviewers(
   return true;
 }
 
+/**
+ * @param reviews
+ * @param reviewersWithRules
+ */
 export function checkReviewersRequiredChanges(
   reviews: PullsGetReviewResponseData[],
   reviewersWithRules: Rule[],

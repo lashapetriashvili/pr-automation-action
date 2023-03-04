@@ -1,11 +1,14 @@
 name: Auto Merge Request
 
+# TODO: Remove
+permissions: write-all
+
 on:
   status:
   pull_request:
-    types: [ready_for_review, reopened, synchronize, edited, labeled, unlabeled]
+    types: [opened, ready_for_review, reopened, synchronize, edited, labeled, unlabeled]
   pull_request_review:
-    types: [submitted, edited, dismissed]
+    types: [submitted,qedited, dismissed]
   
 
 jobs:
@@ -14,7 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Use PR auto merge action
-        uses: lashapetriashvili/pr-automation-action@merge
+        uses: ./
         with:
-          token: ${{ secrets.GITHUB_TOKEN }} # required
-          comment: 'Test Merge Commit' # Optional
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config: '.github/pr-automation-rules.yml'
+          comment: 'Test Merge Commit'
+          do-not-merge-labels: do-not-merge
+          jira-token: ${{ secrets.JIRA_TOKEN }}
+          jira-account: ${{ secrets.JIRA_ACCOUNT }}
+          jira-endpoint: https://test-github-actions.atlassian.net
+          jira-move-issue-from: Code Review
+          jira-move-issue-to: Ready For QA
