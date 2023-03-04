@@ -17,14 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Use PR auto merge action
-        uses: ./
+        uses: lashapetriashvili/pr-automation-action@develop
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           config: '.github/pr-automation-rules.yml'
           comment: 'Test Merge Commit'
           do-not-merge-labels: do-not-merge
-          jira-token: ${{ secrets.JIRA_TOKEN }}
-          jira-account: ${{ secrets.JIRA_ACCOUNT }}
-          jira-endpoint: https://test-github-actions.atlassian.net
-          jira-move-issue-from: Code Review
-          jira-move-issue-to: Ready For QA

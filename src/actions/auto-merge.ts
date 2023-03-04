@@ -50,6 +50,8 @@ export async function run(): Promise<void> {
 
     const pr = github.getPullRequest();
     const { isDraft, author } = pr;
+    info(JSON.stringify(pr, null, 2));
+    return;
 
     const changedFiles = await github.fetchChangedFiles({ pr });
     const fileChangesGroups = identifyFileChangeGroups({

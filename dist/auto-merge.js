@@ -40219,6 +40219,10 @@ function checkRequestedReviewers(requestedReviewers) {
     }
     return true;
 }
+/**
+ * @param reviews
+ * @param reviewersWithRules
+ */
 function checkReviewersRequiredChanges(reviews, reviewersWithRules) {
     let result = true;
     const reviewersByState = filterReviewersByState(getReviewersLastReviews(reviews));
@@ -42818,6 +42822,8 @@ function run() {
             }
             const pr = getPullRequest();
             const { isDraft, author } = pr;
+            logger_info(JSON.stringify(pr, null, 2));
+            return;
             const changedFiles = yield fetchChangedFiles({ pr });
             const fileChangesGroups = reviewer_identifyFileChangeGroups({
                 fileChangesGroups: config.fileChangesGroups,
