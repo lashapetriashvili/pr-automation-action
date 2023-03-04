@@ -16,7 +16,7 @@ inputs:
     description: 'The GitHub repository containing the issue or pr.'
     default: ${{ github.repository }}
   pullRequestNumber:
-    required: false
+    required: true
     description: 'Number of the pull request'
     default: ${{ github.event.pull_request.number }}
   sha:
