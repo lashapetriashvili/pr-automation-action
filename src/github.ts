@@ -122,22 +122,6 @@ export async function fetchConfig(): Promise<Config> {
   return validateConfig(parsedConfig);
 }
 
-export async function createComment(
-  comment: string,
-  inputs: Inputs,
-): Promise<RestEndpointMethodTypes['issues']['createComment']['response']['data']> {
-  const client = getMyOctokit();
-
-  const { data: resp } = await client.issues.createComment({
-    owner: inputs.owner,
-    repo: inputs.repo,
-    issue_number: inputs.pullRequestNumber,
-    body: comment,
-  });
-
-  return resp;
-}
-
 export async function fetchChangedFiles({ pr }: { pr: PullRequest }): Promise<string[]> {
   const octokit = getMyOctokit();
 
@@ -225,81 +209,41 @@ export type Reviews = {
   submittedAt: Date;
 };
 
-export async function getReviews(pr: PullRequest): Promise<Reviews[]> {
+export async function getReviews(): Promise<
+  RestEndpointMethodTypes['pulls']['listReviews']['response']['data']
+> {
   const octokit = getMyOctokit();
-  const reviews = await octokit.paginate(
-    'GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews',
-    {
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      pull_number: pr.number,
-    },
-  );
-  return reviews.reduce<Reviews[]>((result, review) => {
-    // if (review.state !== 'APPROVED') {
-    //   return result;
-    // }
-    if (!review.user) {
-      warning(`No review.user provided for review ${review.id}`);
-      return result;
-    }
-    if (!review.submitted_at) {
-      warning(`No review.submitted_at provided for review ${review.id}`);
-      return result;
-    }
-    result.push({
-      state: review.state,
-      author: review.user.login,
-      submittedAt: new Date(review.submitted_at),
-    });
-    return result;
-  }, []);
+  const inputs = getInputs();
+
+  const response = await octokit.pulls.listReviews({
+    owner: inputs.owner,
+    repo: inputs.repo,
+    pull_number: inputs.pullRequestNumber,
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`Failed to get reviews: ${response.status}`);
+  }
+
+  return response.data;
 }
 
-export async function getReviewsByGraphQL(pr: PullRequest): Promise<Reviewer[]> {
+export async function createComment(
+  comment: string,
+): Promise<RestEndpointMethodTypes['issues']['createComment']['response']['data']> {
   const octokit = getMyOctokit();
-  try {
-    let hasNextPage = true;
-    let reviewsParam = 'last: 100';
-    let response: Reviewer[] = [];
+  const inputs = getInputs();
 
-    do {
-      const queryResult = await octokit.graphql<any>(`
-      {
-        repository(owner: "${context.repo.owner}", name: "${context.repo.repo}") {
-          pullRequest(number: ${pr.number}) {
-            reviews(${reviewsParam}) {
-              pageInfo {
-                hasNextPage
-                endCursor
-              }
-              nodes {
-                author {
-                  login
-                }
-                state
-                body
-                createdAt
-                updatedAt
-              }  
-            }
-          }
-        }
-      }
-    `);
-      const reviewsResponse = queryResult.repository.pullRequest.reviews;
+  const response = await octokit.issues.createComment({
+    owner: inputs.owner,
+    repo: inputs.repo,
+    issue_number: inputs.pullRequestNumber,
+    body: comment,
+  });
 
-      info('--------------- reviewsResponse ------------------');
-      info(JSON.stringify(reviewsResponse, null, 2));
-
-      response = [...reviewsResponse.nodes, ...response];
-      hasNextPage = reviewsResponse.pageInfo.hasNextPage;
-      reviewsParam = `last: 100, after: ${reviewsResponse.pageInfo.endCursor}`;
-    } while (hasNextPage);
-
-    return response;
-  } catch (err) {
-    warning(err as Error);
-    throw err;
+  if (response.status !== 201) {
+    throw new Error(`Failed to create comment: ${response.status}`);
   }
+
+  return response.data;
 }

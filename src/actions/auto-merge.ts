@@ -36,83 +36,60 @@ export async function run(): Promise<void> {
       return;
     }
 
-    await github.createComment('Test comment', inputs);
+    const { author, baseBranchName } = pr;
 
-    const { author, branchName, baseBranchName } = pr;
-    info(`PR author: ${author}`);
-    info(`PR branch: ${branchName}`);
-    info(JSON.stringify(pr, null, 2));
+    const reviews = await github.getReviews();
+
+    info(JSON.stringify(reviews, null, 2));
     return;
 
-    const changedFiles = await github.fetchChangedFiles({ pr });
-    const fileChangesGroups = identifyFileChangeGroups({
-      fileChangesGroups: config.fileChangesGroups,
-      changedFiles,
-    });
+    /* const changedFiles = await github.fetchChangedFiles({ pr }); */
+    /* const fileChangesGroups = identifyFileChangeGroups({ */
+    /*   fileChangesGroups: config.fileChangesGroups, */
+    /*   changedFiles, */
+    /* }); */
+    /**/
+    /* const reviewersWithRules = identifyReviewers({ */
+    /*   createdBy: author, */
+    /*   fileChangesGroups, */
+    /*   rulesByCreator: config.rulesByCreator, */
+    /*   defaultRules: config.defaultRules, */
+    /*   requestedReviewerLogins: pr.requestedReviewerLogins, */
+    /* }); */
+    /**/
+    /* const client = githubAction.getOctokit(inputs.token); */
+    /**/
+    /* const { data: checks } = await client.checks.listForRef({ */
+    /*   owner: inputs.owner, */
+    /*   repo: inputs.repo, */
+    /*   ref: inputs.sha, */
+    /* }); */
 
-    const reviewersWithRules = identifyReviewers({
-      createdBy: author,
-      fileChangesGroups,
-      rulesByCreator: config.rulesByCreator,
-      defaultRules: config.defaultRules,
-      requestedReviewerLogins: pr.requestedReviewerLogins,
-    });
-
-    const client = githubAction.getOctokit(inputs.token);
-
-    const { data: pullRequest } = await client.pulls.get({
-      owner: inputs.owner,
-      repo: inputs.repo,
-      pull_number: inputs.pullRequestNumber,
-    });
-
-    const { data: reviews } = await client.pulls.listReviews({
-      owner: inputs.owner,
-      repo: inputs.repo,
-      pull_number: inputs.pullRequestNumber,
-    });
-
-    const { data: checks } = await client.checks.listForRef({
-      owner: inputs.owner,
-      repo: inputs.repo,
-      ref: inputs.sha,
-    });
-
-    if (
-      !isPrFullyApproved(
-        inputs,
-        // @ts-ignore
-        pullRequest,
-        reviews,
-        checks,
-        reviewersWithRules,
-        config?.options?.requiredChecks,
-      )
-    ) {
-      return;
-    }
+    /* if ( */
+    /*   !isPrFullyApproved( */
+    /*     inputs, */
+    /*     // @ts-ignore */
+    /*     pullRequest, */
+    /*     reviews, */
+    /*     checks, */
+    /*     reviewersWithRules, */
+    /*     config?.options?.requiredChecks, */
+    /*   ) */
+    /* ) { */
+    /*   return; */
+    /* } */
 
     if (inputs.comment) {
-      /* const { data: resp } = await client.issues.createComment({ */
-      /*   owner: inputs.owner, */
-      /*   repo: inputs.repo, */
-      /*   issue_number: inputs.pullRequestNumber, */
-      /*   body: inputs.comment, */
-      /* }); */
-      /**/
-      /* info(`Post comment ${inspect(inputs.comment)}`); */
-      /* core.setOutput('commentID', resp.id); */
+      await github.createComment('Test comment');
     }
 
-    /* const branchName = pullRequest.head.ref; */
-
     if (baseBranchName !== 'master' && baseBranchName !== 'main') {
-      await client.pulls.merge({
-        owner: inputs.owner,
-        repo: inputs.repo,
-        pull_number: inputs.pullRequestNumber,
-        merge_method: inputs.strategy,
-      });
+      /* await client.pulls.merge({ */
+      /*   owner: inputs.owner, */
+      /*   repo: inputs.repo, */
+      /*   pull_number: inputs.pullRequestNumber, */
+      /*   merge_method: inputs.strategy, */
+      /* }); */
 
       info(`Merged pull request #${inputs.pullRequestNumber}`);
     }
