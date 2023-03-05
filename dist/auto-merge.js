@@ -33996,6 +33996,21 @@ function getReviews() {
         return response.data;
     });
 }
+function github_getCIChecks() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const octokit = getMyOctokit();
+        const inputs = getInputs();
+        const response = yield octokit.checks.listForRef({
+            owner: inputs.owner,
+            repo: inputs.repo,
+            ref: inputs.sha,
+        });
+        if (response.status !== 200) {
+            throw new Error(`Failed to get CI checks: ${response.status}`);
+        }
+        return response.data;
+    });
+}
 function createComment(comment) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
@@ -34050,8 +34065,8 @@ function run() {
                 return;
             }
             const { author, baseBranchName } = pr;
-            const reviews = yield getReviews();
-            info(JSON.stringify(reviews, null, 2));
+            const getCIChecks = yield github_getCIChecks();
+            info(JSON.stringify(getCIChecks, null, 2));
             return;
             /* const changedFiles = await github.fetchChangedFiles({ pr }); */
             /* const fileChangesGroups = identifyFileChangeGroups({ */

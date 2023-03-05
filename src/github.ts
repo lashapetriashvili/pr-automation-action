@@ -228,6 +228,25 @@ export async function getReviews(): Promise<
   return response.data;
 }
 
+export async function getCIChecks(): Promise<
+  RestEndpointMethodTypes['checks']['listForRef']['response']['data']
+> {
+  const octokit = getMyOctokit();
+  const inputs = getInputs();
+
+  const response = await octokit.checks.listForRef({
+    owner: inputs.owner,
+    repo: inputs.repo,
+    ref: inputs.sha,
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`Failed to get CI checks: ${response.status}`);
+  }
+
+  return response.data;
+}
+
 export async function createComment(
   comment: string,
 ): Promise<RestEndpointMethodTypes['issues']['createComment']['response']['data']> {

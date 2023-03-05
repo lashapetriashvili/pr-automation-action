@@ -38,9 +38,9 @@ export async function run(): Promise<void> {
 
     const { author, baseBranchName } = pr;
 
-    const reviews = await github.getReviews();
+    const getCIChecks = await github.getCIChecks();
 
-    info(JSON.stringify(reviews, null, 2));
+    info(JSON.stringify(getCIChecks, null, 2));
     return;
 
     /* const changedFiles = await github.fetchChangedFiles({ pr }); */
