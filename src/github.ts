@@ -30,8 +30,17 @@ class PullRequest {
   get number(): number {
     return this._pr.number;
   }
+
   get labelNames(): string[] {
     return (this._pr.labels as { name: string }[]).map((label) => label.name);
+  }
+
+  get branchName(): string {
+    return this._pr.head.ref;
+  }
+
+  get baseBranchName(): string {
+    return this._pr.base.ref;
   }
 
   get requestedReviewerLogins(): string[] {

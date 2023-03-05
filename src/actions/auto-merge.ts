@@ -6,7 +6,6 @@ import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
 import { identifyReviewers } from '../approves/identify-approvers';
-import changeJiraIssueStatus from '../jira/change-jira-issue-status';
 
 import { identifyFileChangeGroups } from '../reviewer';
 
@@ -26,11 +25,6 @@ export async function run(): Promise<void> {
       doNotMergeLabels: core.getInput('do-not-merge-labels'),
       token: core.getInput('token', { required: true }),
       config: core.getInput('config', { required: true }),
-      jiraToken: core.getInput('jira-token', { required: true }),
-      jiraAccount: core.getInput('jira-account', { required: true }),
-      jiraEndpoint: core.getInput('jira-endpoint', { required: true }),
-      jiraMoveIssueFrom: core.getInput('jira-move-issue-from', { required: true }),
-      jiraMoveIssueTo: core.getInput('jira-move-issue-to', { required: true }),
     };
 
     let config;
@@ -49,7 +43,7 @@ export async function run(): Promise<void> {
     }
 
     const pr = github.getPullRequest();
-    const { isDraft, author } = pr;
+    const { author } = pr;
     info(JSON.stringify(pr, null, 2));
     return;
 
@@ -131,14 +125,6 @@ export async function run(): Promise<void> {
       });
 
       info(`Merged pull request #${configInput.pullRequestNumber}`);
-    }
-
-    const jiraResponse = await changeJiraIssueStatus(branchName, configInput);
-
-    if (jiraResponse.status) {
-      info(jiraResponse.message);
-    } else {
-      warning(jiraResponse.message);
     }
 
     core.setOutput('merged', true);

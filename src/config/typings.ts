@@ -86,11 +86,11 @@ export interface Inputs {
   token: string;
   doNotMergeLabels: string;
   config: string;
-  jiraToken: string;
-  jiraAccount: string;
-  jiraEndpoint: string;
-  jiraMoveIssueFrom: string;
-  jiraMoveIssueTo: string;
+  /* jiraToken: string; */
+  /* jiraAccount: string; */
+  /* jiraEndpoint: string; */
+  /* jiraMoveIssueFrom: string; */
+  /* jiraMoveIssueTo: string; */
 }
 
 export interface Reviewer {
