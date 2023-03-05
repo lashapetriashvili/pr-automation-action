@@ -1,9 +1,11 @@
 import * as yaml from 'yaml';
 import { context, getOctokit } from '@actions/github';
+import { OctokitResponse } from '@octokit/types';
 import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
 import { validateConfig } from './config';
-import { Config, Reviewer, ReviewerByState } from './config/typings';
+import { Config, Reviewer, Inputs, Strategy } from './config/typings';
 import { debug, error, warning, info } from './logger';
 
 function getMyOctokit() {
@@ -76,6 +78,22 @@ export function validatePullRequest(pr: PullRequest): string | null {
   return null;
 }
 
+export function getInputs(): Inputs {
+  const [owner, repo] = getInput('repository').split('/');
+
+  return {
+    comment: getInput('comment'),
+    owner,
+    repo,
+    pullRequestNumber: Number(getInput('pullRequestNumber', { required: true })),
+    sha: getInput('sha', { required: true }),
+    strategy: getInput('strategy', { required: true }) as Strategy,
+    doNotMergeLabels: getInput('do-not-merge-labels'),
+    token: getInput('token', { required: true }),
+    config: getInput('config', { required: true }),
+  };
+}
+
 export async function fetchConfig(): Promise<Config> {
   const octokit = getMyOctokit();
   const path = getInput('config');
@@ -102,6 +120,22 @@ export async function fetchConfig(): Promise<Config> {
   const content = Buffer.from(data.content, data.encoding).toString();
   const parsedConfig = yaml.parse(content);
   return validateConfig(parsedConfig);
+}
+
+export async function createComment(
+  comment: string,
+  inputs: Inputs,
+): Promise<RestEndpointMethodTypes['issues']['createComment']['response']['data']> {
+  const client = getMyOctokit();
+
+  const { data: resp } = await client.issues.createComment({
+    owner: inputs.owner,
+    repo: inputs.repo,
+    issue_number: inputs.pullRequestNumber,
+    body: comment,
+  });
+
+  return resp;
 }
 
 export async function fetchChangedFiles({ pr }: { pr: PullRequest }): Promise<string[]> {

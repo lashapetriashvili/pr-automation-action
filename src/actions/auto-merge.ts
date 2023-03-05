@@ -1,31 +1,16 @@
-import { inspect } from 'util';
 import * as core from '@actions/core';
 import * as githubAction from '@actions/github';
 import * as github from '../github';
-import { Inputs, Strategy } from '../config/typings';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
 import { identifyReviewers } from '../approves/identify-approvers';
-
 import { identifyFileChangeGroups } from '../reviewer';
 
 export async function run(): Promise<void> {
   try {
     info('Staring PR auto merging.');
 
-    const [owner, repo] = core.getInput('repository').split('/');
-
-    const configInput: Inputs = {
-      comment: core.getInput('comment'),
-      owner,
-      repo,
-      pullRequestNumber: Number(core.getInput('pullRequestNumber', { required: true })),
-      sha: core.getInput('sha', { required: true }),
-      strategy: core.getInput('strategy', { required: true }) as Strategy,
-      doNotMergeLabels: core.getInput('do-not-merge-labels'),
-      token: core.getInput('token', { required: true }),
-      config: core.getInput('config', { required: true }),
-    };
+    const inputs = github.getInputs();
 
     let config;
 
@@ -51,6 +36,8 @@ export async function run(): Promise<void> {
       return;
     }
 
+    await github.createComment('Test comment', inputs);
+
     const { author, branchName, baseBranchName } = pr;
     info(`PR author: ${author}`);
     info(`PR branch: ${branchName}`);
@@ -62,7 +49,6 @@ export async function run(): Promise<void> {
       fileChangesGroups: config.fileChangesGroups,
       changedFiles,
     });
-    info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
 
     const reviewersWithRules = identifyReviewers({
       createdBy: author,
@@ -72,29 +58,29 @@ export async function run(): Promise<void> {
       requestedReviewerLogins: pr.requestedReviewerLogins,
     });
 
-    const client = githubAction.getOctokit(configInput.token);
+    const client = githubAction.getOctokit(inputs.token);
 
     const { data: pullRequest } = await client.pulls.get({
-      owner,
-      repo,
-      pull_number: configInput.pullRequestNumber,
+      owner: inputs.owner,
+      repo: inputs.repo,
+      pull_number: inputs.pullRequestNumber,
     });
 
     const { data: reviews } = await client.pulls.listReviews({
-      owner,
-      repo,
-      pull_number: configInput.pullRequestNumber,
+      owner: inputs.owner,
+      repo: inputs.repo,
+      pull_number: inputs.pullRequestNumber,
     });
 
     const { data: checks } = await client.checks.listForRef({
-      owner: configInput.owner,
-      repo: configInput.repo,
-      ref: configInput.sha,
+      owner: inputs.owner,
+      repo: inputs.repo,
+      ref: inputs.sha,
     });
 
     if (
       !isPrFullyApproved(
-        configInput,
+        inputs,
         // @ts-ignore
         pullRequest,
         reviews,
@@ -106,15 +92,15 @@ export async function run(): Promise<void> {
       return;
     }
 
-    if (configInput.comment) {
+    if (inputs.comment) {
       /* const { data: resp } = await client.issues.createComment({ */
-      /*   owner: configInput.owner, */
-      /*   repo: configInput.repo, */
-      /*   issue_number: configInput.pullRequestNumber, */
-      /*   body: configInput.comment, */
+      /*   owner: inputs.owner, */
+      /*   repo: inputs.repo, */
+      /*   issue_number: inputs.pullRequestNumber, */
+      /*   body: inputs.comment, */
       /* }); */
       /**/
-      /* info(`Post comment ${inspect(configInput.comment)}`); */
+      /* info(`Post comment ${inspect(inputs.comment)}`); */
       /* core.setOutput('commentID', resp.id); */
     }
 
@@ -122,13 +108,13 @@ export async function run(): Promise<void> {
 
     if (baseBranchName !== 'master' && baseBranchName !== 'main') {
       await client.pulls.merge({
-        owner,
-        repo,
-        pull_number: configInput.pullRequestNumber,
-        merge_method: configInput.strategy,
+        owner: inputs.owner,
+        repo: inputs.repo,
+        pull_number: inputs.pullRequestNumber,
+        merge_method: inputs.strategy,
       });
 
-      info(`Merged pull request #${configInput.pullRequestNumber}`);
+      info(`Merged pull request #${inputs.pullRequestNumber}`);
     }
 
     core.setOutput('merged', true);
