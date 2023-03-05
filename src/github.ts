@@ -27,6 +27,10 @@ class PullRequest {
     return Boolean(this._pr.draft);
   }
 
+  get isOpen(): boolean {
+    return this._pr.state === 'open';
+  }
+
   get number(): number {
     return this._pr.number;
   }
@@ -58,6 +62,18 @@ export function getPullRequest(): PullRequest {
   }
   debug(`PR event payload: ${JSON.stringify(pr)}`);
   return new PullRequest(pr);
+}
+
+export function validatePullRequest(pr: PullRequest): string | null {
+  if (pr.isDraft) {
+    return `Pull request #${pr.number} is a draft`;
+  }
+
+  if (!pr.isOpen) {
+    return `Pull request #${pr.number} is not open`;
+  }
+
+  return null;
 }
 
 export async function fetchConfig(): Promise<Config> {

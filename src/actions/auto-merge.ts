@@ -43,7 +43,15 @@ export async function run(): Promise<void> {
     }
 
     const pr = github.getPullRequest();
-    const { author, branchName } = pr;
+
+    const prValidationError = github.validatePullRequest(pr);
+
+    if (prValidationError) {
+      warning(prValidationError);
+      return;
+    }
+
+    const { author, branchName, baseBranchName } = pr;
     info(`PR author: ${author}`);
     info(`PR branch: ${branchName}`);
     info(JSON.stringify(pr, null, 2));
@@ -71,11 +79,6 @@ export async function run(): Promise<void> {
       repo,
       pull_number: configInput.pullRequestNumber,
     });
-
-    if (pullRequest.state !== 'open') {
-      warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
-      return;
-    }
 
     const { data: reviews } = await client.pulls.listReviews({
       owner,
@@ -116,7 +119,6 @@ export async function run(): Promise<void> {
     }
 
     /* const branchName = pullRequest.head.ref; */
-    const baseBranchName = pullRequest.base.ref;
 
     if (baseBranchName !== 'master' && baseBranchName !== 'main') {
       await client.pulls.merge({

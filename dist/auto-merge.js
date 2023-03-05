@@ -35078,6 +35078,9 @@ class PullRequest {
     get isDraft() {
         return Boolean(this._pr.draft);
     }
+    get isOpen() {
+        return this._pr.state === 'open';
+    }
     get number() {
         return this._pr.number;
     }
@@ -35102,6 +35105,15 @@ function getPullRequest() {
     }
     debug(`PR event payload: ${JSON.stringify(pr)}`);
     return new PullRequest(pr);
+}
+function validatePullRequest(pr) {
+    if (pr.isDraft) {
+        return `Pull request #${pr.number} is a draft`;
+    }
+    if (!pr.isOpen) {
+        return `Pull request #${pr.number} is not open`;
+    }
+    return null;
 }
 function fetchConfig() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -35658,7 +35670,12 @@ function run() {
                 throw err;
             }
             const pr = getPullRequest();
-            const { author, branchName } = pr;
+            const prValidationError = validatePullRequest(pr);
+            if (prValidationError) {
+                logger_warning(prValidationError);
+                return;
+            }
+            const { author, branchName, baseBranchName } = pr;
             logger_info(`PR author: ${author}`);
             logger_info(`PR branch: ${branchName}`);
             logger_info(JSON.stringify(pr, null, 2));
@@ -35682,10 +35699,6 @@ function run() {
                 repo,
                 pull_number: configInput.pullRequestNumber,
             });
-            if (pullRequest.state !== 'open') {
-                logger_warning(`Pull request #${configInput.pullRequestNumber} is not open.`);
-                return;
-            }
             const { data: reviews } = yield client.pulls.listReviews({
                 owner,
                 repo,
@@ -35713,7 +35726,6 @@ function run() {
                 /* core.setOutput('commentID', resp.id); */
             }
             /* const branchName = pullRequest.head.ref; */
-            const baseBranchName = pullRequest.base.ref;
             if (baseBranchName !== 'master' && baseBranchName !== 'main') {
                 yield client.pulls.merge({
                     owner,
