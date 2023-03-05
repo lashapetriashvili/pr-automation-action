@@ -43,7 +43,9 @@ export async function run(): Promise<void> {
     }
 
     const pr = github.getPullRequest();
-    const { author } = pr;
+    const { author, branchName } = pr;
+    info(`PR author: ${author}`);
+    info(`PR branch: ${branchName}`);
     info(JSON.stringify(pr, null, 2));
     return;
 
@@ -113,7 +115,7 @@ export async function run(): Promise<void> {
       /* core.setOutput('commentID', resp.id); */
     }
 
-    const branchName = pullRequest.head.ref;
+    /* const branchName = pullRequest.head.ref; */
     const baseBranchName = pullRequest.base.ref;
 
     if (baseBranchName !== 'master' && baseBranchName !== 'main') {

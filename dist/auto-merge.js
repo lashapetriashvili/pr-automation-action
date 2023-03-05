@@ -35658,7 +35658,9 @@ function run() {
                 throw err;
             }
             const pr = getPullRequest();
-            const { author } = pr;
+            const { author, branchName } = pr;
+            logger_info(`PR author: ${author}`);
+            logger_info(`PR branch: ${branchName}`);
             logger_info(JSON.stringify(pr, null, 2));
             return;
             const changedFiles = yield fetchChangedFiles({ pr });
@@ -35710,7 +35712,7 @@ function run() {
                 /* info(`Post comment ${inspect(configInput.comment)}`); */
                 /* core.setOutput('commentID', resp.id); */
             }
-            const branchName = pullRequest.head.ref;
+            /* const branchName = pullRequest.head.ref; */
             const baseBranchName = pullRequest.base.ref;
             if (baseBranchName !== 'master' && baseBranchName !== 'main') {
                 yield client.pulls.merge({
