@@ -1,6 +1,9 @@
 import { Checks } from '../config/typings';
 
-export function areCIChecksPassed(checks: Checks, requiredChecks: string[] | undefined) {
+export function areCIChecksPassed(
+  checks: Checks,
+  requiredChecks: string[] | undefined,
+): boolean | string {
   if (requiredChecks === undefined) {
     return true;
   }

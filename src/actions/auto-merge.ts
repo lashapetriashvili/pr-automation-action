@@ -52,7 +52,6 @@ export async function run(): Promise<void> {
 
     const checks = await github.getCIChecks();
 
-    info(JSON.stringify(checks, null, 2));
     const reviews = await github.getReviews();
     info(JSON.stringify(reviews, null, 2));
     return;

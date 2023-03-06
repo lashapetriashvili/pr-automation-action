@@ -19,7 +19,7 @@ export function isPrFullyApproved({
   const checkCIChecks = areCIChecksPassed(checks, requiredChecks);
 
   if (checkCIChecks !== true) {
-    warning(checkCIChecks);
+    warning(checkCIChecks || 'CI checks are not passed');
     return false;
   }
 
