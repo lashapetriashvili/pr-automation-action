@@ -35421,7 +35421,7 @@ function areCIChecksPassed(checks, requiredChecks) {
 function isPrFullyApproved({ rules, requiredChecks, checks, reviews, }) {
     const checkCIChecks = areCIChecksPassed(checks, requiredChecks);
     if (checkCIChecks !== true) {
-        logger_warning(checkCIChecks);
+        logger_warning(checkCIChecks || 'CI checks are not passed');
         return false;
     }
     const checkReviewers = checkReviewersRequiredChanges(reviews, rules);
@@ -35700,7 +35700,6 @@ function run() {
                 requestedReviewerLogins: pr.requestedReviewerLogins,
             });
             const checks = yield getCIChecks();
-            info(JSON.stringify(checks, null, 2));
             const reviews = yield getReviews();
             info(JSON.stringify(reviews, null, 2));
             return;
