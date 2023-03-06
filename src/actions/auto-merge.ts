@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as githubAction from '@actions/github';
 import * as github from '../github';
 import { info, error, warning } from '../logger';
 import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
@@ -36,63 +35,41 @@ export async function run(): Promise<void> {
       return;
     }
 
-    const { author, baseBranchName } = pr;
+    const { author } = pr;
 
-    const getCIChecks = await github.getCIChecks();
+    const changedFiles = await github.fetchChangedFiles({ pr });
+    const fileChangesGroups = identifyFileChangeGroups({
+      fileChangesGroups: config.fileChangesGroups,
+      changedFiles,
+    });
 
-    info(JSON.stringify(getCIChecks, null, 2));
-    return;
+    const rules = identifyReviewers({
+      createdBy: author,
+      fileChangesGroups,
+      rulesByCreator: config.rulesByCreator,
+      defaultRules: config.defaultRules,
+      requestedReviewerLogins: pr.requestedReviewerLogins,
+    });
 
-    /* const changedFiles = await github.fetchChangedFiles({ pr }); */
-    /* const fileChangesGroups = identifyFileChangeGroups({ */
-    /*   fileChangesGroups: config.fileChangesGroups, */
-    /*   changedFiles, */
-    /* }); */
-    /**/
-    /* const reviewersWithRules = identifyReviewers({ */
-    /*   createdBy: author, */
-    /*   fileChangesGroups, */
-    /*   rulesByCreator: config.rulesByCreator, */
-    /*   defaultRules: config.defaultRules, */
-    /*   requestedReviewerLogins: pr.requestedReviewerLogins, */
-    /* }); */
-    /**/
-    /* const client = githubAction.getOctokit(inputs.token); */
-    /**/
-    /* const { data: checks } = await client.checks.listForRef({ */
-    /*   owner: inputs.owner, */
-    /*   repo: inputs.repo, */
-    /*   ref: inputs.sha, */
-    /* }); */
+    const checks = await github.getCIChecks();
+    const reviews = await github.getReviews();
 
-    /* if ( */
-    /*   !isPrFullyApproved( */
-    /*     inputs, */
-    /*     // @ts-ignore */
-    /*     pullRequest, */
-    /*     reviews, */
-    /*     checks, */
-    /*     reviewersWithRules, */
-    /*     config?.options?.requiredChecks, */
-    /*   ) */
-    /* ) { */
-    /*   return; */
-    /* } */
+    if (
+      !isPrFullyApproved({
+        rules,
+        requiredChecks: config?.options?.requiredChecks,
+        reviews,
+        checks,
+      })
+    ) {
+      return;
+    }
 
     if (inputs.comment) {
-      await github.createComment('Test comment');
+      await github.createComment(inputs.comment);
     }
 
-    if (baseBranchName !== 'master' && baseBranchName !== 'main') {
-      /* await client.pulls.merge({ */
-      /*   owner: inputs.owner, */
-      /*   repo: inputs.repo, */
-      /*   pull_number: inputs.pullRequestNumber, */
-      /*   merge_method: inputs.strategy, */
-      /* }); */
-
-      info(`Merged pull request #${inputs.pullRequestNumber}`);
-    }
+    await github.mergePullRequest(pr);
 
     core.setOutput('merged', true);
   } catch (err) {

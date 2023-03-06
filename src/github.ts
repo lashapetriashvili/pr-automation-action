@@ -1,12 +1,11 @@
 import * as yaml from 'yaml';
 import { context, getOctokit } from '@actions/github';
-import { OctokitResponse } from '@octokit/types';
 import { getInput } from '@actions/core';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
 import { validateConfig } from './config';
-import { Config, Reviewer, Inputs, Strategy } from './config/typings';
-import { debug, error, warning, info } from './logger';
+import { Config, Inputs, Strategy, Reviews, Checks } from './config/typings';
+import { debug, error, warning } from './logger';
 
 function getMyOctokit() {
   const myToken = getInput('token');
@@ -73,6 +72,10 @@ export function validatePullRequest(pr: PullRequest): string | null {
 
   if (!pr.isOpen) {
     return `Pull request #${pr.number} is not open`;
+  }
+
+  if (doesContainIgnoreMergeLabels(pr.labelNames)) {
+    return `Pull request #${pr.number} contains ignore merge labels`;
   }
 
   return null;
@@ -203,15 +206,7 @@ export async function getLatestCommitDate(pr: PullRequest): Promise<{
   }
 }
 
-export type Reviews = {
-  author: string;
-  state: string;
-  submittedAt: Date;
-};
-
-export async function getReviews(): Promise<
-  RestEndpointMethodTypes['pulls']['listReviews']['response']['data']
-> {
+export async function getReviews(): Promise<Reviews> {
   const octokit = getMyOctokit();
   const inputs = getInputs();
 
@@ -228,9 +223,7 @@ export async function getReviews(): Promise<
   return response.data;
 }
 
-export async function getCIChecks(): Promise<
-  RestEndpointMethodTypes['checks']['listForRef']['response']['data']
-> {
+export async function getCIChecks(): Promise<Checks> {
   const octokit = getMyOctokit();
   const inputs = getInputs();
 
@@ -265,4 +258,44 @@ export async function createComment(
   }
 
   return response.data;
+}
+
+export function doesContainIgnoreMergeLabels(labels: string[]): boolean {
+  const inputs = getInputs();
+
+  const doNotMergeLabelsList = inputs.doNotMergeLabels.split(',');
+
+  const check = labels.find((label) => {
+    return doNotMergeLabelsList.includes(label);
+  });
+
+  if (check) {
+    return true;
+  }
+
+  return false;
+}
+
+export async function mergePullRequest(
+  pr: PullRequest,
+): Promise<RestEndpointMethodTypes['pulls']['merge']['response']['data'] | null> {
+  const octokit = getMyOctokit();
+  const inputs = getInputs();
+
+  if (pr.baseBranchName !== 'master' && pr.baseBranchName !== 'main') {
+    const response = await octokit.pulls.merge({
+      owner: inputs.owner,
+      repo: inputs.repo,
+      pull_number: inputs.pullRequestNumber,
+      merge_method: inputs.strategy,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(`Failed to create comment: ${response.status}`);
+    }
+
+    return response.data;
+  }
+
+  return null;
 }

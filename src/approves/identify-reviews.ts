@@ -1,30 +1,44 @@
-import { PullsGetReviewResponseData, PullsGetResponseData } from '@octokit/types';
-import { ReviewerByState, Rule } from '../config/typings';
-import { info, warning } from '../logger';
+import { PullsGetResponseData } from '@octokit/types';
+import { ReviewerByState, Rule, FunctionResponse, Reviews } from '../config/typings';
 
-export function getReviewersLastReviews(
-  listReviews: PullsGetReviewResponseData[],
-): PullsGetReviewResponseData[] {
+type ReviewersLastReviews = {
+  total_review: number;
+  state: string;
+  user: { login: string };
+};
+
+export function getReviewersLastReviews(listReviews: Reviews) {
   const response: {
-    [key: string]: PullsGetReviewResponseData & { total_review: number };
+    [key: string]: ReviewersLastReviews;
   } = {};
 
   listReviews
     .slice()
     .reverse()
     .forEach((review) => {
-      const key = review.user.login;
-      if (!response[key]) {
-        response[key] = { ...review, total_review: 0 };
+      const login = review?.user?.login;
+
+      if (!login) {
+        return;
       }
 
-      response[key].total_review += 1;
+      if (!response[login]) {
+        response[login] = {
+          user: {
+            login,
+          },
+          state: review.state,
+          total_review: 0,
+        };
+      }
+
+      response[login].total_review += 1;
     });
   return Object.values(response);
 }
 
 export function filterReviewersByState(
-  reviewersFullData: PullsGetReviewResponseData[],
+  reviewersFullData: ReviewersLastReviews[],
 ): ReviewerByState {
   const response: ReviewerByState = {
     requiredChanges: [],
@@ -53,51 +67,44 @@ export function filterReviewersByState(
 
 export function checkRequestedReviewers(
   requestedReviewers: PullsGetResponseData['requested_reviewers'],
-) {
+): FunctionResponse {
   const requestedChanges = requestedReviewers.map((reviewer) => reviewer.login);
 
   if (requestedChanges.length > 0) {
-    warning(`Waiting [${requestedChanges.join(', ')}] to approve.`);
-    return false;
+    return {
+      status: false,
+      message: `Waiting [${requestedChanges.join(', ')}] to approve.`,
+    };
   }
-  return true;
+  return { status: true };
 }
 
 /**
  * @param reviews
  * @param reviewersWithRules
  */
-export function checkReviewersRequiredChanges(
-  reviews: PullsGetReviewResponseData[],
-  reviewersWithRules: Rule[],
-): boolean {
-  let result = true;
-
+export function checkReviewersRequiredChanges(reviews: Reviews, rules: Rule[]) {
   const reviewersByState: ReviewerByState = filterReviewersByState(
     getReviewersLastReviews(reviews),
   );
 
   if (reviewersByState.requiredChanges.length) {
-    warning(`${reviewersByState.requiredChanges.join(', ')} required changes.`);
-    return false;
+    return `${reviewersByState.requiredChanges.join(', ')} required changes.`;
   }
 
-  reviewersWithRules.forEach((rule) => {
-    if (rule.required) {
-      const requiredReviewers = rule.reviewers.filter((reviewer) => {
+  for (const role of rules) {
+    if (role.required) {
+      const requiredReviewers = role.reviewers.filter((reviewer) => {
         return reviewersByState.approve.includes(reviewer);
       });
 
-      if (requiredReviewers.length < rule.required) {
-        warning(
-          `Waiting ${rule.required} reviews from ${rule.reviewers.join(
-            ', ',
-          )} to approve.`,
-        );
-        result = false;
+      if (requiredReviewers.length < role.required) {
+        return `Waiting ${role.required} reviews from ${role.reviewers.join(
+          ', ',
+        )} to approve.`;
       }
     }
-  });
+  }
 
-  return result;
+  return true;
 }
