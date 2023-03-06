@@ -9,7 +9,7 @@ inputs:
     description: 'GitHub Token'
   config:
     required: true
-    description: 'Comment before merge'
+    description: 'Config Files'
     default: ''
   comment:
     required: false
@@ -35,22 +35,10 @@ inputs:
     required: false
     description: 'Merge strategy'
     default: 'merge'
-  jira-token:
-    required: true
-    description: 'Jira Token'
-  jira-account:
-    required: true
-    description: 'Jira Account'
-  jira-endpoint:
-    required: true
-    description: 'Jira EndPoint'
-  jira-move-issue-from:
-    required: true
-    description: 'Move Issue From'
-  jira-move-issue-to:
-    required: true
-    description: 'Move Issue To'
-
+  do-not-merge-on-base-branch:
+    required: false
+    description: ''
+    default: ''
 runs:
   using: 'node16'
   main: 'dist/auto-merge.js'
