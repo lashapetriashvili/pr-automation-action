@@ -1,8 +1,7 @@
 import * as core from '@actions/core';
 import * as github from '../github';
 import { info, error, warning } from '../logger';
-import { isPrFullyApproved } from '../approves/is-pr-fully-approved';
-import { identifyReviewers } from '../approves/identify-approvers';
+import { isPrFullyApproved, identifyReviewers } from '../approves';
 import { identifyFileChangeGroups } from '../reviewer';
 
 export async function run(): Promise<void> {
@@ -52,7 +51,11 @@ export async function run(): Promise<void> {
     });
 
     const checks = await github.getCIChecks();
+
+    info(JSON.stringify(checks, null, 2));
     const reviews = await github.getReviews();
+    info(JSON.stringify(reviews, null, 2));
+    return;
 
     if (
       !isPrFullyApproved({

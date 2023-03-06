@@ -35130,6 +35130,7 @@ function getInputs() {
         doNotMergeLabels: (0,core.getInput)('do-not-merge-labels'),
         token: (0,core.getInput)('token', { required: true }),
         config: (0,core.getInput)('config', { required: true }),
+        doNotMergeOnBaseBranch: (0,core.getInput)('do-not-merge-on-base-branch'),
     };
 }
 function fetchConfig() {
@@ -35287,20 +35288,35 @@ function mergePullRequest(pr) {
     return __awaiter(this, void 0, void 0, function* () {
         const octokit = getMyOctokit();
         const inputs = getInputs();
-        if (pr.baseBranchName !== 'master' && pr.baseBranchName !== 'main') {
-            const response = yield octokit.pulls.merge({
-                owner: inputs.owner,
-                repo: inputs.repo,
-                pull_number: inputs.pullRequestNumber,
-                merge_method: inputs.strategy,
-            });
-            if (response.status !== 200) {
-                throw new Error(`Failed to create comment: ${response.status}`);
-            }
-            return response.data;
+        const doNotMergeBaseBranch = inputs.doNotMergeOnBaseBranch.split(',');
+        if (doNotMergeBaseBranch.includes(pr.baseBranchName)) {
+            return null;
         }
-        return null;
+        const response = yield octokit.pulls.merge({
+            owner: inputs.owner,
+            repo: inputs.repo,
+            pull_number: inputs.pullRequestNumber,
+            merge_method: inputs.strategy,
+        });
+        if (response.status !== 200) {
+            throw new Error(`Failed to create comment: ${response.status}`);
+        }
+        return response.data;
     });
+}
+
+;// CONCATENATED MODULE: ./src/utils.ts
+
+function getRandomItemFromArray(items) {
+    return items[Math.floor(Math.random() * items.length)];
+}
+function withDebugLog(executeFunction) {
+    return function (param) {
+        debug(`[${executeFunction.name}]. Params: ${JSON.stringify(param)}`);
+        const result = executeFunction(param);
+        debug(`[${executeFunction.name}]. Result: ${JSON.stringify(result)}`);
+        return result;
+    };
 }
 
 ;// CONCATENATED MODULE: ./src/approves/identify-reviews.ts
@@ -35491,19 +35507,12 @@ function identifyReviewers({ createdBy, rulesByCreator, fileChangesGroups, defau
     return [...result];
 }
 
-;// CONCATENATED MODULE: ./src/utils.ts
+;// CONCATENATED MODULE: ./src/approves/index.ts
 
-function getRandomItemFromArray(items) {
-    return items[Math.floor(Math.random() * items.length)];
-}
-function withDebugLog(executeFunction) {
-    return function (param) {
-        debug(`[${executeFunction.name}]. Params: ${JSON.stringify(param)}`);
-        const result = executeFunction(param);
-        debug(`[${executeFunction.name}]. Result: ${JSON.stringify(result)}`);
-        return result;
-    };
-}
+
+
+const approves_identifyReviewers = withDebugLog(identifyReviewers);
+const approves_isPrFullyApproved = withDebugLog(isPrFullyApproved);
 
 // EXTERNAL MODULE: ./node_modules/minimatch/minimatch.js
 var minimatch = __nccwpck_require__(3973);
@@ -35653,7 +35662,6 @@ var auto_merge_awaiter = (undefined && undefined.__awaiter) || function (thisArg
 
 
 
-
 function run() {
     var _a;
     return auto_merge_awaiter(this, void 0, void 0, function* () {
@@ -35684,7 +35692,7 @@ function run() {
                 fileChangesGroups: config.fileChangesGroups,
                 changedFiles,
             });
-            const rules = identifyReviewers({
+            const rules = approves_identifyReviewers({
                 createdBy: author,
                 fileChangesGroups,
                 rulesByCreator: config.rulesByCreator,
@@ -35692,8 +35700,11 @@ function run() {
                 requestedReviewerLogins: pr.requestedReviewerLogins,
             });
             const checks = yield getCIChecks();
+            info(JSON.stringify(checks, null, 2));
             const reviews = yield getReviews();
-            if (!isPrFullyApproved({
+            info(JSON.stringify(reviews, null, 2));
+            return;
+            if (!approves_isPrFullyApproved({
                 rules,
                 requiredChecks: (_a = config === null || config === void 0 ? void 0 : config.options) === null || _a === void 0 ? void 0 : _a.requiredChecks,
                 reviews,

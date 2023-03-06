@@ -1,84 +1,72 @@
 /* import { expect } from 'chai'; */
-/* import { PullsGetResponseData } from '@octokit/types'; */
 /* import { Checks } from '../config/typings'; */
-/* import { checkDoNotMergeLabels, checkCI } from './identify-ci'; */
+/* import { areCIChecksPassed } from './identify-ci'; */
 /**/
-/* describe('should test checkDoNotMergeLabels: ', () => { */
-/*   const labels: PullsGetResponseData['labels'] = [ */
+/* const checks: Checks = { */
+/*   total_count: 4, */
+/*   check_runs: [ */
 /*     { */
-/*       id: 123456789, */
-/*       node_id: 'MDU6TGFiZWwxMjM0NTY3ODk=', */
-/*       url: 'https://api.github.com/repos/octocat/Hello-World/labels/do%20not%20merge', */
-/*       name: 'do not merge', */
-/*       color: 'ffffff', */
-/*       default: false, */
-/*       description: 'This PR should not be merged', */
+/*       id: 12345, */
+/*       head_sha: 'a1b2c3d4e5f6', */
+/*       node_id: 'MDEyOkNoZWNrUmV1bjoyMjQ5MjQ5', */
+/*       name: 'Lint', */
+/*       status: 'completed', */
+/*       conclusion: 'success', */
+/*       started_at: '2023-03-05T10:15:00Z', */
+/*       completed_at: '2023-03-05T10:20:00Z', */
+/*       external_id: '12345', */
+/*       url: 'test.com', */
+/*       details_url: 'test.com', */
+/*       check_suite: { */
+/*         id: 12345, */
+/*         node_id: 'MDEyOkNoZWNrU3VpdGU6MjI0OTI0OQ==', */
+/*         head_branch: 'master', */
+/*         head_sha: 'a1b2c3d4e5f6', */
+/*         } */
+/*       output: { */
+/*         title: 'Lint Results', */
+/*         summary: 'No linting errors found', */
+/*         annotations_count: 0, */
+/*         annotations_url: */
+/*           'https://api.github.com/repos/octocat/Hello-World/check-runs/12345/annotations', */
+/*         text: 'No linting errors found', */
+/*       }, */
+/*       html_url: 'https://github.com/octocat/Hello-World/runs/12345', */
 /*     }, */
-/*     { */
-/*       id: 123456789, */
-/*       node_id: 'MDU6TGFiZWwxMjM0NTY3ODk=', */
-/*       url: 'https://api.github.com/repos/octocat/Hello-World/labels/do%20not%20merge', */
-/*       name: 'bug', */
-/*       color: 'ffffff', */
-/*       default: false, */
-/*       description: 'bug label', */
-/*     }, */
-/*   ]; */
+/*   ], */
+/* }; */
 /**/
-/*   it('should return false if the PR has a "do not merge" label', () => { */
-/*     const doNotMergeLabels = 'do not merge'; */
-/**/
-/*     const result = checkDoNotMergeLabels(labels, doNotMergeLabels); */
-/**/
-/*     expect(result).to.be.equal(false); */
-/*   }); */
-/**/
-/*   it('should return true if the PR don\'t have "do-not-merge" label', () => { */
-/*     const doNotMergeLabels = 'do-not-merge'; */
-/**/
-/*     const result = checkDoNotMergeLabels(labels, doNotMergeLabels); */
-/**/
-/*     expect(result).to.be.equal(true); */
-/*   }); */
-/**/
-/*   it('should return false if the PR has a "do not merge" label', () => { */
-/*     const doNotMergeLabels = 'do not merge,cancel,stop'; */
-/**/
-/*     const result = checkDoNotMergeLabels(labels, doNotMergeLabels); */
-/**/
-/*     expect(result).to.be.equal(false); */
-/*   }); */
-/* }); */
+/* // Generate function with return several data from Checks interface */
+/* // function should get  */
 /**/
 /* describe('should test checkCI: ', () => { */
 /*   it('should return false if there are more than one CI checks in progress', () => { */
+/*     // Generate only required example data from Checks interface */
 /*     const checks: Checks = { */
 /*       total_count: 4, */
 /*       check_runs: [ */
 /*         { */
-/*           name: 'test', */
+/*           id: 12345, */
+/*           head_sha: 'a1b2c3d4e5f6', */
+/*           name: 'Lint', */
 /*           status: 'completed', */
 /*           conclusion: 'success', */
-/*         }, */
-/*         { */
-/*           name: 'test 2', */
-/*           status: 'in_progress', */
-/*           conclusion: '', */
-/*         }, */
-/*         { */
-/*           name: 'test 3', */
-/*           status: 'in_progress', */
-/*           conclusion: 'success', */
-/*         }, */
-/*         { */
-/*           name: 'test 4', */
-/*           status: 'in_progress', */
-/*           conclusion: '', */
+/*           started_at: '2023-03-05T10:15:00Z', */
+/*           completed_at: '2023-03-05T10:20:00Z', */
+/*           output: { */
+/*             title: 'Lint Results', */
+/*             summary: 'No linting errors found', */
+/*             annotations_count: 0, */
+/*             annotations_url: */
+/*               'https://api.github.com/repos/octocat/Hello-World/check-runs/12345/annotations', */
+/*             text: 'No linting errors found', */
+/*           }, */
+/*           html_url: 'https://github.com/octocat/Hello-World/runs/12345', */
 /*         }, */
 /*       ], */
 /*     }; */
 /**/
-/*     const result = checkCI(checks); */
+/*     const result = areCIChecksPassed(checks); */
 /**/
 /*     expect(result).to.be.equal(false); */
 /*   }); */
@@ -105,7 +93,7 @@
 /*       ], */
 /*     }; */
 /**/
-/*     const result = checkCI(checks); */
+/*     const result = areCIChecksPassed(checks); */
 /**/
 /*     expect(result).to.be.equal(true); */
 /*   }); */
@@ -132,7 +120,7 @@
 /*       ], */
 /*     }; */
 /**/
-/*     const result = checkCI(checks); */
+/*     const result = areCIChecksPassed(checks); */
 /**/
 /*     expect(result).to.be.equal(false); */
 /*   }); */
