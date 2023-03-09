@@ -1,24 +1,21 @@
-// TODO npm run test don't warking
+import { expect } from 'chai';
+import { getIssueIdFromBranchName } from './';
+import { JiraTransitions } from '../config/typings';
 
-/* import { expect } from 'chai'; */
-/**/
-/* import { getIssueIdFromBranchName } from './'; */
-/* import { JiraTransitions } from '../config/typings'; */
+describe('Should test getIssueIdFromBranchName:', () => {
+  it('Should return null if branch name is empty', () => {
+    expect(getIssueIdFromBranchName('')).to.be.equal(null);
+  });
 
-/* describe('Should test getIssueIdFromBranchName:', () => { */
-/*   it('Should return null if branch name is empty', () => { */
-/*     expect(getIssueIdFromBranchName('')).to.be.equal(null); */
-/*   }); */
-/**/
-/*   it('Should return null if branch name is not in correct format', () => { */
-/*     expect(getIssueIdFromBranchName('branch')).to.be.equal(null); */
-/*     expect(getIssueIdFromBranchName('1-TEST-something-something')).to.be.equal(null); */
-/*   }); */
-/**/
-/*   it('Should return TEST-1 if branch name is in correct format', () => { */
-/*     expect(getIssueIdFromBranchName('TEST-1-something-test1')).to.be.equal('TEST-1'); */
-/*   }); */
-/* }); */
+  it('Should return null if branch name is not in correct format', () => {
+    expect(getIssueIdFromBranchName('branch')).to.be.equal(null);
+    expect(getIssueIdFromBranchName('1-TEST-something-something')).to.be.equal(null);
+  });
+
+  it('Should return TEST-1 if branch name is in correct format', () => {
+    expect(getIssueIdFromBranchName('TEST-1-something-test1')).to.be.equal('TEST-1');
+  });
+});
 
 /* describe('Should test getTransitionId:', () => { */
 /*   const transitions: JiraTransitions[] = [ */
