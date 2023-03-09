@@ -61,4 +61,4 @@ inputs:
 
 runs:
   using: 'node16'
-  main: 'dist/auto-merge.js'
+  main: '../dist/auto-merge.js'
