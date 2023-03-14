@@ -40040,29 +40040,29 @@ function validatePullRequest(pr) {
     return null;
 }
 function getInputs() {
-    const [owner, repo] = (0,core.getInput)('repository').split('/');
+    const [owner, repo] = getInput('repository').split('/');
     return {
-        comment: (0,core.getInput)('comment'),
+        comment: getInput('comment'),
         owner,
         repo,
-        pullRequestNumber: Number((0,core.getInput)('pullRequestNumber', { required: true })),
-        sha: (0,core.getInput)('sha', { required: true }),
-        strategy: (0,core.getInput)('strategy', { required: true }),
-        doNotMergeLabels: (0,core.getInput)('do-not-merge-labels'),
-        token: (0,core.getInput)('token', { required: true }),
-        config: (0,core.getInput)('config', { required: true }),
-        doNotMergeOnBaseBranch: (0,core.getInput)('do-not-merge-on-base-branch'),
-        shouldChangeJiraIssueStatus: (0,core.getInput)('should-change-jira-issue-status', {
+        pullRequestNumber: Number(getInput('pullRequestNumber', { required: true })),
+        sha: getInput('sha', { required: true }),
+        strategy: getInput('strategy', { required: true }),
+        doNotMergeLabels: getInput('do-not-merge-labels'),
+        token: getInput('token', { required: true }),
+        config: getInput('config', { required: true }),
+        doNotMergeOnBaseBranch: getInput('do-not-merge-on-base-branch'),
+        shouldChangeJiraIssueStatus: getInput('should-change-jira-issue-status', {
             required: false,
         }) === 'true',
-        jiraToken: (0,core.getInput)('jira-token', { required: false }),
-        jiraAccount: (0,core.getInput)('jira-account', { required: false }),
-        jiraEndpoint: (0,core.getInput)('jira-endpoint', { required: false }),
-        jiraMoveIssueFrom: (0,core.getInput)('jira-move-issue-from', { required: false }),
-        jiraMoveIssueTo: (0,core.getInput)('jira-move-issue-to', { required: false }),
-        checkReviewerOnSage: (0,core.getInput)('check-reviewer-on-sage', { required: false }) === 'true',
-        sageUrl: (0,core.getInput)('sage-url', { required: false }),
-        sageToken: (0,core.getInput)('sage-token', { required: false }),
+        jiraToken: getInput('jira-token', { required: false }),
+        jiraAccount: getInput('jira-account', { required: false }),
+        jiraEndpoint: getInput('jira-endpoint', { required: false }),
+        jiraMoveIssueFrom: getInput('jira-move-issue-from', { required: false }),
+        jiraMoveIssueTo: getInput('jira-move-issue-to', { required: false }),
+        checkReviewerOnSage: getInput('check-reviewer-on-sage', { required: false }) === 'true',
+        sageUrl: getInput('sage-url', { required: false }),
+        sageToken: getInput('sage-token', { required: false }),
     };
 }
 function fetchConfig() {
@@ -42582,11 +42582,16 @@ var auto_assign_awaiter = (undefined && undefined.__awaiter) || function (thisAr
 
 
 
+
 function run() {
     return auto_assign_awaiter(this, void 0, void 0, function* () {
         try {
             info('Starting pr auto assign.');
-            const inputs = getInputs();
+            const inputs = {
+                checkReviewerOnSage: (0,core.getInput)('check-reviewer-on-sage', { required: false }) === 'true',
+                sageUrl: (0,core.getInput)('sage-url', { required: false }),
+                sageToken: (0,core.getInput)('sage-token', { required: false }),
+            };
             let config;
             try {
                 config = yield fetchConfig();
@@ -42601,7 +42606,10 @@ function run() {
             }
             const pr = getPullRequest();
             const { isDraft, author } = pr;
-            const client = sage_sageClient({ sageBaseUrl: inputs.sageUrl, sageToken: inputs.sageToken });
+            const client = sage_sageClient({
+                sageBaseUrl: inputs.sageUrl,
+                sageToken: inputs.sageToken,
+            });
             const sageResponse = yield client('employees?page=1', 'GET');
             info(`Sage response: ${JSON.stringify(sageResponse, null, 2)}`);
             return;

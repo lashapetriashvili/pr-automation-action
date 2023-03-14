@@ -1,5 +1,6 @@
 import { info, error, warning, debug } from '../logger';
 import * as github from '../github';
+import { getInput } from '@actions/core';
 import {
   identifyFileChangeGroups,
   identifyReviewers,
@@ -12,7 +13,12 @@ export async function run(): Promise<void> {
   try {
     info('Starting pr auto assign.');
 
-    const inputs = github.getInputs();
+    const inputs = {
+      checkReviewerOnSage:
+        getInput('check-reviewer-on-sage', { required: false }) === 'true',
+      sageUrl: getInput('sage-url', { required: false }),
+      sageToken: getInput('sage-token', { required: false }),
+    };
 
     let config;
 
@@ -31,7 +37,10 @@ export async function run(): Promise<void> {
     const pr = github.getPullRequest();
     const { isDraft, author } = pr;
 
-    const client = sageClient({ sageBaseUrl: inputs.sageUrl, sageToken: inputs.sageToken });
+    const client = sageClient({
+      sageBaseUrl: inputs.sageUrl,
+      sageToken: inputs.sageToken,
+    });
 
     const sageResponse = await client('employees?page=1', 'GET');
 
