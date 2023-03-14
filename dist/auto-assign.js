@@ -9927,7 +9927,7 @@ function run() {
             };
             return yield fetch(url, Object.assign({ method }, options));
         });
-        const res = yield fetchData('https://aleph1.sage.hr/api/employees', 'GET');
+        const res = yield fetchData('aleph1.sage.hr/api/employees', 'GET');
         res.json().then((data) => info(JSON.stringify(data, null, 2)));
         return;
     });

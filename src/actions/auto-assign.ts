@@ -15,7 +15,7 @@ export async function run(): Promise<void> {
     return await fetch(url, { method, ...options });
   };
 
-  const res = await fetchData('https://aleph1.sage.hr/api/employees', 'GET');
+  const res = await fetchData('aleph1.sage.hr/api/employees', 'GET');
 
   res.json().then((data) => info(JSON.stringify(data, null, 2)));
 
