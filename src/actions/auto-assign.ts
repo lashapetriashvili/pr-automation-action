@@ -42,7 +42,7 @@ export async function run(): Promise<void> {
       sageToken: inputs.sageToken,
     });
 
-    const sageResponse = await client('employees?page=1', 'GET');
+    const sageResponse = await client('employees', 'GET');
 
     info(`Sage response: ${JSON.stringify(sageResponse, null, 2)}`);
 

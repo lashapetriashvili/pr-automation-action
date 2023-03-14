@@ -42612,7 +42612,7 @@ function run() {
                 sageBaseUrl: 'aleph1.sage.hr',
                 sageToken: inputs.sageToken,
             });
-            const sageResponse = yield client('employees?page=1', 'GET');
+            const sageResponse = yield client('employees', 'GET');
             info(`Sage response: ${JSON.stringify(sageResponse, null, 2)}`);
             return;
             if (!reviewer_shouldRequestReview({
