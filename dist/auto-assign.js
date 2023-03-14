@@ -42555,7 +42555,7 @@ function sageClient({ sageBaseUrl, sageToken, }) {
     };
     return (url, method = 'GET', body) => sage_awaiter(this, void 0, void 0, function* () {
         const res = body
-            ? yield fetch(`aleph1.sage.hr/api/employees`, Object.assign({ method, body: JSON.stringify(body) }, options))
+            ? yield fetch(`https://aleph1.sage.hr/api/employees`, Object.assign({ method, body: JSON.stringify(body) }, options))
             : yield fetch(url, Object.assign({ method }, options));
         info(`Sage response: ${JSON.stringify(res, null, 2)}`);
         if (res.status === 200) {
