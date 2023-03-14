@@ -96,7 +96,7 @@ export interface Inputs {
   jiraMoveIssueTo: string;
   sageUrl: string;
   sageToken: string;
-  shouldCheckReviewerOnSage: boolean;
+  checkReviewerOnSage: boolean;
 }
 
 export interface Reviewer {
