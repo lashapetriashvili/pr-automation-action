@@ -1,100 +1,24 @@
 import { info, error, warning, debug } from '../logger';
-import * as github from '../github';
-import { getInput } from '@actions/core';
-import {
-  identifyFileChangeGroups,
-  identifyReviewers,
-  shouldRequestReview,
-} from '../reviewer';
-
-import { sageClient } from '../sage';
+import fetch from 'node-fetch';
 
 export async function run(): Promise<void> {
-  try {
-    info('Starting pr auto assign.');
-
-    const inputs = {
-      checkReviewerOnSage:
-        getInput('check-reviewer-on-sage', { required: false }) === 'true',
-      sageUrl: getInput('sage-url', { required: false }),
-      sageToken: getInput('sage-token', { required: false }),
+  const fetchData = async (url: string, method: string) => {
+    const options = {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Auth-Token':
+          'a1b6b8ac30db14623956b95990ecb221888f8c09d1c3159c782fb421b6dd3a55a7c483425371a279',
+      },
     };
 
-    let config;
+    return await fetch(url, { method, ...options });
+  };
 
-    try {
-      config = await github.fetchConfig();
-    } catch (err) {
-      if ((err as Record<string, unknown>).status === 404) {
-        warning(
-          'No configuration file is found in the base branch; terminating the process',
-        );
-        info(JSON.stringify(err));
-        return;
-      }
-      throw err;
-    }
-    const pr = github.getPullRequest();
-    const { isDraft, author } = pr;
+  const res = await fetchData('https://aleph1.sage.hr/api/employees', 'GET');
 
-    const client = sageClient({
-      sageBaseUrl: 'aleph1.sage.hr',
-      sageToken: inputs.sageToken,
-    });
+  res.json().then((data) => info(JSON.stringify(data, null, 2)));
 
-    const sageResponse = await client('employees', 'GET');
-
-    info(`Sage response: ${JSON.stringify(sageResponse, null, 2)}`);
-
-    return;
-
-    if (
-      !shouldRequestReview({
-        isDraft,
-        options: config.options,
-        currentLabels: pr.labelNames,
-      })
-    ) {
-      info(
-        `Matched the ignoring rules ${JSON.stringify({
-          isDraft,
-          prLabels: pr.labelNames,
-        })}; terminating the process.`,
-      );
-      return;
-    }
-
-    debug('Fetching changed files in the pull request');
-    const changedFiles = await github.fetchChangedFiles({ pr });
-    const fileChangesGroups = identifyFileChangeGroups({
-      fileChangesGroups: config.fileChangesGroups,
-      changedFiles,
-    });
-    info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
-
-    debug('Identifying reviewers based on the changed files and PR creator');
-    const reviewers = identifyReviewers({
-      createdBy: author,
-      fileChangesGroups,
-      rulesByCreator: config.rulesByCreator,
-      defaultRules: config.defaultRules,
-      requestedReviewerLogins: pr.requestedReviewerLogins,
-    });
-    info(`Identified reviewers: ${reviewers.join(', ')}`);
-
-    const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
-    if (reviewersToAssign.length === 0) {
-      info(`No reviewers were matched for author ${author}. Terminating the process`);
-      return;
-    }
-    await github.assignReviewers(pr, reviewersToAssign);
-
-    info(`Requesting review to ${reviewersToAssign.join(', ')}`);
-
-    info('Done');
-  } catch (err) {
-    error(err as Error);
-  }
   return;
 }
 

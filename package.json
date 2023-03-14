@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "GitHub Action that automatically requests review of a pull request based on who creates PR and what files were changed",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
     "build:auto-assign": "ncc build ./src/actions/auto-assign.ts -o dist && mv ./dist/index.js ./dist/auto-assign.js",
     "build:auto-merge": "ncc build ./src/actions/auto-merge.ts -o dist && mv ./dist/index.js ./dist/auto-merge.js",
