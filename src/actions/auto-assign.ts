@@ -20,6 +20,10 @@ export async function run(): Promise<void> {
       sageToken: getInput('sage-token', { required: false }),
     };
 
+    info(JSON.stringify(inputs, null, 2));
+
+    return;
+
     let config;
 
     try {

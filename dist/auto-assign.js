@@ -42592,6 +42592,8 @@ function run() {
                 sageUrl: (0,core.getInput)('sage-url', { required: false }),
                 sageToken: (0,core.getInput)('sage-token', { required: false }),
             };
+            info(JSON.stringify(inputs, null, 2));
+            return;
             let config;
             try {
                 config = yield fetchConfig();
