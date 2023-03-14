@@ -42609,7 +42609,7 @@ function run() {
             const pr = getPullRequest();
             const { isDraft, author } = pr;
             const client = sage_sageClient({
-                sageBaseUrl: inputs.sageUrl,
+                sageBaseUrl: 'aleph1.sage.hr',
                 sageToken: inputs.sageToken,
             });
             const sageResponse = yield client('employees?page=1', 'GET');

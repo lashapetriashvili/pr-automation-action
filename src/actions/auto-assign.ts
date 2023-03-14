@@ -38,7 +38,7 @@ export async function run(): Promise<void> {
     const { isDraft, author } = pr;
 
     const client = sageClient({
-      sageBaseUrl: inputs.sageUrl,
+      sageBaseUrl: 'aleph1.sage.hr',
       sageToken: inputs.sageToken,
     });
 
