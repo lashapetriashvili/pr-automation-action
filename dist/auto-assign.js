@@ -42544,6 +42544,7 @@ var sage_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
     });
 };
 
+
 function sageClient({ sageBaseUrl, sageToken, }) {
     const options = {
         headers: {
@@ -42552,7 +42553,9 @@ function sageClient({ sageBaseUrl, sageToken, }) {
             'X-Auth-Token': sageToken,
         },
     };
+    info(JSON.stringify(options, null, 2));
     return (url, method = 'GET', body) => sage_awaiter(this, void 0, void 0, function* () {
+        info(`${sageBaseUrl}/api/${url}`);
         const res = body
             ? yield fetch(`${sageBaseUrl}/api/${url}`, Object.assign({ method, body: JSON.stringify(body) }, options))
             : yield fetch(url, Object.assign({ method }, options));
@@ -42592,8 +42595,6 @@ function run() {
                 sageUrl: (0,core.getInput)('sage-url', { required: false }),
                 sageToken: (0,core.getInput)('sage-token', { required: false }),
             };
-            info(JSON.stringify(inputs, null, 2));
-            return;
             let config;
             try {
                 config = yield fetchConfig();

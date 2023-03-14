@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { info } from '../logger';
 
 export function sageClient({
   sageBaseUrl,
@@ -15,11 +16,16 @@ export function sageClient({
     },
   };
 
+  info(JSON.stringify(options, null, 2));
+
   return async <T = any>(
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     body?: any | undefined,
   ) => {
+
+    info(`${sageBaseUrl}/api/${url}`);
+
     const res = body
       ? await fetch(`${sageBaseUrl}/api/${url}`, {
           method,
