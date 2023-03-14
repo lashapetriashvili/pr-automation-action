@@ -6,9 +6,13 @@ import {
   shouldRequestReview,
 } from '../reviewer';
 
+import { sageClient } from '../sage';
+
 export async function run(): Promise<void> {
   try {
     info('Starting pr auto assign.');
+
+    const inputs = github.getInputs();
 
     let config;
 
@@ -26,6 +30,14 @@ export async function run(): Promise<void> {
     }
     const pr = github.getPullRequest();
     const { isDraft, author } = pr;
+
+    const client = sageClient({ sageBaseUrl: inputs.sageUrl, sageToken: inputs.sageToken });
+
+    const sageResponse = await client('employees?page=1', 'GET');
+
+    info(`Sage response: ${JSON.stringify(sageResponse, null, 2)}`);
+
+    return;
 
     if (
       !shouldRequestReview({

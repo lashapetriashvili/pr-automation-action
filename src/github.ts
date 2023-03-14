@@ -104,6 +104,9 @@ export function getInputs(): Inputs {
     jiraEndpoint: getInput('jira-endpoint', { required: false }),
     jiraMoveIssueFrom: getInput('jira-move-issue-from', { required: false }),
     jiraMoveIssueTo: getInput('jira-move-issue-to', { required: false }),
+    shouldCheckReviewerOnSage: getInput('should-check-reviewer-on-sage', { required: false }) === 'true',
+    sageUrl: getInput('sage-url', { required: false }),
+    sageToken: getInput('sage-token', { required: false }),
   };
 }
 

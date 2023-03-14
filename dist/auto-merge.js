@@ -40060,6 +40060,9 @@ function getInputs() {
         jiraEndpoint: (0,core.getInput)('jira-endpoint', { required: false }),
         jiraMoveIssueFrom: (0,core.getInput)('jira-move-issue-from', { required: false }),
         jiraMoveIssueTo: (0,core.getInput)('jira-move-issue-to', { required: false }),
+        shouldCheckReviewerOnSage: (0,core.getInput)('should-check-reviewer-on-sage', { required: false }) === 'true',
+        sageUrl: (0,core.getInput)('sage-url', { required: false }),
+        sageToken: (0,core.getInput)('sage-token', { required: false }),
     };
 }
 function fetchConfig() {
