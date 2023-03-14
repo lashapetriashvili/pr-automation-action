@@ -42553,12 +42553,11 @@ function sageClient({ sageBaseUrl, sageToken, }) {
             'X-Auth-Token': sageToken,
         },
     };
-    info(JSON.stringify(options, null, 2));
     return (url, method = 'GET', body) => sage_awaiter(this, void 0, void 0, function* () {
-        info(`${sageBaseUrl}/api/${url}`);
         const res = body
             ? yield fetch(`${sageBaseUrl}/api/${url}`, Object.assign({ method, body: JSON.stringify(body) }, options))
             : yield fetch(url, Object.assign({ method }, options));
+        info(`Sage response: ${JSON.stringify(res, null, 2)}`);
         if (res.status === 200) {
             const json = yield res.json();
             return json;

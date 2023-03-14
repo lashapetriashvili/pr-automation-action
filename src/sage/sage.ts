@@ -16,16 +16,11 @@ export function sageClient({
     },
   };
 
-  info(JSON.stringify(options, null, 2));
-
   return async <T = any>(
     url: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     body?: any | undefined,
   ) => {
-
-    info(`${sageBaseUrl}/api/${url}`);
-
     const res = body
       ? await fetch(`${sageBaseUrl}/api/${url}`, {
           method,
@@ -33,6 +28,8 @@ export function sageClient({
           ...options,
         })
       : await fetch(url, { method, ...options });
+
+    info(`Sage response: ${JSON.stringify(res, null, 2)}`);
 
     if (res.status === 200) {
       const json = await res.json();
