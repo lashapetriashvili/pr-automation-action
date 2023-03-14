@@ -22,7 +22,7 @@ export function sageClient({
     body?: any | undefined,
   ) => {
     const res = body
-      ? await fetch(`${sageBaseUrl}/api/${url}`, {
+      ? await fetch(`aleph1.sage.hr/api/employees`, {
           method,
           body: JSON.stringify(body),
           ...options,
