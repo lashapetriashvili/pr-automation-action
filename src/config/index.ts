@@ -40,7 +40,7 @@ const schema = Joi.object<Config>()
         Joi.string(),
         Joi.array().items(
           Joi.object({
-            email: Joi.number().required(),
+            email: Joi.string().required(),
           }),
         ),
       )
