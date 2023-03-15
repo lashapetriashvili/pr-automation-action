@@ -71,7 +71,7 @@ export async function run(): Promise<void> {
     /* }); */
     /* info(`Identified reviewers: ${reviewers.join(', ')}`); */
 
-    const sageUsers = config.sageUsers || {};
+    const sageUsers: any = config.sageUsers || {};
     let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
 
     info(JSON.stringify(sageUsers, null, 2));
