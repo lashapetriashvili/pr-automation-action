@@ -1,32 +1,35 @@
 import fetch from 'node-fetch';
 import { info } from '../logger';
+import { SageEmployee, SageLeaveManagement } from '../config/typings';
 
-type SageResponse<T> = {
-  data: T[];
-  meta: {
-    current_page: number;
-    next_page: number | null;
-    per_page: number;
-    total_pages: number;
-    total_count: number;
-  };
-};
+export async function filterReviewersWhoDontWorkToday({
+  sageBaseUrl,
+  sageToken,
+  reviewers,
+  sageUsers,
+}: {
+  sageBaseUrl: string;
+  sageToken: string;
+  reviewers: string[];
+  sageUsers: any;
+}): Promise<string[]> {
+  /* const employeesWhoDontWorkToday = await getEmployeesWhoDontWorkToday({ */
+  /*   sageBaseUrl, */
+  /*   sageToken, */
+  /* }); */
 
-type SageEmployee = SageResponse<{
-  id: number;
-  first_name: string;
-  last_email: string;
-  email: string;
-}>;
+  const employeesWhoDontWorkToday = ['lasha.petriashvili@eze.tech', 'zaza']
 
-type SageLeaveManagement = SageResponse<{
-  id: string;
-  status: string;
-  status_code: 'approved' | 'canceled';
-  start_date: string;
-  end_date: string;
-  employee_id: number;
-}>;
+  reviewers = reviewers.filter((reviewer) => {
+    if (sageUsers[reviewer]) {
+      return !employeesWhoDontWorkToday.includes(sageUsers[reviewer][0].email);
+    }
+
+    return true;
+  });
+
+  return reviewers;
+}
 
 export async function getEmployeesWhoDontWorkToday({
   sageBaseUrl,

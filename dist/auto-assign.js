@@ -42361,6 +42361,22 @@ var sage_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
 };
 
 
+function filterReviewersWhoDontWorkToday({ sageBaseUrl, sageToken, reviewers, sageUsers, }) {
+    return sage_awaiter(this, void 0, void 0, function* () {
+        /* const employeesWhoDontWorkToday = await getEmployeesWhoDontWorkToday({ */
+        /*   sageBaseUrl, */
+        /*   sageToken, */
+        /* }); */
+        const employeesWhoDontWorkToday = ['lasha.petriashvili@eze.tech', 'zaza'];
+        reviewers = reviewers.filter((reviewer) => {
+            if (sageUsers[reviewer]) {
+                return !employeesWhoDontWorkToday.includes(sageUsers[reviewer][0].email);
+            }
+            return true;
+        });
+        return reviewers;
+    });
+}
 function getEmployeesWhoDontWorkToday({ sageBaseUrl, sageToken, }) {
     return sage_awaiter(this, void 0, void 0, function* () {
         const client = sageClient({
@@ -42445,6 +42461,7 @@ function sageClient({ sageBaseUrl, sageToken, }) {
 
 const sage_sageClient = withDebugLog(sageClient);
 const sage_getEmployeesWhoDontWorkToday = withDebugLog(getEmployeesWhoDontWorkToday);
+const sage_filterReviewersWhoDontWorkToday = withDebugLog(filterReviewersWhoDontWorkToday);
 const sage_getLeaveManagement = withDebugLog(getLeaveManagement);
 
 ;// CONCATENATED MODULE: ./src/actions/auto-assign.ts
@@ -42530,29 +42547,26 @@ function run() {
                 ],
             };
             let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
-            // find sage users in reviewers
-            let reviewersEmails = [];
-            const employees = ['lasha.petriashvili@eze.tech', 'oleksandra.marchenko@eze.tech'];
-            reviewers.filter((reviewer) => {
-                if (sageUsers[reviewer]) {
-                    return !employees.includes(sageUsers[reviewer][0].email);
-                }
-                return true;
+            reviewers = yield sage_filterReviewersWhoDontWorkToday({
+                sageBaseUrl: inputs.sageUrl,
+                sageToken: inputs.sageToken,
+                reviewers,
+                sageUsers,
             });
             info(JSON.stringify(reviewers, null, 2));
             return;
             if (inputs.checkReviewerOnSage) {
                 try {
-                    reviewersEmails = yield sage_getEmployeesWhoDontWorkToday({
-                        sageBaseUrl: inputs.sageUrl,
-                        sageToken: inputs.sageToken,
-                    });
+                    /* reviewersEmails = await getEmployeesWhoDontWorkToday({ */
+                    /*   sageBaseUrl: inputs.sageUrl, */
+                    /*   sageToken: inputs.sageToken, */
+                    /* }); */
                 }
                 catch (err) {
                     logger_warning('Sage Error: ' + JSON.stringify(err, null, 2));
                 }
             }
-            info(`Identified reviewers: ${reviewersEmails.join(', ')}`);
+            /* info(`Identified reviewers: ${reviewersEmails.join(', ')}`); */
             return;
             const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
             if (reviewersToAssign.length === 0) {

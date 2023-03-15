@@ -7,7 +7,7 @@ import {
   shouldRequestReview,
 } from '../reviewer';
 
-import { getEmployeesWhoDontWorkToday } from '../sage';
+import { filterReviewersWhoDontWorkToday } from '../sage';
 
 export async function run(): Promise<void> {
   try {
@@ -90,18 +90,11 @@ export async function run(): Promise<void> {
     };
     let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
 
-    // find sage users in reviewers
-
-    let reviewersEmails: string[] = [];
-
-    const employees = ['lasha.petriashvili@eze.tech', 'oleksandra.marchenko@eze.tech'];
-
-    reviewers.filter((reviewer) => {
-      if (sageUsers[reviewer]) {
-        return !employees.includes(sageUsers[reviewer][0].email);
-      }
-
-      return true;
+    reviewers = await filterReviewersWhoDontWorkToday({
+      sageBaseUrl: inputs.sageUrl,
+      sageToken: inputs.sageToken,
+      reviewers,
+      sageUsers,
     });
 
     info(JSON.stringify(reviewers, null, 2));
@@ -110,16 +103,16 @@ export async function run(): Promise<void> {
 
     if (inputs.checkReviewerOnSage) {
       try {
-        reviewersEmails = await getEmployeesWhoDontWorkToday({
-          sageBaseUrl: inputs.sageUrl,
-          sageToken: inputs.sageToken,
-        });
+        /* reviewersEmails = await getEmployeesWhoDontWorkToday({ */
+        /*   sageBaseUrl: inputs.sageUrl, */
+        /*   sageToken: inputs.sageToken, */
+        /* }); */
       } catch (err) {
         warning('Sage Error: ' + JSON.stringify(err, null, 2));
       }
     }
 
-    info(`Identified reviewers: ${reviewersEmails.join(', ')}`);
+    /* info(`Identified reviewers: ${reviewersEmails.join(', ')}`); */
 
     return;
 
