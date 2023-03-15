@@ -38,9 +38,11 @@ const schema = Joi.object<Config>()
     sageUsers: Joi.object()
       .pattern(
         Joi.string(),
-        Joi.object({
-          email: Joi.string().required(),
-        }),
+        Joi.array().items(
+          Joi.object({
+            email: Joi.string().required(),
+          }),
+        ),
       )
       .required(),
   })

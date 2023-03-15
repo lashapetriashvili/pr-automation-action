@@ -39772,9 +39772,9 @@ const schema = lib.object()
         .pattern(lib.string(), lib.array().items(lib.string()))
         .required(),
     sageUsers: lib.object()
-        .pattern(lib.string(), lib.object({
+        .pattern(lib.string(), lib.array().items(lib.object({
         email: lib.string().required(),
-    }))
+    })))
         .required(),
 })
     .required()
