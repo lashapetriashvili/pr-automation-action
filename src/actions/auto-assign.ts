@@ -21,6 +21,10 @@ export async function run(): Promise<void> {
     };
 
     let config;
+    
+    info(new Date().toISOString().split('T')[0]);
+
+    return;
 
     try {
       config = await github.fetchConfig();
@@ -36,15 +40,6 @@ export async function run(): Promise<void> {
     }
     const pr = github.getPullRequest();
     const { isDraft, author } = pr;
-
-    const client = sageClient({
-      sageBaseUrl: 'https://aleph1.sage.hr',
-      sageToken: inputs.sageToken,
-    });
-
-    const sageResponse = await client('employees', 'GET');
-
-    info(`Sage response: ${JSON.stringify(sageResponse, null, 2)}`);
 
     return;
 
