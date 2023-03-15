@@ -71,6 +71,8 @@ export async function run(): Promise<void> {
     });
     info(`Identified reviewers: ${reviewers.join(', ')}`);
 
+    info(JSON.stringify(config, null, 2));
+
     return;
 
     if (inputs.checkReviewerOnSage) {

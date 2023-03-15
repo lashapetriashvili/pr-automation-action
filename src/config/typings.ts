@@ -22,6 +22,7 @@ export type Config = {
   rulesByCreator: Record<string, Rule[]>;
   options?: Options;
   postReviewOptions?: {};
+  sageUsers: Record<string, { email: string }>;
 };
 
 export type ReviewerByState = {

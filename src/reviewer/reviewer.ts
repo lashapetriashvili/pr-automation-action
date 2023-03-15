@@ -1,7 +1,7 @@
 import * as minimatch from 'minimatch';
 import { info } from '../logger';
 import { Config, DefaultRules, Rule } from '../config/typings';
-/* import { getRandomItemFromArray } from '../utils'; */
+import { getRandomItemFromArray } from '../utils';
 
 export function shouldRequestReview({
   isDraft,
@@ -58,13 +58,13 @@ function getReviewersBasedOnRule({
     [],
   );
   const selectedList = [...preselectAlreadySelectedReviewers];
-  /* while (selectedList.length < assign) { */
-  /*   const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => { */
-  /*     return !selectedList.includes(reviewer); */
-  /*   }); */
-  /*   const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected); */
-  /*   selectedList.push(randomReviewer); */
-  /* } */
+  while (selectedList.length < assign) {
+    const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
+      return !selectedList.includes(reviewer);
+    });
+    const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
+    selectedList.push(randomReviewer);
+  }
   selectedList.forEach((randomlySelected) => {
     result.add(randomlySelected);
   });

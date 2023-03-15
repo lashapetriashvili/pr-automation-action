@@ -39771,6 +39771,11 @@ const schema = lib.object()
     fileChangesGroups: lib.object()
         .pattern(lib.string(), lib.array().items(lib.string()))
         .required(),
+    sageUsers: lib.object()
+        .pattern(lib.string(), lib.array().items(lib.object({
+        email: lib.number().required(),
+    })))
+        .required(),
 })
     .required()
     .options({ stripUnknown: true });
@@ -40067,7 +40072,7 @@ var minimatch = __nccwpck_require__(3973);
 ;// CONCATENATED MODULE: ./src/reviewer/reviewer.ts
 
 
-/* import { getRandomItemFromArray } from '../utils'; */
+
 function shouldRequestReview({ isDraft, options, currentLabels, }) {
     if (isDraft) {
         return false;
@@ -40102,13 +40107,13 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
         return alreadySelectedReviewers;
     }, []);
     const selectedList = [...preselectAlreadySelectedReviewers];
-    /* while (selectedList.length < assign) { */
-    /*   const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => { */
-    /*     return !selectedList.includes(reviewer); */
-    /*   }); */
-    /*   const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected); */
-    /*   selectedList.push(randomReviewer); */
-    /* } */
+    while (selectedList.length < assign) {
+        const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
+            return !selectedList.includes(reviewer);
+        });
+        const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
+        selectedList.push(randomReviewer);
+    }
     selectedList.forEach((randomlySelected) => {
         result.add(randomlySelected);
     });
@@ -42511,6 +42516,7 @@ function run() {
                 requestedReviewerLogins: pr.requestedReviewerLogins,
             });
             info(`Identified reviewers: ${reviewers.join(', ')}`);
+            info(JSON.stringify(config, null, 2));
             return;
             if (inputs.checkReviewerOnSage) {
                 try {
