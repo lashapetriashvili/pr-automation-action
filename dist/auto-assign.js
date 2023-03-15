@@ -39874,9 +39874,6 @@ function getInputs() {
         jiraEndpoint: getInput('jira-endpoint', { required: false }),
         jiraMoveIssueFrom: getInput('jira-move-issue-from', { required: false }),
         jiraMoveIssueTo: getInput('jira-move-issue-to', { required: false }),
-        checkReviewerOnSage: getInput('check-reviewer-on-sage', { required: false }) === 'true',
-        sageUrl: getInput('sage-url', { required: false }),
-        sageToken: getInput('sage-token', { required: false }),
     };
 }
 function fetchConfig() {
@@ -40070,7 +40067,7 @@ var minimatch = __nccwpck_require__(3973);
 ;// CONCATENATED MODULE: ./src/reviewer/reviewer.ts
 
 
-
+/* import { getRandomItemFromArray } from '../utils'; */
 function shouldRequestReview({ isDraft, options, currentLabels, }) {
     if (isDraft) {
         return false;
@@ -40105,13 +40102,13 @@ function getReviewersBasedOnRule({ assign, reviewers, createdBy, requestedReview
         return alreadySelectedReviewers;
     }, []);
     const selectedList = [...preselectAlreadySelectedReviewers];
-    while (selectedList.length < assign) {
-        const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => {
-            return !selectedList.includes(reviewer);
-        });
-        const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected);
-        selectedList.push(randomReviewer);
-    }
+    /* while (selectedList.length < assign) { */
+    /*   const reviewersWithoutRandomlySelected = reviewers.filter((reviewer) => { */
+    /*     return !selectedList.includes(reviewer); */
+    /*   }); */
+    /*   const randomReviewer = getRandomItemFromArray(reviewersWithoutRandomlySelected); */
+    /*   selectedList.push(randomReviewer); */
+    /* } */
     selectedList.forEach((randomlySelected) => {
         result.add(randomlySelected);
     });
@@ -42487,13 +42484,6 @@ function run() {
             }
             const pr = getPullRequest();
             const { isDraft, author } = pr;
-            const reviewersEmails = yield sage_getEmployees({
-                sageBaseUrl: inputs.sageUrl,
-                sageToken: inputs.sageToken,
-                reviewersEmails: ["oleksandra.marchenko@eze.tech"],
-            });
-            info(JSON.stringify(reviewersEmails));
-            return;
             if (!reviewer_shouldRequestReview({
                 isDraft,
                 options: config.options,
@@ -42513,7 +42503,7 @@ function run() {
             });
             info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
             debug('Identifying reviewers based on the changed files and PR creator');
-            const reviewers = reviewer_identifyReviewers({
+            let reviewers = reviewer_identifyReviewers({
                 createdBy: author,
                 fileChangesGroups,
                 rulesByCreator: config.rulesByCreator,
@@ -42521,6 +42511,19 @@ function run() {
                 requestedReviewerLogins: pr.requestedReviewerLogins,
             });
             info(`Identified reviewers: ${reviewers.join(', ')}`);
+            return;
+            if (inputs.checkReviewerOnSage) {
+                try {
+                    reviewers = yield sage_getEmployees({
+                        sageBaseUrl: inputs.sageUrl,
+                        sageToken: inputs.sageToken,
+                        reviewersEmails: reviewers,
+                    });
+                }
+                catch (err) {
+                    logger_warning('Sage Error: ' + JSON.stringify(err, null, 2));
+                }
+            }
             const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
             if (reviewersToAssign.length === 0) {
                 info(`No reviewers were matched for author ${author}. Terminating the process`);

@@ -94,9 +94,6 @@ export interface Inputs {
   jiraEndpoint: string;
   jiraMoveIssueFrom: string;
   jiraMoveIssueTo: string;
-  sageUrl: string;
-  sageToken: string;
-  checkReviewerOnSage: boolean;
 }
 
 export interface Reviewer {

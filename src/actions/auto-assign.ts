@@ -37,16 +37,6 @@ export async function run(): Promise<void> {
     const pr = github.getPullRequest();
     const { isDraft, author } = pr;
 
-    const reviewersEmails = await getEmployees({
-      sageBaseUrl: inputs.sageUrl,
-      sageToken: inputs.sageToken,
-      reviewersEmails: ["oleksandra.marchenko@eze.tech"],
-    });
-
-    info(JSON.stringify(reviewersEmails));
-
-    return;
-
     if (
       !shouldRequestReview({
         isDraft,
@@ -72,7 +62,7 @@ export async function run(): Promise<void> {
     info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
 
     debug('Identifying reviewers based on the changed files and PR creator');
-    const reviewers = identifyReviewers({
+    let reviewers = identifyReviewers({
       createdBy: author,
       fileChangesGroups,
       rulesByCreator: config.rulesByCreator,
@@ -80,6 +70,20 @@ export async function run(): Promise<void> {
       requestedReviewerLogins: pr.requestedReviewerLogins,
     });
     info(`Identified reviewers: ${reviewers.join(', ')}`);
+
+    return;
+
+    if (inputs.checkReviewerOnSage) {
+      try {
+        reviewers = await getEmployees({
+          sageBaseUrl: inputs.sageUrl,
+          sageToken: inputs.sageToken,
+          reviewersEmails: reviewers,
+        });
+      } catch (err) {
+        warning('Sage Error: ' + JSON.stringify(err, null, 2));
+      }
+    }
 
     const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
     if (reviewersToAssign.length === 0) {
