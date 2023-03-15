@@ -47,6 +47,8 @@ export async function getEmployees({
     sageToken,
   });
 
+  info(JSON.stringify(leaveManagement));
+
   let page: number | null = 1;
   let data: string[] = [];
 

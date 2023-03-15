@@ -42369,6 +42369,7 @@ function getEmployees({ sageBaseUrl, sageToken, reviewersEmails, }) {
             sageBaseUrl,
             sageToken,
         });
+        info(JSON.stringify(leaveManagement));
         let page = 1;
         let data = [];
         do {
