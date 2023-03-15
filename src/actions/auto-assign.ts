@@ -71,23 +71,8 @@ export async function run(): Promise<void> {
     /* }); */
     /* info(`Identified reviewers: ${reviewers.join(', ')}`); */
 
-    const sageUsers: any = {
-      lashapetriashvili: [
-        {
-          email: 'lasha.petriashvili@eze.tech',
-        },
-      ],
-      'lashapetriashvili-ezetech': [
-        {
-          email: 'lasha.petriashvili1@eze.tech',
-        },
-      ],
-      lasha3044: [
-        {
-          email: 'lasha.petriashvili2@eze.tech',
-        },
-      ],
-    };
+    const sageUsers = config.sageUsers || {};
+
     let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
 
     reviewers = await filterReviewersWhoDontWorkToday({
