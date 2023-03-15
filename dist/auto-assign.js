@@ -42508,15 +42508,24 @@ function run() {
             });
             info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
             debug('Identifying reviewers based on the changed files and PR creator');
-            let reviewers = reviewer_identifyReviewers({
-                createdBy: author,
-                fileChangesGroups,
-                rulesByCreator: config.rulesByCreator,
-                defaultRules: config.defaultRules,
-                requestedReviewerLogins: pr.requestedReviewerLogins,
+            /* let reviewers = identifyReviewers({ */
+            /*   createdBy: author, */
+            /*   fileChangesGroups, */
+            /*   rulesByCreator: config.rulesByCreator, */
+            /*   defaultRules: config.defaultRules, */
+            /*   requestedReviewerLogins: pr.requestedReviewerLogins, */
+            /* }); */
+            /* info(`Identified reviewers: ${reviewers.join(', ')}`); */
+            const sageUsers = config.sageUsers || {};
+            let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
+            // find sage users in reviewers
+            const reviewersEmails = [];
+            reviewers.forEach((reviewer) => {
+                if (sageUsers[reviewer]) {
+                    reviewersEmails.push(sageUsers[reviewer].email);
+                }
             });
-            info(`Identified reviewers: ${reviewers.join(', ')}`);
-            info(JSON.stringify(config, null, 2));
+            info(JSON.stringify(reviewersEmails, null, 2));
             return;
             if (inputs.checkReviewerOnSage) {
                 try {

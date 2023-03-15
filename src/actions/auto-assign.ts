@@ -62,16 +62,30 @@ export async function run(): Promise<void> {
     info(`Identified changed file groups: ${fileChangesGroups.join(', ')}`);
 
     debug('Identifying reviewers based on the changed files and PR creator');
-    let reviewers = identifyReviewers({
-      createdBy: author,
-      fileChangesGroups,
-      rulesByCreator: config.rulesByCreator,
-      defaultRules: config.defaultRules,
-      requestedReviewerLogins: pr.requestedReviewerLogins,
-    });
-    info(`Identified reviewers: ${reviewers.join(', ')}`);
+    /* let reviewers = identifyReviewers({ */
+    /*   createdBy: author, */
+    /*   fileChangesGroups, */
+    /*   rulesByCreator: config.rulesByCreator, */
+    /*   defaultRules: config.defaultRules, */
+    /*   requestedReviewerLogins: pr.requestedReviewerLogins, */
+    /* }); */
+    /* info(`Identified reviewers: ${reviewers.join(', ')}`); */
 
-    info(JSON.stringify(config, null, 2));
+    const sageUsers = config.sageUsers || {};
+    let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
+
+    // find sage users in reviewers
+
+    const reviewersEmails: string[] = [];
+
+    reviewers.forEach((reviewer) => {
+      if (sageUsers[reviewer]) {
+        reviewersEmails.push(sageUsers[reviewer].email);
+      }
+    });
+
+    info(JSON.stringify(reviewersEmails, null, 2));
+
 
     return;
 
