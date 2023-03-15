@@ -40,7 +40,7 @@ export async function run(): Promise<void> {
     const reviewersEmails = await getEmployees({
       sageBaseUrl: inputs.sageUrl,
       sageToken: inputs.sageToken,
-      reviewersEmails: [],
+      reviewersEmails: ["oleksandra.marchenko@eze.tech"],
     });
 
     info(JSON.stringify(reviewersEmails));

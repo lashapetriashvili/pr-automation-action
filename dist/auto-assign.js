@@ -42490,7 +42490,7 @@ function run() {
             const reviewersEmails = yield sage_getEmployees({
                 sageBaseUrl: inputs.sageUrl,
                 sageToken: inputs.sageToken,
-                reviewersEmails: [],
+                reviewersEmails: ["oleksandra.marchenko@eze.tech"],
             });
             info(JSON.stringify(reviewersEmails));
             return;
