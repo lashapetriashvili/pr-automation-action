@@ -42530,7 +42530,6 @@ function run() {
                 ],
             };
             let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
-            info(JSON.stringify(sageUsers, null, 2));
             // find sage users in reviewers
             let reviewersEmails = [];
             const employees = ['lasha.petriashvili@eze.tech', 'oleksandra.marchenko@eze.tech'];
@@ -42538,6 +42537,7 @@ function run() {
                 if (sageUsers[reviewer]) {
                     return !employees.includes(sageUsers[reviewer][0].email);
                 }
+                return true;
             });
             info(JSON.stringify(reviewers, null, 2));
             return;
