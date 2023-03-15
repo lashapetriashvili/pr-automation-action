@@ -42381,7 +42381,7 @@ function getEmployees({ sageBaseUrl, sageToken, reviewersEmails, }) {
             else {
                 page = null;
             }
-        } while (page == null);
+        } while (page !== null);
         info(JSON.stringify(data));
         const filteredEmployees = data.filter((employee) => !reviewersEmails.includes(employee));
         info(JSON.stringify(filteredEmployees));
@@ -42411,7 +42411,7 @@ function getLeaveManagement({ sageBaseUrl, sageToken, }) {
             else {
                 page = null;
             }
-        } while (page == null);
+        } while (page !== null);
         return data;
     });
 }

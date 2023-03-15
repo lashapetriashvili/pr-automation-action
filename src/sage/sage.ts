@@ -67,7 +67,7 @@ export async function getEmployees({
     } else {
       page = null;
     }
-  } while (page == null);
+  } while (page !== null);
 
   info(JSON.stringify(data));
 
@@ -117,7 +117,7 @@ export async function getLeaveManagement({
     } else {
       page = null;
     }
-  } while (page == null);
+  } while (page !== null);
 
   return data;
 }
