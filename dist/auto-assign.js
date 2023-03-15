@@ -42520,27 +42520,27 @@ function run() {
             let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
             info(JSON.stringify(sageUsers, null, 2));
             // find sage users in reviewers
-            const reviewersEmails = [];
+            let reviewersEmails = [];
             reviewers.forEach((reviewer) => {
                 if (sageUsers[reviewer]) {
                     /* info(sageUsers[reviewer]); */
                     reviewersEmails.push(sageUsers[reviewer][0].email);
                 }
             });
-            info(JSON.stringify(reviewersEmails, null, 2));
-            return;
             if (inputs.checkReviewerOnSage) {
                 try {
-                    reviewers = yield sage_getEmployees({
+                    reviewersEmails = yield sage_getEmployees({
                         sageBaseUrl: inputs.sageUrl,
                         sageToken: inputs.sageToken,
-                        reviewersEmails: reviewers,
+                        reviewersEmails: reviewersEmails,
                     });
                 }
                 catch (err) {
                     logger_warning('Sage Error: ' + JSON.stringify(err, null, 2));
                 }
             }
+            info(`Identified reviewers: ${reviewersEmails.join(', ')}`);
+            return;
             const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
             if (reviewersToAssign.length === 0) {
                 info(`No reviewers were matched for author ${author}. Terminating the process`);

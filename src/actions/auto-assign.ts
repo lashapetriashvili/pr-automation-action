@@ -78,7 +78,7 @@ export async function run(): Promise<void> {
 
     // find sage users in reviewers
 
-    const reviewersEmails: string[] = [];
+    let reviewersEmails: string[] = [];
 
     reviewers.forEach((reviewer) => {
       if (sageUsers[reviewer]) {
@@ -89,22 +89,21 @@ export async function run(): Promise<void> {
       }
     });
 
-    info(JSON.stringify(reviewersEmails, null, 2));
-
-
-    return;
-
     if (inputs.checkReviewerOnSage) {
       try {
-        reviewers = await getEmployees({
+        reviewersEmails = await getEmployees({
           sageBaseUrl: inputs.sageUrl,
           sageToken: inputs.sageToken,
-          reviewersEmails: reviewers,
+          reviewersEmails: reviewersEmails,
         });
       } catch (err) {
         warning('Sage Error: ' + JSON.stringify(err, null, 2));
       }
     }
+
+    info(`Identified reviewers: ${reviewersEmails.join(', ')}`);
+
+    return;
 
     const reviewersToAssign = reviewers.filter((reviewer) => reviewer !== author);
     if (reviewersToAssign.length === 0) {
