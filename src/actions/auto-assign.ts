@@ -85,7 +85,7 @@ export async function run(): Promise<void> {
 
         /* info(sageUsers[reviewer]); */
 
-        reviewersEmails.push(sageUsers[reviewer].email);
+        reviewersEmails.push(sageUsers[reviewer][0].email);
       }
     });
 

@@ -42524,7 +42524,7 @@ function run() {
             reviewers.forEach((reviewer) => {
                 if (sageUsers[reviewer]) {
                     /* info(sageUsers[reviewer]); */
-                    reviewersEmails.push(sageUsers[reviewer].email);
+                    reviewersEmails.push(sageUsers[reviewer][0].email);
                 }
             });
             info(JSON.stringify(reviewersEmails, null, 2));
