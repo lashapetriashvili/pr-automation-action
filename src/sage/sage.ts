@@ -94,8 +94,11 @@ export async function getLeaveManagement({
     sageToken,
   });
 
-  const from = new Date().toISOString().split('T')[0];
-  const to = new Date().toISOString().split('T')[0];
+  /* const from = new Date().toISOString().split('T')[0]; */
+  /* const to = new Date().toISOString().split('T')[0]; */
+  const from = '2023-03-14';
+  const to = '2023-03-14';
+
   let page: number | null = 1;
   let data: number[] = [];
 
