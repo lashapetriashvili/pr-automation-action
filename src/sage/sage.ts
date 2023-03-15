@@ -46,7 +46,7 @@ export async function getEmployees({
     sageBaseUrl,
     sageToken,
   });
-  
+
   let page: number | null = 1;
   let data: string[] = [];
 
@@ -143,6 +143,8 @@ export function sageClient({
     body?: any | undefined,
   ) => {
     const fullUrl = `${sageBaseUrl}/api/${url}`;
+
+    info(`Sage request: ${fullUrl}`);
     const res = body
       ? await fetch(fullUrl, {
           method,
@@ -151,11 +153,11 @@ export function sageClient({
         })
       : await fetch(fullUrl, { method, ...options });
 
-    info(`Sage response: ${JSON.stringify(res, null, 2)}`);
-
     if (res.status === 200) {
       const json = await res.json();
       return json as T;
+    } else {
+      return undefined;
     }
   };
 }

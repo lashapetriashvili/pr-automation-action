@@ -42425,13 +42425,16 @@ function sageClient({ sageBaseUrl, sageToken, }) {
     };
     return (url, method = 'GET', body) => sage_awaiter(this, void 0, void 0, function* () {
         const fullUrl = `${sageBaseUrl}/api/${url}`;
+        info(`Sage request: ${fullUrl}`);
         const res = body
             ? yield fetch(fullUrl, Object.assign({ method, body: JSON.stringify(body) }, options))
             : yield fetch(fullUrl, Object.assign({ method }, options));
-        info(`Sage response: ${JSON.stringify(res, null, 2)}`);
         if (res.status === 200) {
             const json = yield res.json();
             return json;
+        }
+        else {
+            return undefined;
         }
     });
 }
