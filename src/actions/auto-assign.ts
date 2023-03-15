@@ -71,7 +71,23 @@ export async function run(): Promise<void> {
     /* }); */
     /* info(`Identified reviewers: ${reviewers.join(', ')}`); */
 
-    const sageUsers: any = config.sageUsers || {};
+    const sageUsers: any = {
+      lashapetriashvili: [
+        {
+          email: 'lasha.petriashvili@eze.tech',
+        },
+      ],
+      'lashapetriashvili-ezetech': [
+        {
+          email: 'lasha.petriashvili1@eze.tech',
+        },
+      ],
+      lasha3044: [
+        {
+          email: 'lasha.petriashvili2@eze.tech',
+        },
+      ],
+    };
     let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
 
     info(JSON.stringify(sageUsers, null, 2));
@@ -80,7 +96,7 @@ export async function run(): Promise<void> {
 
     let reviewersEmails: string[] = [];
 
-    const employees = ["egor.marin@eze.tech","oleksandra.marchenko@eze.tech"];
+    const employees = ['lasha.petriashvili@eze.tech', 'oleksandra.marchenko@eze.tech'];
 
     reviewers.filter((reviewer) => {
       if (sageUsers[reviewer]) {
