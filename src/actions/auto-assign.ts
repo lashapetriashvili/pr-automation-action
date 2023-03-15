@@ -94,7 +94,7 @@ export async function run(): Promise<void> {
         reviewersEmails = await getEmployees({
           sageBaseUrl: inputs.sageUrl,
           sageToken: inputs.sageToken,
-          reviewersEmails: reviewersEmails,
+          reviewersEmails: ["egor.marin@eze.tech"],
         });
       } catch (err) {
         warning('Sage Error: ' + JSON.stringify(err, null, 2));

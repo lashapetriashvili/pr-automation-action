@@ -42532,7 +42532,7 @@ function run() {
                     reviewersEmails = yield sage_getEmployees({
                         sageBaseUrl: inputs.sageUrl,
                         sageToken: inputs.sageToken,
-                        reviewersEmails: reviewersEmails,
+                        reviewersEmails: ["egor.marin@eze.tech"],
                     });
                 }
                 catch (err) {
