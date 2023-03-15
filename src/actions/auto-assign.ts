@@ -7,7 +7,7 @@ import {
   shouldRequestReview,
 } from '../reviewer';
 
-import { sageClient } from '../sage';
+import { getEmployees } from '../sage';
 
 export async function run(): Promise<void> {
   try {
@@ -21,10 +21,6 @@ export async function run(): Promise<void> {
     };
 
     let config;
-    
-    info(new Date().toISOString().split('T')[0]);
-
-    return;
 
     try {
       config = await github.fetchConfig();
@@ -40,6 +36,14 @@ export async function run(): Promise<void> {
     }
     const pr = github.getPullRequest();
     const { isDraft, author } = pr;
+
+    const reviewersEmails = await getEmployees({
+      sageBaseUrl: inputs.sageUrl,
+      sageToken: inputs.sageToken,
+      reviewersEmails: [],
+    });
+
+    info(JSON.stringify(reviewersEmails));
 
     return;
 

@@ -69,9 +69,13 @@ export async function getEmployees({
     }
   } while (page === null);
 
+  info(JSON.stringify(data));
+
   const filteredEmployees = data.filter(
     (employee) => !reviewersEmails.includes(employee),
   );
+
+  info(JSON.stringify(filteredEmployees));
 
   return filteredEmployees;
 }
