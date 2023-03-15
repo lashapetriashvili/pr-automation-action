@@ -42518,10 +42518,12 @@ function run() {
             /* info(`Identified reviewers: ${reviewers.join(', ')}`); */
             const sageUsers = config.sageUsers || {};
             let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
+            info(JSON.stringify(sageUsers, null, 2));
             // find sage users in reviewers
             const reviewersEmails = [];
             reviewers.forEach((reviewer) => {
                 if (sageUsers[reviewer]) {
+                    info(JSON.stringify(sageUsers[reviewer], null, 2));
                     reviewersEmails.push(sageUsers[reviewer].email);
                 }
             });

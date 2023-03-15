@@ -74,12 +74,17 @@ export async function run(): Promise<void> {
     const sageUsers = config.sageUsers || {};
     let reviewers = ['lashapetriashvili', 'lashapetriashvili-ezetech', 'lasha3044'];
 
+    info(JSON.stringify(sageUsers, null, 2));
+
     // find sage users in reviewers
 
     const reviewersEmails: string[] = [];
 
     reviewers.forEach((reviewer) => {
       if (sageUsers[reviewer]) {
+
+        info(JSON.stringify(sageUsers[reviewer], null, 2));
+
         reviewersEmails.push(sageUsers[reviewer].email);
       }
     });
