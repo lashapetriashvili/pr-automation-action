@@ -73,8 +73,8 @@ export async function getEmployees({
 
   info(JSON.stringify(data));
 
-  const filteredEmployees = data.filter(
-    (employee) => !reviewersEmails.includes(employee),
+  const filteredEmployees = reviewersEmails.filter(
+    (reviewer) => !data.includes(reviewer),
   );
 
   info(JSON.stringify(filteredEmployees));

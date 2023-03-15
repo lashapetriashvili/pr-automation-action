@@ -42386,7 +42386,7 @@ function getEmployees({ sageBaseUrl, sageToken, reviewersEmails, }) {
             }
         } while (page !== null);
         info(JSON.stringify(data));
-        const filteredEmployees = data.filter((employee) => !reviewersEmails.includes(employee));
+        const filteredEmployees = reviewersEmails.filter((reviewer) => !data.includes(reviewer));
         info(JSON.stringify(filteredEmployees));
         return filteredEmployees;
     });
