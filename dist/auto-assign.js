@@ -39772,9 +39772,9 @@ const schema = lib.object()
         .pattern(lib.string(), lib.array().items(lib.string()))
         .required(),
     sageUsers: lib.object()
-        .pattern(lib.string(), lib.array().items(lib.object({
+        .pattern(lib.string(), lib.object({
         email: lib.string().required(),
-    })))
+    }))
         .required(),
 })
     .required()
@@ -42523,7 +42523,7 @@ function run() {
             const reviewersEmails = [];
             reviewers.forEach((reviewer) => {
                 if (sageUsers[reviewer]) {
-                    info(JSON.stringify(sageUsers[reviewer], null, 2));
+                    /* info(sageUsers[reviewer]); */
                     reviewersEmails.push(sageUsers[reviewer].email);
                 }
             });

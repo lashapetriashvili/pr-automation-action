@@ -83,7 +83,7 @@ export async function run(): Promise<void> {
     reviewers.forEach((reviewer) => {
       if (sageUsers[reviewer]) {
 
-        info(JSON.stringify(sageUsers[reviewer], null, 2));
+        /* info(sageUsers[reviewer]); */
 
         reviewersEmails.push(sageUsers[reviewer].email);
       }
