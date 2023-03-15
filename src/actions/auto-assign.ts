@@ -7,7 +7,7 @@ import {
   shouldRequestReview,
 } from '../reviewer';
 
-import { getEmployees } from '../sage';
+import { getEmployeesWhoDontWorkToday } from '../sage';
 
 export async function run(): Promise<void> {
   try {
@@ -80,21 +80,23 @@ export async function run(): Promise<void> {
 
     let reviewersEmails: string[] = [];
 
-    reviewers.forEach((reviewer) => {
+    const employees = ["egor.marin@eze.tech","oleksandra.marchenko@eze.tech"];
+
+    reviewers.filter((reviewer) => {
       if (sageUsers[reviewer]) {
-
-        /* info(sageUsers[reviewer]); */
-
-        reviewersEmails.push(sageUsers[reviewer][0].email);
+        return !employees.includes(sageUsers[reviewer][0].email);
       }
     });
 
+    info(JSON.stringify(reviewers, null, 2));
+
+    return;
+
     if (inputs.checkReviewerOnSage) {
       try {
-        reviewersEmails = await getEmployees({
+        reviewersEmails = await getEmployeesWhoDontWorkToday({
           sageBaseUrl: inputs.sageUrl,
           sageToken: inputs.sageToken,
-          reviewersEmails: ["egor.marin@eze.tech"],
         });
       } catch (err) {
         warning('Sage Error: ' + JSON.stringify(err, null, 2));

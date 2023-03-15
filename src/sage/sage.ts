@@ -28,14 +28,12 @@ type SageLeaveManagement = SageResponse<{
   employee_id: number;
 }>;
 
-export async function getEmployees({
+export async function getEmployeesWhoDontWorkToday({
   sageBaseUrl,
   sageToken,
-  reviewersEmails,
 }: {
   sageBaseUrl: string;
   sageToken: string;
-  reviewersEmails: string[];
 }): Promise<string[]> {
   const client = sageClient({
     sageBaseUrl,
@@ -46,8 +44,6 @@ export async function getEmployees({
     sageBaseUrl,
     sageToken,
   });
-
-  info(JSON.stringify(leaveManagement));
 
   let page: number | null = 1;
   let data: string[] = [];
@@ -71,15 +67,7 @@ export async function getEmployees({
     }
   } while (page !== null);
 
-  info(JSON.stringify(data));
-
-  const filteredEmployees = reviewersEmails.filter(
-    (reviewer) => !data.includes(reviewer),
-  );
-
-  info(JSON.stringify(filteredEmployees));
-
-  return filteredEmployees;
+  return data;
 }
 
 export async function getLeaveManagement({

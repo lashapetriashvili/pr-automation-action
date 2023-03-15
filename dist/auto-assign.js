@@ -42361,7 +42361,7 @@ var sage_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arg
 };
 
 
-function getEmployees({ sageBaseUrl, sageToken, reviewersEmails, }) {
+function getEmployeesWhoDontWorkToday({ sageBaseUrl, sageToken, }) {
     return sage_awaiter(this, void 0, void 0, function* () {
         const client = sageClient({
             sageBaseUrl,
@@ -42371,7 +42371,6 @@ function getEmployees({ sageBaseUrl, sageToken, reviewersEmails, }) {
             sageBaseUrl,
             sageToken,
         });
-        info(JSON.stringify(leaveManagement));
         let page = 1;
         let data = [];
         do {
@@ -42385,10 +42384,7 @@ function getEmployees({ sageBaseUrl, sageToken, reviewersEmails, }) {
                 page = null;
             }
         } while (page !== null);
-        info(JSON.stringify(data));
-        const filteredEmployees = reviewersEmails.filter((reviewer) => !data.includes(reviewer));
-        info(JSON.stringify(filteredEmployees));
-        return filteredEmployees;
+        return data;
     });
 }
 function getLeaveManagement({ sageBaseUrl, sageToken, }) {
@@ -42448,7 +42444,7 @@ function sageClient({ sageBaseUrl, sageToken, }) {
 
 
 const sage_sageClient = withDebugLog(sageClient);
-const sage_getEmployees = withDebugLog(getEmployees);
+const sage_getEmployeesWhoDontWorkToday = withDebugLog(getEmployeesWhoDontWorkToday);
 const sage_getLeaveManagement = withDebugLog(getLeaveManagement);
 
 ;// CONCATENATED MODULE: ./src/actions/auto-assign.ts
@@ -42521,18 +42517,19 @@ function run() {
             info(JSON.stringify(sageUsers, null, 2));
             // find sage users in reviewers
             let reviewersEmails = [];
-            reviewers.forEach((reviewer) => {
+            const employees = ["egor.marin@eze.tech", "oleksandra.marchenko@eze.tech"];
+            reviewers.filter((reviewer) => {
                 if (sageUsers[reviewer]) {
-                    /* info(sageUsers[reviewer]); */
-                    reviewersEmails.push(sageUsers[reviewer][0].email);
+                    return !employees.includes(sageUsers[reviewer][0].email);
                 }
             });
+            info(JSON.stringify(reviewers, null, 2));
+            return;
             if (inputs.checkReviewerOnSage) {
                 try {
-                    reviewersEmails = yield sage_getEmployees({
+                    reviewersEmails = yield sage_getEmployeesWhoDontWorkToday({
                         sageBaseUrl: inputs.sageUrl,
                         sageToken: inputs.sageToken,
-                        reviewersEmails: ["egor.marin@eze.tech"],
                     });
                 }
                 catch (err) {

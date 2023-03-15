@@ -2,10 +2,10 @@ import { withDebugLog } from '../utils';
 
 import {
   sageClient as sageClientFunc,
-  getEmployees as getEmployeesFunc,
+  getEmployeesWhoDontWorkToday as getEmployeesWhoDontWorkTodayFunc,
   getLeaveManagement as getLeaveManagementFunc,
 } from './sage';
 
 export const sageClient = withDebugLog(sageClientFunc);
-export const getEmployees = withDebugLog(getEmployeesFunc);
+export const getEmployeesWhoDontWorkToday = withDebugLog(getEmployeesWhoDontWorkTodayFunc);
 export const getLeaveManagement = withDebugLog(getLeaveManagementFunc);
